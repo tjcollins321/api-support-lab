@@ -1,0 +1,29 @@
+{
+  "case": "invalid_credentials",
+  "variant": "broken",
+  "captured_at": "2026-10-22T03:22:50.374958+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 394.916,
+  "outcome": "api_error",
+  "exception_type": "AuthenticationError",
+  "http_status": 401,
+  "error_type": "invalid_request_error",
+  "error_code": "invalid_api_key",
+  "error_param": null,
+  "message": "Incorrect API key provided: [REDACTED]************************-lab. You can find your API key at https://platform.openai.com/account/api-keys.",
+  "request_id": "req_c610e4e44403409bbe5eecc22366c2d8",
+  "headers": {
+    "x-request-id": "req_c610e4e44403409bbe5eecc22366c2d8"
+  },
+  "response_status": null,
+  "incomplete_reason": null,
+  "output_excerpt": null,
+  "usage": null,
+  "settings": {
+    "max_output_tokens": 2048,
+    "reasoning_effort": "low",
+    "timeout_seconds": 60.0,
+    "max_retries": 0
+  }
+}

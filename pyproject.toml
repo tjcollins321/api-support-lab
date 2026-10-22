@@ -1,0 +1,24 @@
+[project]
+name = "api-support-lab"
+version = "0.1.0"
+description = "A technical learning lab for API failures and support triage."
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "openai",
+    "openai-agents",
+    "pydantic>=2,<3",
+    "pyyaml>=6,<7",
+]
+
+[dependency-groups]
+dev = ["pytest>=9,<10"]
+
+[build-system]
+requires = ["hatchling>=1.27,<2"]
+build-backend = "hatchling.build"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-markers"
+markers = ["live: requires --run-live to permit API requests"]
