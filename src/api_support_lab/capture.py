@@ -149,6 +149,7 @@ def capture(
     settings: Settings,
     secrets: Sequence[str] = (),
     output_dir: Path = DEFAULT_OUTPUT_DIR,
+    validate_output: Callable[[str], bool] | None = None,
 ) -> CaptureResult:
     """Capture a raw SDK response or SDK exception; let programming errors propagate.
 
@@ -178,6 +179,7 @@ def capture(
         "response_status": None,
         "incomplete_reason": None,
         "output_excerpt": None,
+        "output_valid": None,
         "usage": None,
         "settings": {
             "max_output_tokens": settings.max_output_tokens,
@@ -199,6 +201,16 @@ def capture(
         record.update(_error_fields(error, "api_error"))
     except OpenAIError as error:
         record.update(_error_fields(error, "sdk_error"))
+    # Validate the complete text, never a saved/truncated excerpt. Incomplete,
+    # refused, or failed responses do not enter a JSON parser. Validators return
+    # a boolean only; unexpected programming errors still propagate.
+    if (
+        validate_output is not None and record["outcome"] == "response"
+        and record["response_status"] == "completed"
+        and record["incomplete_reason"] is None and record["error_code"] is None
+        and type(record["http_status"]) is int and 200 <= record["http_status"] < 300
+    ):
+        record["output_valid"] = validate_output(record["output_excerpt"] or "")
     record["elapsed_ms"] = round((perf_counter() - started) * 1_000, 3)
     record = _sanitize(record, secrets)
     # Redact before truncation, so a credential cannot survive as a cut-off prefix.

@@ -1,0 +1,40 @@
+{
+  "case": "incomplete_output",
+  "variant": "broken",
+  "captured_at": "2026-10-22T23:23:33.193696+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 3763.052,
+  "outcome": "response",
+  "exception_type": null,
+  "http_status": 200,
+  "error_type": null,
+  "error_code": null,
+  "error_param": null,
+  "message": null,
+  "request_id": "req_5ed5656bfb27417fb89f38eb8f52b03b",
+  "headers": {
+    "x-request-id": "req_5ed5656bfb27417fb89f38eb8f52b03b"
+  },
+  "response_status": "incomplete",
+  "incomplete_reason": "max_output_tokens",
+  "output_excerpt": "{\"status\":\"READY\",\"items\":[{\"index\":1,\"label\":\"item_1\"},{\"index\":2,\"label\":\"item_2\"},{\"index\":3,\"label\":\"item_3\"},{\"index\":4,\"label\":\"item_4\"},{\"index\":5,\"label\":\"item_5\"},{\"index\":6,\"label\":\"item_6\"},{\"index\":7,\"label\":\"item_7\"},{\"index\":8,\"label\":\"item_8\"},{\"index\":9,\"label\":\"item_9\"},{\"index\":10,\"label\":\"item_10\"},{\"index\":11,\"label\":\"item_11\"},{\"index\":12",
+  "output_valid": null,
+  "usage": {
+    "input_tokens": 138,
+    "output_tokens": 128,
+    "total_tokens": 266,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "settings": {
+    "max_output_tokens": 128,
+    "reasoning_effort": "low",
+    "timeout_seconds": 60.0,
+    "max_retries": 0
+  }
+}

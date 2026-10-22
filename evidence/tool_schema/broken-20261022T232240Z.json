@@ -1,0 +1,30 @@
+{
+  "case": "tool_schema",
+  "variant": "broken",
+  "captured_at": "2026-10-22T23:22:40.318052+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 996.304,
+  "outcome": "api_error",
+  "exception_type": "BadRequestError",
+  "http_status": 400,
+  "error_type": "invalid_request_error",
+  "error_code": "invalid_function_parameters",
+  "error_param": "tools[0].parameters",
+  "message": "Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas.",
+  "request_id": "req_ed8455b8b9d34759b15ecfaed73816f7",
+  "headers": {
+    "x-request-id": "req_ed8455b8b9d34759b15ecfaed73816f7"
+  },
+  "response_status": null,
+  "incomplete_reason": null,
+  "output_excerpt": null,
+  "output_valid": null,
+  "usage": null,
+  "settings": {
+    "max_output_tokens": 2048,
+    "reasoning_effort": "low",
+    "timeout_seconds": 60.0,
+    "max_retries": 0
+  }
+}

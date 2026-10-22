@@ -1,0 +1,46 @@
+{
+  "case": "incomplete_output",
+  "variant": "fixed",
+  "captured_at": "2026-10-22T23:23:46.160497+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 6101.847,
+  "outcome": "response",
+  "exception_type": null,
+  "http_status": 200,
+  "error_type": null,
+  "error_code": null,
+  "error_param": null,
+  "message": null,
+  "request_id": "req_06901b0b40854075a08e471f71ccd47e",
+  "headers": {
+    "x-ratelimit-limit-requests": "5000",
+    "x-ratelimit-limit-tokens": "1000000",
+    "x-ratelimit-remaining-requests": "4999",
+    "x-ratelimit-remaining-tokens": "999806",
+    "x-ratelimit-reset-requests": "12ms",
+    "x-ratelimit-reset-tokens": "11ms",
+    "x-request-id": "req_06901b0b40854075a08e471f71ccd47e"
+  },
+  "response_status": "completed",
+  "incomplete_reason": null,
+  "output_excerpt": "{\"status\":\"READY\",\"items\":[{\"index\":1,\"label\":\"item_1\"},{\"index\":2,\"label\":\"item_2\"},{\"index\":3,\"label\":\"item_3\"},{\"index\":4,\"label\":\"item_4\"},{\"index\":5,\"label\":\"item_5\"},{\"index\":6,\"label\":\"item_6\"},{\"index\":7,\"label\":\"item_7\"},{\"index\":8,\"label\":\"item_8\"},{\"index\":9,\"label\":\"item_9\"},{\"index\":10,\"label\":\"item_10\"},{\"index\":11,\"label\":\"item_11\"},{\"index\":12,\"label\":\"item_12\"},{\"index\":13,\"label\":\"item_13\"},{\"index\":14,\"label\":\"item_14\"},{\"index\":15,\"label\":\"item_15\"},{\"index\":16,\"label\":\"item_16\"},{\"index\":17,\"label\":\"item_17\"},{\"index\":18,\"label\":\"item_18\"},{\"index\":19,\"label\":\"item_19\"},{\"index\":20,\"label\":\"item_20\"},{\"index\":21,\"label\":\"item_21\"},{\"index\":22,\"label\":\"item_22\"},{\"index\":23,\"label\":\"item_23\"},{\"index\":24,\"label\":\"item_24\"},{\"index\":25,\"label\":\"item_25\"},{\"index\":26,\"label\":\"item_26\"},{\"index\":27,\"label\":\"item_27\"},{\"index\":28,\"label\":\"item_28\"},{\"index\":29,\"label\":\"item_29\"},{\"index\":30,\"label\":\"item_30\"},{\"index\":31,\"label\":\"item_31\"},{\"index\":32,\"label\":\"item_32\"}",
+  "output_valid": true,
+  "usage": {
+    "input_tokens": 138,
+    "output_tokens": 337,
+    "total_tokens": 475,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "settings": {
+    "max_output_tokens": 2048,
+    "reasoning_effort": "low",
+    "timeout_seconds": 60.0,
+    "max_retries": 0
+  }
+}

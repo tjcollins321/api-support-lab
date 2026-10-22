@@ -21,6 +21,8 @@ def forbid_client_and_credential_access(monkeypatch):
 @pytest.mark.parametrize("key", [None, "dummy-secret-never-display"])
 @pytest.mark.parametrize("args", [
     ["reproduce", "invalid_credentials", "--variant", "broken"],
+    *[["reproduce", case, "--variant", variant] for case in
+      ("tool_schema", "incomplete_output", "timeout") for variant in ("broken", "fixed")],
     ["triage", "ticket.yaml"],
     ["evaluate"],
 ])
@@ -35,16 +37,6 @@ def test_live_commands_refuse_without_opt_in(monkeypatch, capsys, key, args):
     output = capsys.readouterr().err
     assert "--live" in output
     assert "dummy-secret-never-display" not in output
-
-
-@pytest.mark.parametrize("args", [
-    ["reproduce", "tool_schema", "--variant", "fixed", "--live"],
-])
-def test_unfinished_handlers_fail_explicitly_without_side_effects(capsys, args):
-    assert main(args) == 1
-    output = capsys.readouterr()
-    assert output.out == ""
-    assert "not implemented" in output.err
 
 
 def test_diagnose_is_offline_and_unknown_codes_are_retained_as_unmatched(capsys):

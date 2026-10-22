@@ -1,0 +1,28 @@
+{
+  "case": "timeout",
+  "variant": "broken",
+  "captured_at": "2026-10-22T23:24:02.582143+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 619.908,
+  "outcome": "client_timeout",
+  "exception_type": "APITimeoutError",
+  "http_status": null,
+  "error_type": null,
+  "error_code": null,
+  "error_param": null,
+  "message": "Request timed out.",
+  "request_id": null,
+  "headers": {},
+  "response_status": null,
+  "incomplete_reason": null,
+  "output_excerpt": null,
+  "output_valid": null,
+  "usage": null,
+  "settings": {
+    "max_output_tokens": 2048,
+    "reasoning_effort": "low",
+    "timeout_seconds": 0.5,
+    "max_retries": 0
+  }
+}

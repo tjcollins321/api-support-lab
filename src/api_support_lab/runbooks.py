@@ -15,13 +15,20 @@ class Runbook:
 
 
 # Only reviewed captures establish mappings. The corrected HTTP 200 is not a
-# diagnostic entry. Add other runbooks when milestone 4 supplies their material.
+# diagnostic entry. Unverified runbooks have no diagnostic mappings.
 # Source: evidence/invalid_credentials/broken-20261022T032250Z.json
+# Source: evidence/tool_schema/broken-20261022T232240Z.json
 REGISTRY: dict[CaseId, Runbook] = {
     "invalid_credentials": Runbook(
         PROJECT_ROOT / "runbooks" / "invalid_credentials.md",
         ((401, "invalid_api_key"),),
     ),
+    "tool_schema": Runbook(
+        PROJECT_ROOT / "runbooks" / "tool_schema.md",
+        ((400, "invalid_function_parameters"),),
+    ),
+    "incomplete_output": Runbook(PROJECT_ROOT / "runbooks" / "incomplete_output.md"),
+    "timeout": Runbook(PROJECT_ROOT / "runbooks" / "timeout.md"),
 }
 
 

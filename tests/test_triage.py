@@ -150,11 +150,14 @@ def test_listing_is_not_supporting_retrieval(transport, ticket, draft, tmp_path)
     assert run(ticket, tmp_path).record["failure"]["type"] == "GroundingError"
 
 
-def test_tool_error_is_failed_run(transport, ticket, tmp_path):
+def test_tool_error_is_failed_run(transport, ticket, tmp_path, monkeypatch):
+    monkeypatch.setattr(agent.runbooks, "REGISTRY", {
+        "timeout": agent.runbooks.Runbook(tmp_path / "missing-runbook.md"),
+    })
     transport([response([tool("get_runbook", {"case": "timeout"})])])
     outcome = run(ticket, tmp_path)
     assert outcome.record["failure"]["type"] == "UserError"
-    assert outcome.record["failure"]["cause_type"] == "ValueError"
+    assert outcome.record["failure"]["cause_type"] == "FileNotFoundError"
     assert outcome.record["tool_use"][0]["status"] == "failed"
     assert outcome.record["result"] is None
 

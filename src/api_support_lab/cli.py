@@ -1,10 +1,12 @@
-"""Argument parsing and execution boundaries for the planned lab commands."""
+"""Argument parsing and execution boundaries for the lab commands."""
 
 import argparse
 import asyncio
 import json
 import sys
 from collections.abc import Sequence
+from dataclasses import replace
+from importlib import import_module
 from pathlib import Path
 
 from api_support_lab.config import ConfigurationError, load_settings, require_live
@@ -30,11 +32,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
-    reproduce = commands.add_parser("reproduce", help="Reproduce a case (authentication implemented; requires --live).")
+    reproduce = commands.add_parser("reproduce", help="Reproduce one case attempt (requires --live).")
     reproduce.add_argument("case", choices=CASE_IDS)
     reproduce.add_argument("--variant", choices=("broken", "fixed"), required=True)
     reproduce.add_argument("--live", action="store_true", help="Explicitly permit API requests.")
     reproduce.add_argument("--output-dir", type=Path, help="Evidence directory; defaults to artifacts/evidence in the checkout.")
+    reproduce.add_argument("--max-output-tokens", type=int, help="Override the output cap (broken incomplete: 128; otherwise 2048).")
+    reproduce.add_argument("--timeout-seconds", type=float, help="Override client timeout (broken timeout: 0.5; otherwise 60).")
 
     diagnose = commands.add_parser("diagnose", help="Look up diagnostic candidates offline.")
     diagnose.add_argument("--status", type=http_status, required=True)
@@ -64,21 +68,30 @@ def main(argv: Sequence[str] | None = None) -> int:
         except ConfigurationError as error:
             parser.error(str(error))
 
-    if args.command == "reproduce" and args.case == "invalid_credentials":
+    if args.command == "reproduce":
         # Import SDK-dependent case code only after the live boundary.
-        from api_support_lab.cases import invalid_credentials
+        case = import_module(f"api_support_lab.cases.{args.case}")
 
-        variant = invalid_credentials.broken if args.variant == "broken" else invalid_credentials.fixed
+        variant = case.broken if args.variant == "broken" else case.fixed
         options = {"output_dir": args.output_dir} if args.output_dir is not None else {}
         try:
-            result = variant(load_settings(), live=args.live, **options)
+            settings = load_settings()
+            if args.max_output_tokens is not None:
+                settings = replace(settings, max_output_tokens=args.max_output_tokens)
+                if args.case == "incomplete_output" and args.variant == "broken":
+                    options["max_output_tokens"] = args.max_output_tokens
+            if args.timeout_seconds is not None:
+                settings = replace(settings, timeout_seconds=args.timeout_seconds)
+                if args.case == "timeout" and args.variant == "broken":
+                    options["timeout_seconds"] = args.timeout_seconds
+            result = variant(settings, live=args.live, **options)
         except ConfigurationError as error:
             parser.error(str(error))
         except OSError:
             print("Could not write the evidence artifact; the request may already have run.", file=sys.stderr)
             return 1
         print(f"Saved evidence: {result.path}")
-        if not invalid_credentials.matches_expected(result):
+        if not case.matches_expected(result):
             print("The attempt did not match the intended behavior; inspect the sanitized evidence.", file=sys.stderr)
             return 1
         print("The attempt matched the intended behavior. Pair verification requires both variants and review.")
@@ -130,6 +143,4 @@ def main(argv: Sequence[str] | None = None) -> int:
             print("Could not read or write an artifact; any attempted request was not repeated.", file=sys.stderr)
             return 1
 
-    # Do not load credentials or construct clients for unimplemented handlers.
-    print(f"{args.command} is not implemented yet; no operation was performed.", file=sys.stderr)
-    return 1
+    raise AssertionError("Unhandled command")

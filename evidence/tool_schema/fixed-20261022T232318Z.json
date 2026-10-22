@@ -1,0 +1,46 @@
+{
+  "case": "tool_schema",
+  "variant": "fixed",
+  "captured_at": "2026-10-22T23:23:18.195182+00:00",
+  "model": "gpt-6.1-sol",
+  "sdk_version": "3.36.0",
+  "elapsed_ms": 1826.372,
+  "outcome": "response",
+  "exception_type": null,
+  "http_status": 200,
+  "error_type": null,
+  "error_code": null,
+  "error_param": null,
+  "message": null,
+  "request_id": "req_866e254a1553477881be38b8d9ac44f0",
+  "headers": {
+    "x-ratelimit-limit-requests": "5000",
+    "x-ratelimit-limit-tokens": "1000000",
+    "x-ratelimit-remaining-requests": "4999",
+    "x-ratelimit-remaining-tokens": "1000000",
+    "x-ratelimit-reset-requests": "12ms",
+    "x-ratelimit-reset-tokens": "0s",
+    "x-request-id": "req_866e254a1553477881be38b8d9ac44f0"
+  },
+  "response_status": "completed",
+  "incomplete_reason": null,
+  "output_excerpt": "READY",
+  "output_valid": null,
+  "usage": {
+    "input_tokens": 42,
+    "output_tokens": 5,
+    "total_tokens": 47,
+    "input_tokens_details": {
+      "cached_tokens": 0
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 0
+    }
+  },
+  "settings": {
+    "max_output_tokens": 2048,
+    "reasoning_effort": "low",
+    "timeout_seconds": 60.0,
+    "max_retries": 0
+  }
+}
