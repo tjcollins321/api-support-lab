@@ -40,7 +40,7 @@ Project permissions, model availability, billing issues, and connection failures
 
 Confirm that the intended project key is present in the process environment, without printing it. The application does not automatically read `.env`; when using that file, explicitly pass `uv run --env-file .env`. The broken variant does not need a genuine credential.
 
-These command forms were used for the observed live pair, with the workspace-local `.tools/uv`, a local uv cache, and package downloads disabled. Future reruns require their own explicit live opt-in and spending review:
+These command forms describe the observed live pair. Future reruns require their own explicit live opt-in and spending review:
 
 ```sh
 uv run --locked python -m api_support_lab reproduce invalid_credentials --variant broken --live

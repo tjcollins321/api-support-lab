@@ -57,7 +57,8 @@ The result should use `request_info` and mark the diagnosis as inferred. HTTP su
 
 ## Setup and current usage
 
-Use Python 3.14 and `uv`. Install the locked dependencies from the checkout:
+Use Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installation/),
+installed and available on your `PATH`. Install the locked dependencies from the checkout:
 
 ```sh
 uv sync --locked
@@ -66,7 +67,7 @@ env -u OPENAI_API_KEY uv run --offline --locked --no-env-file pytest
 uv run --offline --locked --no-env-file python -m api_support_lab diagnose --status 401 --error-code invalid_api_key
 ```
 
-Setup may download dependencies; the help command and default tests need neither network access nor credentials after setup. In this workspace, `uv` is installed locally at `.tools/uv`; use that executable in place of `uv` if it is not on your PATH. Local tooling and caches are ignored.
+Setup may download dependencies; the help command and default tests need neither network access nor credentials after setup.
 
 The CLI implements `reproduce invalid_credentials --variant broken|fixed --live`. Each invocation makes one request with retries disabled. The broken variant deliberately uses an invalid credential and does not load the environment key; the fixed variant uses `OPENAI_API_KEY`. Both use the same small synthetic workload. The implementation has offline checks and one reviewed live pair, observed on 2026-10-21 in America/New_York (2026-10-22 UTC). Live execution remains explicitly opted-in work.
 
@@ -109,7 +110,7 @@ Each attempt gets a separate timestamped, uniquely named JSON file under the che
 
 Tests block DNS resolution and outbound socket connections inside offline test execution. Tests marked `live` are skipped unless `--run-live` is supplied; selecting the marker alone does not enable them. The current suite has no live API tests. Its opt-in checks use a harmless generated test; authentication tests use dummy credentials and an in-memory transport, including real SDK request serialization, parsing, and exception handling. All test artifacts stay in temporary directories and are never public evidence. The network tripwire is a pytest fixture, not a production guard framework or an OS network sandbox.
 
-The environment and local interfaces were checked on Python 3.14.4 with uv 0.13.5, OpenAI SDK 3.36.0, Agents SDK 0.24.0, Pydantic 2.14.1, PyYAML 6.0.3, and pytest 9.1.1. Exact runtime and test dependencies are in `uv.lock`. Slice 3 has 148 passing offline tests, including actual strict function-tool schemas and the asynchronous SDK loop through an in-memory transport, all three pilot outcomes, and saved-result scoring. These authored responses are offline fixtures, separate from the later live pilot. In this execution sandbox, local asyncio thread wakeups stalled; the suite passed outside that sandbox with pytest's DNS/socket tripwire still active.
+The environment and local interfaces were checked on Python 3.14.4 with uv 0.13.5, OpenAI SDK 3.36.0, Agents SDK 0.24.0, Pydantic 2.14.1, PyYAML 6.0.3, and pytest 9.1.1. Exact runtime and test dependencies are in `uv.lock`. Slice 3 has 148 passing offline tests, including actual strict function-tool schemas and the asynchronous SDK loop through an in-memory transport, all three pilot outcomes, and saved-result scoring. These authored responses are offline fixtures, separate from the later live pilot.
 
 Slice 2's live checkpoint is complete: one broken and one corrected request, both with zero retries; reviewed evidence is linked from the authentication runbook. The correction reported 13 input and 5 output tokens. Its standard-rate token estimate is $0.000076, not a confirmed billing charge; rejected-request usage and the remaining account balance are unknown.
 

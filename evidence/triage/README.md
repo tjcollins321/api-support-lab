@@ -45,8 +45,7 @@ To score the selected report offline from a configured checkout:
 env -u OPENAI_API_KEY uv run --offline --locked --no-env-file python -m api_support_lab evaluate --results evidence/triage/pilot-20261022.json
 ```
 
-Use `.tools/uv` in place of `uv` if using the workspace-local executable. This
-command reads the current [tickets](../../triage/tickets/) and separate
+The command reads the current [tickets](../../triage/tickets/) and separate
 [expectations](../../triage/expected.yaml), preserves the review notes, and writes
 a new report under ignored `artifacts/evaluation/`. It makes no model calls and
 needs no credential. The verified score is **3/3**, with **0 operational failures**,
