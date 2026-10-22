@@ -1,6 +1,8 @@
 """Argument parsing and execution boundaries for the planned lab commands."""
 
 import argparse
+import asyncio
+import json
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -24,7 +26,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="api_support_lab",
         description="API Support Lab: a technical learning lab for API failures and support triage.",
-        epilog="Authentication reproduction requires --live; other command handlers remain planned.",
+        epilog="Reproduction, triage, and model-backed evaluation require --live.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
 
@@ -34,15 +36,17 @@ def build_parser() -> argparse.ArgumentParser:
     reproduce.add_argument("--live", action="store_true", help="Explicitly permit API requests.")
     reproduce.add_argument("--output-dir", type=Path, help="Evidence directory; defaults to artifacts/evidence in the checkout.")
 
-    diagnose = commands.add_parser("diagnose", help="Look up diagnostic candidates offline (planned).")
+    diagnose = commands.add_parser("diagnose", help="Look up diagnostic candidates offline.")
     diagnose.add_argument("--status", type=http_status, required=True)
     diagnose.add_argument("--error-code")
 
-    triage = commands.add_parser("triage", help="Draft a ticket reply (planned; requires --live).")
+    triage = commands.add_parser("triage", help="Draft a ticket reply (requires --live).")
     triage.add_argument("ticket", type=Path)
     triage.add_argument("--live", action="store_true", help="Explicitly permit API requests.")
+    triage.add_argument("--output-dir", type=Path, help="Local run artifact directory.")
 
-    evaluate = commands.add_parser("evaluate", help="Evaluate tickets or score saved results (planned).")
+    evaluate = commands.add_parser("evaluate", help="Evaluate three tickets or score saved results offline.")
+    evaluate.add_argument("--output-dir", type=Path, help="Local evaluation artifact directory.")
     mode = evaluate.add_mutually_exclusive_group(required=True)
     mode.add_argument("--live", action="store_true", help="Explicitly permit model-backed evaluation.")
     mode.add_argument("--results", type=Path, help="Score saved results offline without model calls.")
@@ -79,6 +83,52 @@ def main(argv: Sequence[str] | None = None) -> int:
             return 1
         print("The attempt matched the intended behavior. Pair verification requires both variants and review.")
         return 0
+
+    if args.command == "diagnose":
+        from api_support_lab.runbooks import diagnose
+
+        print(json.dumps(diagnose(args.status, args.error_code)))
+        return 0
+
+    if args.command in ("triage", "evaluate"):
+        from pydantic import ValidationError
+        from yaml import YAMLError
+
+        options = {"output_dir": args.output_dir} if args.output_dir is not None else {}
+        try:
+            if args.command == "triage":
+                from api_support_lab.agent import triage_ticket
+                from api_support_lab.tickets import load_ticket
+
+                ticket = load_ticket(args.ticket)
+                run = asyncio.run(triage_ticket(ticket, load_settings(), live=args.live, **options))
+                print(f"Saved triage run: {run.path}")
+                if run.record["status"] != "completed":
+                    print("Triage failed; no draft accepted. Inspect the saved run.", file=sys.stderr)
+                    return 1
+                print("Draft for human review:")
+                print(run.record["result"]["customer_reply"])
+                return 0
+            from api_support_lab.evaluation import evaluate_live, report_passed, score_saved
+
+            if args.results is not None:
+                report, path = score_saved(args.results, **options)
+            else:
+                report, path = asyncio.run(evaluate_live(load_settings(), live=args.live, **options))
+            print(f"Saved evaluation report: {path}")
+            summary = report["summary"]
+            print(f"Automated agreement: {summary['automated_pass']}/{summary['total']}; "
+                  f"operational failures: {summary['operational_failures']}; "
+                  f"semantic mismatches: {summary['semantic_mismatches']}. Manual reply review required.")
+            return 0 if report_passed(report) else 1
+        except ConfigurationError as error:
+            parser.error(str(error))
+        except (ValidationError, YAMLError, ValueError):
+            print("Invalid ticket or saved-result data; no usable result produced.", file=sys.stderr)
+            return 1
+        except OSError:
+            print("Could not read or write an artifact; any attempted request was not repeated.", file=sys.stderr)
+            return 1
 
     # Do not load credentials or construct clients for unimplemented handlers.
     print(f"{args.command} is not implemented yet; no operation was performed.", file=sys.stderr)

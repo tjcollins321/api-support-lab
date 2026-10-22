@@ -1,0 +1,25 @@
+# Evaluator only. Never import this file in agent code or include it in prompts.
+T-001:
+  categories: [invalid_credentials]
+  basis: [stated]
+  action: recommend_fix
+  severity: unknown
+  required_missing: []
+  required_runbooks: [invalid_credentials]
+  required_evidence: ['401', invalid_api_key]
+T-005:
+  categories: [undetermined, invalid_credentials]
+  basis: [none, inferred]
+  action: request_info
+  severity: unknown
+  required_missing: [http_status, error_code]
+  required_runbooks: []
+  required_evidence: []
+T-009:
+  categories: [out_of_scope]
+  basis: [none]
+  action: escalate
+  severity: unknown
+  required_missing: []
+  required_runbooks: []
+  required_evidence: [SSO]

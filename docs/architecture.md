@@ -1,6 +1,6 @@
 # Architecture
 
-Status: the package, configuration, SDK setup, test boundaries, capture wrapper, and authentication commands are implemented, with offline checks and one reviewed live authentication pair. The authentication runbook is verified; 1 of 4 target cases are live-verified. No agent runs have been completed. The workflow below remains the target design. [Requirements](requirements.md) define acceptance; the [implementation plan](implementation-plan.md) defines delivery order.
+Status: slices 1–3 are implemented and checked offline, including the three deterministic tools, one asynchronous draft-only agent, and the initial evaluation/scoring workflow. One separately authorized three-ticket live pilot passed automated checks, Codex-assisted reply review, artifact review, and offline rescoring on 2026-10-22. The authentication runbook is verified; 1 of 4 target reproduction cases are live-verified. Other cases and the ten-ticket evaluation remain targets. [Requirements](requirements.md) define acceptance; the [implementation plan](implementation-plan.md) defines delivery order.
 
 ## Overview
 
@@ -27,7 +27,7 @@ The evidence-to-runbook step is a human documentation task, not automatic model 
 
 ## Components and storage
 
-Layout below includes planned components. The current package includes the foundation modules, `capture.py`, and `cases/invalid_credentials.py`, with a verified authentication runbook, two selected live evidence files, and offline tests. The other cases, deterministic tools, tickets, agent, and evaluation remain deferred:
+Layout below includes planned components. All listed modules now exist except the three remaining case modules/runbooks. The checkout includes one verified runbook, two reviewed live evidence files, three pilot tickets, separate expectations, and offline tests:
 
 ```text
 src/api_support_lab/
@@ -40,6 +40,8 @@ src/api_support_lab/
   cases/              one module per case, with broken() and fixed()
   runbooks.py          registry and three shared functions
   agent.py            SDK configuration, tool wrappers, result models
+  tickets.py          safe loading, input allowlist, ticket hashing
+  artifacts.py        sanitized unique local run/report artifacts
   evaluation.py       ticket loading, scoring, saved reports
 runbooks/             Markdown, one file per case
 evidence/             sanitized live observations
@@ -54,13 +56,15 @@ Local run artifacts belong under an ignored `artifacts/` directory. Select sanit
 
 Use a static registry mapping each case identifier to its runbook path. Read the first prose paragraph after the runbook title as its one-line symptoms description. Resolve paths relative to the project location, not the caller's working directory.
 
+Slice 3 registers only the existing authentication runbook and the observed 401/`invalid_api_key` combination. The other case IDs remain in the public type contract but retrieval rejects them until registered. Resources resolve from the installed checkout; distributing Markdown/YAML resources in a standalone wheel is deferred.
+
 ## Environment and model
 
 Target Python 3.14 and manage the environment with `uv`. Depend directly on `openai`, `openai-agents`, Pydantic, and PyYAML; use pytest for checks and standard-library argument parsing for the CLI. The locked dependency set installs on Python 3.14.4; versions and checked setup instructions are recorded in the README.
 
 Use `OPENAI_API_KEY` for the credential and `API_SUPPORT_LAB_MODEL` for the model override, defaulting to `gpt-6.1-sol`. Set reasoning effort explicitly to `low` through Responses. Sol supports low reasoning and Responses tool calling; it does not support `none` or `minimal`. Model availability in the configured account must be checked. [Model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol)
 
-The implementation will use the SDK's `Agent`, `Runner`, and `function_tool` interfaces. Use a Pydantic result model through `output_type`. Start with an asynchronous runner behind the CLI rather than relying on a synchronous helper whose availability has not been checked. [Agents SDK quickstart](https://developers.openai.com/api/docs/guides/agents/quickstart), [structured agent output](https://developers.openai.com/api/docs/guides/agents/define-agents)
+The implementation uses the SDK's `Agent`, asynchronous `Runner.run`, and `function_tool` interfaces, with a Pydantic result model through `output_type`. [Agents SDK quickstart](https://developers.openai.com/api/docs/guides/agents/quickstart), [structured agent output](https://developers.openai.com/api/docs/guides/agents/define-agents)
 
 Keep settings free of credentials. Load the key only at authorized live client construction, after the opt-in check. An explicit credential override supports the deliberately invalid variant without reading the environment key. Do not load `.env` files automatically; an operator can explicitly use `uv run --env-file .env`. The reproduction client uses the normal OpenAI API endpoint explicitly. `configure_agents()` selects Responses, disables tracing before any agent run, and prepares low-reasoning model settings without creating a client or running a model. The tracing interface is described in the [official SDK example](https://developers.openai.com/cookbook/examples/agents_sdk/session_memory); local compatibility tests check the installed interface.
 
@@ -150,17 +154,22 @@ Retrieve supporting material before `recommend_fix`. All cited case IDs must hav
 
 Use at most eight agent turns and a 4,096-token output cap per model response initially. Record settings, elapsed time, available usage, sanitized tool arguments/results, and SDK versions locally. Disable automatic remote trace export for the MVP; inspect the installed SDK configuration during setup. Never expose the client credential through tools or prompts.
 
+The implemented runner uses an explicitly constructed `AsyncOpenAI` client and `OpenAIResponsesModel`, with the normal API endpoint, a 60-second client timeout, zero client and runner retries, and `store=False`. Both global SDK setup and `RunConfig` disable tracing; sensitive trace data is disabled too. Run hooks record tool starts/completions and raw available usage. Tool errors propagate instead of becoming successful tool outputs. Only exception/cause types and a fixed failure message are saved. Artifacts omit full prompts and response objects. Settings/turn caps do not impose a whole-run deadline or account budget.
+
+`observed_evidence` is implemented as a list of verbatim ticket extracts. Runtime checks validate result shape and successful retrieval for every referenced case, including candidate IDs. Diagnosis arguments must occur in explicit ticket fields recognized as `HTTP NNN`, `status`/`http_status: NNN`, or `code`/`error_code: value` (also quoted JSON). This conservative recognizer does not classify arbitrary prose; the agent should request clarification when fields are absent. Semantic correctness of guidance and impact classification still needs evaluation/manual review.
+
 On model/API failure, refusal, turn exhaustion, or invalid/ungrounded output, save an explicit failed run record with no fabricated triage result. A tool error is not evidence of a customer-side failure. Structured output validates shape; evidence and reply correctness still require evaluation.
 
 ## CLI, execution boundaries, and budget
 
-The following is the command contract. Authentication reproduction is implemented, checked offline, and live-verified for one broken/corrected pair. Other cases and business handlers remain unavailable and return a nonzero `not implemented` result without loading credentials or making requests. CLI help and offline tests work now:
+The following is the implemented command contract. Authentication reproduction has one live-verified pair; evaluation has one live three-ticket pilot. The single-ticket triage CLI form has offline SDK checks, while its underlying workflow was exercised by the live batch. Other reproduction cases return a nonzero `not implemented` result without loading credentials or making requests:
 
 ```text
 uv run python -m api_support_lab reproduce CASE --variant broken|fixed --live
 uv run python -m api_support_lab diagnose --status STATUS [--error-code CODE]
 uv run python -m api_support_lab triage TICKET.yaml --live
 uv run python -m api_support_lab evaluate --live
+uv run --offline --locked --no-env-file python -m api_support_lab evaluate --results PATH
 uv run pytest                         # offline only
 uv run pytest --run-live              # explicit reproduction checks
 ```
@@ -173,6 +182,8 @@ Keep the boundary small: a CLI opt-in check, a lazy client-construction helper, 
 
 Run cases sequentially and keep automatic retries disabled for the initial lab and agent runs. Stop the requested operation on unexpected failures; a batch evaluation records the failed ticket and continues within its bounded ticket/turn count. Review usage and account spending between milestones. Missing usage, especially after a timeout, means unknown cost, not zero cost. The $15 allowance is a manual experiment budget; these bounds do not enforce an account-wide billing ceiling.
 
+`triage` and both evaluation modes accept `--output-dir`. Default run/report directories are checkout-relative under `artifacts/triage/` and `artifacts/evaluation/`; evaluation also saves individual runs in its `runs/` subdirectory. Triage exits 0 for an accepted draft, 1 for an explicit failed run; evaluation exits 0 for full automated agreement without input issues, otherwise 1. Configuration/argument errors exit 2, and file/data errors exit 1 without retry. Evaluation requires either `--live` or `--results`, never both. A missing live credential fails before model execution.
+
 ## Evaluation design
 
 Use ten tickets: four clear cases, partial evidence, ambiguous symptoms with explicit business impact, an unfamiliar error, misleading customer diagnosis, an out-of-scope request, and a public-sector data-handling request. Use observed excerpts for verified cases. Hand-authored unfamiliar-error fixtures are labeled synthetic in evaluator-only provenance and must never be described as observed API behavior.
@@ -182,6 +193,8 @@ Expected outcomes are keyed by ticket ID and include acceptable categories, expe
 Check schema validity, allowed category, action and severity agreement, required fields in `missing`, and supporting retrieval. Check logged diagnosis arguments against ticket-supplied values. Manually review replies for useful questions, unsupported claims, inappropriate sensitive-data requests, uncertainty, and clear escalation language. A required field in JSON does not prove the reply actually asks for it.
 
 Report per-ticket outcomes and aggregate numerators/denominators over all ten tickets, including failed runs. Report operational failures separately from semantic mismatches; never drop failures to inflate scores. Save the ticket set version or content hash, model, SDK versions, settings, and timestamp. Label the report a small demonstration, with no general reliability claims.
+
+The implemented pilot uses final IDs T-001, T-005, and T-009 and a denominator of three. Only T-001 pastes selected observed fields, with provenance kept outside model input. Expected outcomes are loaded only after all model runs. Offline `--results` accepts a single run, a report containing `runs`, or a directory of individual run JSON files. Missing/duplicate runs, corrupt directory entries, invalid output/logs, grounding failures, ticket-hash drift, and expectation mismatches remain visible. Reports retain original sanitized runs, settings/versions/usage, and separate operational-failure and semantic-mismatch counts. Manual review entries default to pending; reviewers record pass/fail and notes in `manual_reviews`. Rescoring preserves those entries. A passing automated report does not mean manual review passed. Offline scoring needs no credential, client, or valid live model setting.
 
 ## Tradeoffs and remaining verification
 
@@ -193,4 +206,4 @@ Report per-ticket outcomes and aggregate numerators/denominators over all ten ti
 | Four cases before expanding coverage | Leaves time for evaluation; many real errors remain outside the registry |
 | Python 3.14 and one model default | A single documented environment; dependency and account compatibility must be checked |
 
-Official documentation and installed SDK source were consulted on 2026-10-21. Python 3.14 dependency installation, core SDK exports, local structured-output configuration, tracing controls, allowlisted capture/redaction, and SDK authentication request handling have offline checks. One live pair established the observed authentication rejection, a successful correction, and access to the configured model at that time. Actual tool schemas, other case mappings/triggers/corrections, agent behavior, and billed costs remain implementation checks. The service tier is not captured, so standard-rate token estimates are not billed-cost evidence. Recheck the linked official pages when building; do not substitute documentation expectations for captured observations.
+Official agent-definition documentation and installed SDK source were checked again during slice 3 on 2026-10-22. Offline tests cover actual strict tool schemas, asynchronous tool execution through an in-memory transport, structured outputs, all three pilot actions, tracing/retry/timeout settings, failed runs, and saved scoring. Synthetic SDK responses do not establish live model behavior. One earlier live pair established authentication behavior; the subsequent three-ticket live pilot observed all three intended actions, supporting retrieval and grounded arguments, with no recorded failures. All three replies passed Codex-assisted qualitative review, and the saved report passed offline rescoring. Human approval is still required before sending any reply. The [selected reviewed report and summary](../evidence/triage/README.md) are included as learning-lab evidence, not benchmark evidence. Original live runs and reviewed/scored reports remain unchanged under ignored local artifacts. Other case mappings/triggers/corrections, broader model behavior, billed costs, and account spending remain unverified. The service tier is not captured in the authentication evidence, so its standard-rate token estimate is not billed-cost evidence. Do not substitute documentation or test expectations for captured observations.

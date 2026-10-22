@@ -1,6 +1,6 @@
 # Requirements
 
-Status: first-release specification; the foundation and slice-2 capture/authentication paths are implemented, with offline checks and one reviewed live authentication pair. The authentication runbook is verified, with 1 of 4 target live cases verified. This document defines full-release acceptance; slice 2 alone does not meet it.
+Status: first-release specification; slices 1–3 are implemented and checked offline, including deterministic tools, the asynchronous draft-only agent, and three-ticket evaluation/saved-result scoring. One separately authorized live pilot on 2026-10-22 passed all three automated outcomes, Codex-assisted qualitative reply review, artifact review, and offline rescoring. Human approval is still required before using a draft. Only the authentication reproduction pair is live-verified: 1 of 4 target cases. This document defines full-release acceptance; the current pilot does not meet R6's ten-ticket requirement or R1's four-case requirement.
 
 ## Purpose and boundaries
 

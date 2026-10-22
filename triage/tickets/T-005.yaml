@@ -1,0 +1,10 @@
+id: T-005
+subject: Is our API key broken?
+body: >-
+  Our invented Maple Demo team thinks authentication may be the problem.
+  We do not have the error message or status handy. What information would help?
+pasted_error: null
+organization: Maple Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: hand-authored synthetic partial complaint; no observed API error

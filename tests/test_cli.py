@@ -15,6 +15,7 @@ def forbid_client_and_credential_access(monkeypatch):
 
     monkeypatch.setattr(config, "require_api_key", forbidden)
     monkeypatch.setattr(sdk, "create_client", forbidden)
+    monkeypatch.setattr(sdk, "create_async_client", forbidden)
 
 
 @pytest.mark.parametrize("key", [None, "dummy-secret-never-display"])
@@ -38,16 +39,28 @@ def test_live_commands_refuse_without_opt_in(monkeypatch, capsys, key, args):
 
 @pytest.mark.parametrize("args", [
     ["reproduce", "tool_schema", "--variant", "fixed", "--live"],
-    ["triage", "ticket.yaml", "--live"],
-    ["evaluate", "--live"],
-    ["evaluate", "--results", "missing-results.json"],
-    ["diagnose", "--status", "401", "--error-code", "unfamiliar_code"],
 ])
 def test_unfinished_handlers_fail_explicitly_without_side_effects(capsys, args):
     assert main(args) == 1
     output = capsys.readouterr()
     assert output.out == ""
     assert "not implemented" in output.err
+
+
+def test_diagnose_is_offline_and_unknown_codes_are_retained_as_unmatched(capsys):
+    assert main(["diagnose", "--status", "401"]) == 0
+    assert capsys.readouterr().out.strip() == '["invalid_credentials"]'
+    assert main(["diagnose", "--status", "401", "--error-code", "unfamiliar_code"]) == 0
+    assert capsys.readouterr().out.strip() == '[]'
+
+
+@pytest.mark.parametrize("args", [
+    ["triage", "missing-ticket.yaml", "--live"],
+    ["evaluate", "--results", "missing-results.json"],
+])
+def test_missing_inputs_fail_without_client_access(capsys, args):
+    assert main(args) == 1
+    assert "Could not read or write" in capsys.readouterr().err
 
 
 @pytest.mark.parametrize("args", [

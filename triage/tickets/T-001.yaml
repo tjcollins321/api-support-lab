@@ -1,0 +1,16 @@
+id: T-001
+subject: API request rejected in our test application
+body: >-
+  Our invented Harbor Demo application fails before it receives output.
+  Can you suggest what to check? We have not described the business impact yet.
+pasted_error: |-
+  HTTP 401
+  exception_type: AuthenticationError
+  error_type: invalid_request_error
+  error_code: invalid_api_key
+  request_id: req_c610e4e44403409bbe5eecc22366c2d8
+organization: Harbor Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: selected sanitized observed fields; surrounding ticket is synthetic
+  evidence: evidence/invalid_credentials/broken-20261022T032250Z.json

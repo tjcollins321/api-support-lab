@@ -7,7 +7,7 @@ from api_support_lab.config import Settings, require_api_key, require_live
 
 if TYPE_CHECKING:
     from agents import ModelSettings
-    from openai import OpenAI
+    from openai import AsyncOpenAI, OpenAI
 
 
 def create_client(settings: Settings, *, live: bool, api_key: str | None = None) -> OpenAI:
@@ -31,6 +31,7 @@ def configure_agents(settings: Settings) -> ModelSettings:
     """
     os.environ["OPENAI_AGENTS_DISABLE_TRACING"] = "1"
     from agents import ModelSettings, set_default_openai_api, set_tracing_disabled
+    from agents.retry import ModelRetrySettings
     from openai.types.shared import Reasoning
 
     set_tracing_disabled(True)
@@ -38,4 +39,21 @@ def configure_agents(settings: Settings) -> ModelSettings:
     return ModelSettings(
         max_tokens=settings.agent_max_output_tokens,
         reasoning=Reasoning(effort=settings.reasoning_effort),
+        retry=ModelRetrySettings(max_retries=0),
+        store=False,
+        preserve_raw_usage=True,
+    )
+
+
+def create_async_client(settings: Settings, *, live: bool) -> AsyncOpenAI:
+    """Construct an explicit HTTP Responses client for the asynchronous agent."""
+    require_live(live)
+    key = require_api_key()
+    from openai import AsyncOpenAI
+
+    return AsyncOpenAI(
+        api_key=key,
+        base_url="https://api.openai.com/v1",
+        timeout=settings.timeout_seconds,
+        max_retries=0,
     )
