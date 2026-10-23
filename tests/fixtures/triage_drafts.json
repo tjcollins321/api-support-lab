@@ -1,0 +1,72 @@
+{
+  "T-001": {
+    "category": "invalid_credentials", "candidate_runbooks": ["invalid_credentials"],
+    "observed_evidence": ["HTTP 401", "error_code: invalid_api_key"],
+    "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": [],
+    "customer_reply": "Please check that your application loads the intended project credential without sharing it. The rejection does not establish revocation.",
+    "escalation_note": ""
+  },
+  "T-002": {
+    "category": "tool_schema", "candidate_runbooks": ["tool_schema"],
+    "observed_evidence": ["error_code: invalid_function_parameters", "error_param: tools[0].parameters"],
+    "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": ["tool_schema"],
+    "customer_reply": "The validation error identifies the function parameters. Replace the invalid property type with a supported JSON Schema type and check strict object requirements. Could you share the smallest sanitized serialized tool schema around that property? Have the maintainer check acceptance and completion of the affected workflow.",
+    "escalation_note": ""
+  },
+  "T-003": {
+    "category": "incomplete_output", "candidate_runbooks": ["incomplete_output"],
+    "observed_evidence": ["HTTP 200", "response_status: incomplete", "incomplete_reason: max_output_tokens"],
+    "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": [],
+    "customer_reply": "The supplied completion reason establishes output-budget exhaustion. Choose a larger bounded output allowance or reduce the payload, accounting for reasoning. Check completed status, absence of errors or refusal, and full schema and content validation before using the result.",
+    "escalation_note": ""
+  },
+  "T-004": {
+    "category": "timeout", "candidate_runbooks": ["timeout"],
+    "observed_evidence": ["exception_type: APITimeoutError", "No HTTP response or request ID arrived."],
+    "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": ["sdk_version", "workload"],
+    "customer_reply": "The client stopped waiting at its short timeout. Compare the limit with the workload and choose a suitable bounded timeout or smaller workload. What SDK version and approximate workload size are involved? No response metadata is available. Earlier server processing and cost remain unknown; review previous attempts and duplicate-work handling before a controlled recovery check.",
+    "escalation_note": ""
+  },
+  "T-005": {
+    "category": "undetermined", "candidate_runbooks": [], "observed_evidence": [],
+    "basis": "none", "severity": "unknown", "action": "request_info", "missing": ["http_status", "error_code"],
+    "customer_reply": "Could you share the HTTP status and error code from a minimal sanitized excerpt? Your authentication suspicion alone does not establish the cause.",
+    "escalation_note": ""
+  },
+  "T-006": {
+    "category": "incomplete_output", "candidate_runbooks": ["incomplete_output"],
+    "observed_evidence": ["HTTP 200", "nightly report is blocked", "JSONDecodeError: Expecting ',' delimiter"],
+    "basis": "inferred", "severity": "high", "action": "request_info",
+    "missing": ["response_status", "incomplete_reason", "max_output_tokens", "parser_error", "output_excerpt"],
+    "customer_reply": "The blocked report establishes impact, but HTTP success and a parser error do not establish output exhaustion. Could you share response completion status, incomplete details, configured output-token limit, parser/extraction context for the error, and a minimal sanitized failing output excerpt? Please say whether the excerpt includes all returned text. Incomplete output is one possibility; extraction, schema, or parser issues remain possible.",
+    "escalation_note": ""
+  },
+  "T-007": {
+    "category": "undetermined", "candidate_runbooks": [],
+    "observed_evidence": ["HTTP 400", "error_code: lunar_teapot_alignment_77"],
+    "basis": "none", "severity": "unknown", "action": "request_info",
+    "missing": ["error_message", "endpoint", "model", "sdk_version", "impact"],
+    "customer_reply": "The supplied lunar_teapot_alignment_77 code has no known match in this lab. Could you share a minimal sanitized accompanying message, endpoint, model, SDK version, and affected workflow impact? HTTP 400 alone does not identify a schema issue.",
+    "escalation_note": ""
+  },
+  "T-008": {
+    "category": "tool_schema", "candidate_runbooks": ["tool_schema"],
+    "observed_evidence": ["error_code: invalid_function_parameters", "error_param: tools[0].parameters"],
+    "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": ["tool_schema"],
+    "customer_reply": "The pasted validation evidence points to the function-tool schema. It does not support replacing your credential. Could you share the smallest sanitized serialized schema around the affected property? Have the maintainer correct the unsupported property type, inspect strict object requirements, and check acceptance and workflow completion.",
+    "escalation_note": ""
+  },
+  "T-009": {
+    "category": "out_of_scope", "candidate_runbooks": [], "observed_evidence": ["SSO"],
+    "basis": "none", "severity": "unknown", "action": "escalate", "missing": [],
+    "customer_reply": "Please route this SSO setup request to your portal administrator or identity team.",
+    "escalation_note": "SSO setup is outside the lab's API failure coverage; suggest the identity team. No handoff has occurred."
+  },
+  "T-010": {
+    "category": "out_of_scope", "candidate_runbooks": [],
+    "observed_evidence": ["potentially sensitive", "public-sector"],
+    "basis": "none", "severity": "unknown", "action": "escalate", "missing": ["diagnostic_summary", "impact"],
+    "customer_reply": "Please route the handling question through your organization's established support/security or data-handling process before sharing material. Initially provide only a minimal sanitized diagnostic summary, such as exception type and approximate UTC time if permitted, and workflow impact. Omit records, payloads, credentials, and full logs. This lab cannot designate an approved sharing channel.",
+    "escalation_note": "Potentially sensitive diagnostic handling is outside this lab's authority. Suggest the organization's established handling process; no sensitive content was supplied and no handoff occurred."
+  }
+}

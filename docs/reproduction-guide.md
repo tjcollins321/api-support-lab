@@ -110,7 +110,7 @@ Exact-match checks against the active credential, recognizable key/bearer checks
 
 Available usage sums to **331 input, 475 output, 806 total tokens**, with zero cached-input and reasoning-output tokens reported. At the standard $2/million input and $10/million output rates checked in the [official model reference](https://developers.openai.com/api/docs/models/gpt-6.1-sol), this is **$0.005412 for known usage only**. It is not a billed-charge confirmation or a total for all six attempts. The service tier is not captured; rejection and timeout usage/cost remain unknown, and account billing/remaining balance were not inspected. The owner supplied the spending checkpoint before authorizing these requests. Review actual account spending before the next live milestone.
 
-The reviewed schema capture adds 400/`invalid_function_parameters` to deterministic diagnosis. Incomplete output remains symptom-based, and a client timeout gains no fabricated HTTP mapping. The updated registry/runbook text/instructions have offline checks only; these reproduction pairs do not replace the planned ten-ticket agent evaluation.
+The reviewed schema capture adds 400/`invalid_function_parameters` to deterministic diagnosis. Incomplete output remains symptom-based, and a client timeout gains no fabricated HTTP mapping. The reproduction checkpoint did not evaluate the updated agent workflow; these reproduction pairs do not replace the ten-ticket agent evaluation. Slice 5 implements that ticket set and scoring offline; its later authorized live pass, retained failures, and review are described in the [maintainer evaluation guide](evaluation-guide.md).
 
 ## Capture and evidence review
 

@@ -13,36 +13,16 @@ from api_support_lab.tickets import diagnostic_values, load_ticket, load_tickets
 
 
 @pytest.fixture
-def records():
-    drafts = {
-        "T-001": {
-            "category": "invalid_credentials", "candidate_runbooks": ["invalid_credentials"],
-            "observed_evidence": ["HTTP 401", "error_code: invalid_api_key"],
-            "basis": "stated", "severity": "unknown", "action": "recommend_fix", "missing": [],
-            "customer_reply": "Please check that your application loads the intended project credential without sharing it.",
-            "escalation_note": "",
-        },
-        "T-005": {
-            "category": "undetermined", "candidate_runbooks": [], "observed_evidence": [],
-            "basis": "none", "severity": "unknown", "action": "request_info",
-            "missing": ["http_status", "error_code"],
-            "customer_reply": "Could you share the HTTP status and error code from a minimal sanitized excerpt?",
-            "escalation_note": "",
-        },
-        "T-009": {
-            "category": "out_of_scope", "candidate_runbooks": [], "observed_evidence": ["SSO"],
-            "basis": "none", "severity": "unknown", "action": "escalate", "missing": [],
-            "customer_reply": "Please route this SSO setup request to your portal administrator or identity team.",
-            "escalation_note": "SSO setup is outside the lab's API failure coverage; suggest the identity team.",
-        },
-    }
+def records(authored_drafts):
     return [{
         "schema_version": 1, "ticket_id": ticket.id, "ticket_hash": ticket.content_hash(),
-        "status": "completed", "failure": None, "result": drafts[ticket.id],
-        "tool_use": ([{"name": "get_runbook", "arguments": {"case": "invalid_credentials"},
-                       "status": "completed", "result": get_runbook("invalid_credentials")}]
-                     if ticket.id == "T-001" else []),
-        "model": "synthetic-model", "settings": {}, "usage": [],
+        "status": "completed", "failure": None, "result": authored_drafts[ticket.id],
+        "tool_use": [{"name": "get_runbook", "arguments": {"case": case},
+                      "status": "completed", "result": get_runbook(case)}
+                     for case in authored_drafts[ticket.id]["candidate_runbooks"]],
+        "model": "synthetic-model", "settings": {"max_turns": 8},
+        "sdk_versions": {"openai": "authored", "openai-agents": "authored"},
+        "usage": [None],
     } for ticket in load_tickets()]
 
 
@@ -50,15 +30,15 @@ def score(records):
     return evaluation.score_runs(records, load_tickets(), evaluation.load_expected())
 
 
-def test_three_final_ids_and_model_input_allowlist():
+def test_ten_final_ids_and_model_input_allowlist():
     tickets = load_tickets()
-    assert [ticket.id for ticket in tickets] == ["T-001", "T-005", "T-009"]
+    assert [ticket.id for ticket in tickets] == [f"T-{i:03}" for i in range(1, 11)]
     for ticket in tickets:
         assert set(json.loads(ticket.model_input())) == {"subject", "body", "pasted_error"}
         assert ticket.id not in ticket.model_input()
         assert ticket.provenance["source"] not in ticket.model_input()
     assert diagnostic_values(tickets[0]) == ({401}, {"invalid_api_key"})
-    assert diagnostic_values(tickets[1]) == (set(), set())
+    assert diagnostic_values(tickets[4]) == (set(), set())
 
 
 def test_safe_yaml_and_ticket_shape(tmp_path):
@@ -74,7 +54,7 @@ def test_safe_yaml_and_ticket_shape(tmp_path):
 def test_scoring_synthetic_successes_requires_manual_review(records):
     report = score(records)
     assert evaluation.report_passed(report)
-    assert report["summary"] == {"total": 3, "automated_pass": 3, "operational_failures": 0,
+    assert report["summary"] == {"total": 10, "automated_pass": 10, "operational_failures": 0,
                                  "semantic_mismatches": 0}
     assert all(review["status"] == "pending" for review in report["manual_reviews"].values())
     assert report["runs"] == records
@@ -83,8 +63,8 @@ def test_scoring_synthetic_successes_requires_manual_review(records):
 def test_operational_failure_is_not_dropped(records):
     records[0].update(status="failed", result=None, failure={"type": "APITimeoutError"})
     report = score(records)
-    assert report["summary"]["total"] == 3
-    assert report["summary"]["automated_pass"] == 2
+    assert report["summary"]["total"] == 10
+    assert report["summary"]["automated_pass"] == 9
     assert report["summary"]["operational_failures"] == 1
     assert report["tickets"][0]["operational_failure"] == "APITimeoutError"
     assert not evaluation.report_passed(report)
@@ -100,14 +80,14 @@ def test_semantic_mismatches_visible(records, field, value):
         records[0]["result"]["action"] = "request_info"
     records[0]["result"][field] = value
     report = score(records)
-    assert report["summary"]["automated_pass"] == 2
+    assert report["summary"]["automated_pass"] == 9
     assert report["summary"]["semantic_mismatches"] == 1
 
 
 def test_required_followup_fields_are_checked(records):
-    records[1]["result"]["missing"] = []
+    records[4]["result"]["missing"] = []
     report = score(records)
-    assert report["tickets"][1]["checks"]["missing"] is False
+    assert report["tickets"][4]["checks"]["missing"] is False
 
 
 @pytest.mark.parametrize("change", ["schema", "retrieval", "tool_failure", "invented_lookup", "invented_evidence", "malformed_log", "nontext_retrieval"])
@@ -133,7 +113,7 @@ def test_invalid_and_ungrounded_results_are_failures(records, change):
 
 def test_missing_duplicate_and_unknown_runs_stay_visible(records):
     report = score([records[0], records[0], {"ticket_id": "T-999", "status": "failed"}])
-    assert report["summary"]["operational_failures"] == 3
+    assert report["summary"]["operational_failures"] == 10
     assert report["tickets"][0]["operational_failure"] == "duplicate_runs"
     assert report["tickets"][1]["operational_failure"] == "missing_run"
     assert len(report["runs"]) == 3
@@ -157,12 +137,12 @@ def test_saved_scoring_and_cli_use_no_clients(records, tmp_path, monkeypatch, ca
         "T-001": {"status": "pass", "notes": "Authored fixture review only."},
     }}))
     assert main(["evaluate", "--results", str(source), "--output-dir", str(tmp_path / "reports")]) == 0
-    assert "3/3" in capsys.readouterr().out
+    assert "10/10" in capsys.readouterr().out
     saved = json.loads(next((tmp_path / "reports").glob("*.json")).read_text())
     assert saved["manual_reviews"]["T-001"]["status"] == "pass"
     source.write_text(json.dumps(records[0]))
     assert main(["evaluate", "--results", str(source), "--output-dir", str(tmp_path / "reports")]) == 1
-    assert "1/3" in capsys.readouterr().out
+    assert "1/10" in capsys.readouterr().out
 
 
 def test_directory_scoring_includes_corrupt_artifacts(records, tmp_path):
@@ -172,7 +152,7 @@ def test_directory_scoring_includes_corrupt_artifacts(records, tmp_path):
         (source / f"{index}.json").write_text(json.dumps(record))
     (source / "corrupt.json").write_text("{broken")
     report, path = evaluation.score_saved(source, output_dir=tmp_path / "reports")
-    assert report["summary"]["automated_pass"] == 3
+    assert report["summary"]["automated_pass"] == 10
     assert report["input_issues"]
     assert not evaluation.report_passed(report)
 
@@ -182,20 +162,20 @@ def test_batch_is_sequential_and_expected_only_loaded_after_execution(records, t
     original_expected = evaluation.load_expected
     async def fake_triage(ticket, settings, *, live, output_dir):
         assert live
-        assert len(seen) < 3
+        assert len(seen) < 10
         seen.append(ticket.id)
         record = deepcopy(next(r for r in records if r["ticket_id"] == ticket.id))
         if ticket.id == "T-005":
             record.update(status="failed", result=None, failure={"type": "SyntheticFailure"})
         return TriageRun(record, tmp_path / "synthetic.json")
     def expected_after_runs():
-        assert seen == ["T-001", "T-005", "T-009"]
+        assert seen == [f"T-{i:03}" for i in range(1, 11)]
         return original_expected()
     monkeypatch.setattr(evaluation, "triage_ticket", fake_triage)
     monkeypatch.setattr(evaluation, "load_expected", expected_after_runs)
     report, path = asyncio.run(evaluation.evaluate_live(Settings(), live=True, output_dir=tmp_path))
     assert report["summary"]["operational_failures"] == 1
-    assert report["summary"]["automated_pass"] == 2
+    assert report["summary"]["automated_pass"] == 9
     assert path.exists()
 
 
@@ -205,3 +185,128 @@ def test_evaluation_requires_live_before_loading_tickets(monkeypatch, tmp_path):
     monkeypatch.setattr(evaluation, "load_tickets", forbidden)
     with pytest.raises(ConfigurationError):
         asyncio.run(evaluation.evaluate_live(Settings(), live=False, output_dir=tmp_path))
+
+
+@pytest.mark.parametrize("ticket_id", ["T-002", "T-003", "T-004", "T-006", "T-007", "T-008", "T-010"])
+@pytest.mark.parametrize("field", ["action", "severity", "observed_evidence"])
+def test_new_scenarios_reject_wrong_action_severity_and_evidence(records, ticket_id, field):
+    index = next(i for i, record in enumerate(records) if record["ticket_id"] == ticket_id)
+    result = records[index]["result"]
+    if field == "action":
+        result["action"] = "request_info" if result["action"] != "request_info" else "escalate"
+        result["escalation_note"] = "Suggest application support; no handoff occurred."
+    elif field == "severity":
+        result["severity"] = "low"  # No new ticket reports a limited nonblocking issue.
+    else:
+        result["observed_evidence"] = []
+    report = score(records)
+    row = report["tickets"][index]
+    if ticket_id == "T-010" and field == "action":
+        assert row["operational_failure"] == "invalid_or_ungrounded_result"
+    else:
+        assert row["operational_failure"] is None
+        assert not row["checks"][field]
+    assert report["summary"]["automated_pass"] == 9
+
+
+@pytest.mark.parametrize("field", ["http_status", "error_code", "error_type", "request_id", "response_status", "incomplete_reason"])
+def test_timeout_does_not_require_known_unavailable_response_fields(records, field):
+    records[3]["result"]["missing"].append(field)
+    report = score(records)
+    assert not report["tickets"][3]["checks"]["unavailable_information"]
+    assert not evaluation.report_passed(report)
+
+
+def test_ambiguous_parser_failure_allows_no_diagnosis_with_supporting_retrieval(records):
+    records[5]["result"].update(category="undetermined", basis="none")
+    assert evaluation.report_passed(score(records))
+    records[5]["result"].update(basis="stated", category="incomplete_output")
+    assert not score(records)["tickets"][5]["checks"]["basis"]
+
+
+@pytest.mark.parametrize("index", [6, 7])
+def test_unknown_code_or_customer_assertion_cannot_force_a_known_category(records, index):
+    records[index]["result"].update(category="invalid_credentials", basis="stated")
+    records[index]["tool_use"].append({
+        "name": "get_runbook", "arguments": {"case": "invalid_credentials"},
+        "status": "completed", "result": get_runbook("invalid_credentials"),
+    })
+    report = score(records)
+    assert not report["tickets"][index]["checks"]["category"]
+
+
+def test_unknown_code_replacement_is_ungrounded_even_with_matching_status(records):
+    records[6]["tool_use"].append({
+        "name": "diagnose", "arguments": {"status": 400, "error_code": "invalid_function_parameters"},
+        "status": "completed", "result": ["tool_schema"],
+    })
+    assert score(records)["tickets"][6]["operational_failure"] == "invalid_or_ungrounded_result"
+
+
+def test_required_retrieval_is_checked_even_for_undetermined_category(records):
+    records[5]["result"].update(category="undetermined", basis="none", candidate_runbooks=[])
+    records[5]["tool_use"] = []
+    assert not score(records)["tickets"][5]["checks"]["retrieval"]
+
+
+def test_review_failure_does_not_change_automated_agreement(records, tmp_path):
+    reviews = {r["ticket_id"]: {"status": "pass", "notes": "Authored example only."} for r in records}
+    reviews["T-010"] = {"status": "fail", "notes": "Example manual finding retained separately."}
+    source = tmp_path / "reviewed.json"
+    source.write_text(json.dumps({"runs": records, "manual_reviews": reviews}))
+    report, _ = evaluation.score_saved(source, output_dir=tmp_path / "scores")
+    assert evaluation.report_passed(report)  # Automated agreement only.
+    assert report["manual_reviews"] == reviews
+    assert report["runs"] == records  # Includes model/settings/versions and unknown usage.
+
+
+@pytest.mark.parametrize("review", [None, "pass", {"status": "approved", "notes": "x"}, {"status": "pass"}])
+def test_corrupt_review_is_preserved_and_flagged(records, review):
+    report = evaluation.score_runs(records, load_tickets(), evaluation.load_expected(),
+                                   manual_reviews={"T-010": review})
+    assert report["manual_reviews"]["T-010"] == review
+    assert report["input_issues"] == ["Invalid manual review for T-010"]
+    assert not evaluation.report_passed(report)
+
+
+def test_prior_public_pilot_is_unchanged_and_scores_as_partial_set(tmp_path):
+    from api_support_lab.runbooks import PROJECT_ROOT
+
+    paths = list((PROJECT_ROOT / "evidence/triage").glob("*.json"))
+    assert len(paths) == 1
+    source = paths[0]
+    before = source.read_bytes()
+    original = json.loads(before)
+    report, _ = evaluation.score_saved(source, output_dir=tmp_path)
+    assert source.read_bytes() == before
+    assert report["summary"]["total"] == 10
+    assert report["summary"]["automated_pass"] == 3
+    assert report["summary"]["operational_failures"] == 7
+    assert report["runs"] == original["runs"]
+    assert all(report["manual_reviews"][key] == value for key, value in original["manual_reviews"].items())
+
+
+def test_observed_ticket_fields_match_reviewed_captures():
+    from api_support_lab.runbooks import PROJECT_ROOT
+
+    tickets = {ticket.id: ticket for ticket in load_tickets()}
+    for ticket_id in ("T-001", "T-002", "T-003", "T-004", "T-008"):
+        ticket = tickets[ticket_id]
+        observation = json.loads((PROJECT_ROOT / ticket.provenance["evidence"]).read_text())
+        for line in ticket.pasted_error.splitlines():
+            if line.startswith("HTTP "):
+                assert int(line.removeprefix("HTTP ")) == observation["http_status"]
+            else:
+                field, value = line.split(": ", 1)
+                assert value == str(observation[field])
+        assert ticket.provenance["evidence"] not in ticket.model_input()
+    timeout = tickets["T-004"]
+    assert diagnostic_values(timeout) == (set(), set())
+    assert "0.5-second" in timeout.body
+
+
+@pytest.mark.parametrize("ticket_id", ["T-002", "T-004", "T-006", "T-007", "T-008", "T-010"])
+def test_new_required_information_fields_are_enforced(records, ticket_id):
+    index = next(i for i, record in enumerate(records) if record["ticket_id"] == ticket_id)
+    records[index]["result"]["missing"] = []
+    assert not score(records)["tickets"][index]["checks"]["missing"]

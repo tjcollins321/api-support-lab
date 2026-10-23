@@ -236,27 +236,34 @@ def test_run_configuration_and_turn_cap(monkeypatch, transport, ticket, draft, t
     assert run(ticket, tmp_path, max_turns=2).record["failure"]["type"] == "MaxTurnsExceeded"
 
 
-def test_three_ticket_evaluation_through_sdk_and_cli(transport, draft, tmp_path, capsys):
-    partial = {**draft, "category": "undetermined", "candidate_runbooks": ["invalid_credentials"],
-               "observed_evidence": [], "basis": "none", "action": "request_info",
-               "missing": ["http_status", "error_code"],
-               "customer_reply": "Could you share the HTTP status and error code in a minimal sanitized excerpt?"}
-    outside = {**draft, "category": "out_of_scope", "candidate_runbooks": [],
-               "observed_evidence": ["SSO"], "basis": "none", "action": "escalate",
-               "customer_reply": "Please route this SSO setup request to your identity team.",
-               "escalation_note": "SSO setup is outside this lab; suggest the identity team."}
-    calls, _ = transport([
-        response([tool("get_runbook", {"case": "invalid_credentials"})]), response([message(draft)]),
-        response([tool("list_runbooks", {}, "list_partial")]),
-        response([tool("get_runbook", {"case": "invalid_credentials"}, "retrieve_partial")]), response([message(partial)]),
-        response([message(outside)]),
-    ])
+def test_ten_ticket_evaluation_through_sdk_and_cli(transport, authored_drafts, tmp_path, capsys):
+    script = []
+    for ticket_id, result in authored_drafts.items():
+        # Unknown code is passed unchanged; it must not find a schema mapping.
+        if ticket_id == "T-007":
+            script.append(response([tool("diagnose", {
+                "status": 400, "error_code": "lunar_teapot_alignment_77",
+            }, "unknown_code")]))
+        for case in result["candidate_runbooks"]:
+            script.append(response([tool("get_runbook", {"case": case}, ticket_id)]))
+        script.append(response([message(result)]))
+    calls, _ = transport(script)
     assert main(["evaluate", "--live", "--output-dir", str(tmp_path)]) == 0
-    assert "3/3" in capsys.readouterr().out
+    assert "10/10" in capsys.readouterr().out
     report = json.loads(next(tmp_path.glob("evaluation-*.json")).read_text())
-    assert [r["result"]["action"] for r in report["runs"]] == ["recommend_fix", "request_info", "escalate"]
-    assert len(list((tmp_path / "runs").glob("triage-*.json"))) == 3
-    assert len(calls) == 6
+    assert len(report["runs"]) == 10
+    assert len(list((tmp_path / "runs").glob("triage-*.json"))) == 10
+    assert len(calls) == 17
+    unknown = report["runs"][6]
+    assert unknown["tool_use"][0]["arguments"]["error_code"] == "lunar_teapot_alignment_77"
+    assert unknown["tool_use"][0]["result"] == []
+    assert all(review["status"] == "pending" for review in report["manual_reviews"].values())
+    for request in calls:
+        payload = json.loads(request.content)
+        user_inputs = [item for item in payload["input"] if item.get("role") == "user"]
+        assert len(user_inputs) == 1
+        value = json.loads(user_inputs[0]["content"])
+        assert set(value) == {"subject", "body", "pasted_error"}
 
 
 @pytest.mark.parametrize("success", [True, False])

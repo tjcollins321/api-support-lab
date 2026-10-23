@@ -1,0 +1,15 @@
+id: T-004
+subject: Client stops waiting for output
+body: >-
+  Our invented Elm Demo application uses a 0.5-second client timeout and zero
+  SDK retries. No HTTP response or request ID arrived. How should we investigate
+  this before arranging another attempt?
+pasted_error: |-
+  exception_type: APITimeoutError
+  message: Request timed out.
+  elapsed_ms: 619.908
+organization: Elm Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: selected sanitized observed exception, timing, effective settings and absent response; surrounding ticket is synthetic
+  evidence: evidence/timeout/broken-20261022T232402Z.json

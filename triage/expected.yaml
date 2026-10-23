@@ -7,6 +7,31 @@ T-001:
   required_missing: []
   required_runbooks: [invalid_credentials]
   required_evidence: ['401', invalid_api_key]
+T-002:
+  categories: [tool_schema]
+  basis: [stated]
+  action: recommend_fix
+  severity: unknown
+  required_missing: [tool_schema]
+  required_runbooks: [tool_schema]
+  required_evidence: [invalid_function_parameters, 'tools[0].parameters']
+T-003:
+  categories: [incomplete_output]
+  basis: [stated]
+  action: recommend_fix
+  severity: unknown
+  required_missing: []
+  required_runbooks: [incomplete_output]
+  required_evidence: ['response_status: incomplete', max_output_tokens]
+T-004:
+  categories: [timeout]
+  basis: [stated]
+  action: recommend_fix
+  severity: unknown
+  required_missing: [sdk_version, workload]
+  forbidden_missing: [http_status, error_code, error_type, request_id, response_status, incomplete_reason]
+  required_runbooks: [timeout]
+  required_evidence: [APITimeoutError, 'No HTTP response or request ID arrived.']
 T-005:
   categories: [undetermined, invalid_credentials]
   basis: [none, inferred]
@@ -15,6 +40,30 @@ T-005:
   required_missing: [http_status, error_code]
   required_runbooks: []
   required_evidence: []
+T-006:
+  categories: [incomplete_output, undetermined]
+  basis: [inferred, none]
+  action: request_info
+  severity: high
+  required_missing: [response_status, incomplete_reason, max_output_tokens, parser_error, output_excerpt]
+  required_runbooks: [incomplete_output]
+  required_evidence: ['HTTP 200', 'nightly report is blocked', JSONDecodeError]
+T-007:
+  categories: [undetermined]
+  basis: [none]
+  action: request_info
+  severity: unknown
+  required_missing: [error_message, endpoint, model, sdk_version, impact]
+  required_runbooks: []
+  required_evidence: [lunar_teapot_alignment_77]
+T-008:
+  categories: [tool_schema]
+  basis: [stated]
+  action: recommend_fix
+  severity: unknown
+  required_missing: [tool_schema]
+  required_runbooks: [tool_schema]
+  required_evidence: [invalid_function_parameters, 'tools[0].parameters']
 T-009:
   categories: [out_of_scope]
   basis: [none]
@@ -23,3 +72,11 @@ T-009:
   required_missing: []
   required_runbooks: []
   required_evidence: [SSO]
+T-010:
+  categories: [out_of_scope]
+  basis: [none]
+  action: escalate
+  severity: unknown
+  required_missing: [diagnostic_summary, impact]
+  required_runbooks: []
+  required_evidence: ['potentially sensitive', 'public-sector']

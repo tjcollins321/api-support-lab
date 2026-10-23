@@ -1,10 +1,10 @@
-"""Three-ticket pilot execution and offline scoring, with failures in denominators."""
+"""Ten-ticket execution and offline scoring, with failures in denominators."""
 
 import json
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from api_support_lab.agent import TriageResult, triage_ticket, validate_grounding
 from api_support_lab.artifacts import DEFAULT_EVALUATION_DIR, sanitize, save_record, timestamp
@@ -22,6 +22,7 @@ class Expected(BaseModel):
     required_missing: list[str]
     required_runbooks: list[str]
     required_evidence: list[str]
+    forbidden_missing: list[str] = Field(default_factory=list)
 
 
 def load_expected() -> dict[str, Expected]:
@@ -82,17 +83,21 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
                         "action": result.action == expected.action,
                         "severity": result.severity == expected.severity,
                         "missing": set(expected.required_missing) <= set(result.missing),
+                        "unavailable_information": not set(expected.forbidden_missing) & set(result.missing),
                         "retrieval": set(expected.required_runbooks) <= retrieved,
                         "observed_evidence": all(fact in evidence for fact in expected.required_evidence),
                     }
                     row["automated_pass"] = all(row["checks"].values())
         review = (manual_reviews or {}).get(ticket.id, {"status": "pending", "notes": ""})
+        if (not isinstance(review, dict) or review.get("status") not in ("pending", "pass", "fail")
+                or not isinstance(review.get("notes"), str)):
+            issues.append(f"Invalid manual review for {ticket.id}")
         reviews[ticket.id] = review
         rows.append(row)
     return sanitize({
         "schema_version": 1,
         "captured_at": timestamp(),
-        "scope": "Three-ticket technical learning demonstration; no reliability claim.",
+        "scope": "Ten-ticket technical learning demonstration; no reliability claim.",
         "ticket_hashes": {ticket.id: ticket.content_hash() for ticket in tickets},
         "runs": runs,
         "tickets": rows,
@@ -108,7 +113,7 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
             "Automated checks do not establish reply usefulness or factual correctness.",
             "Review every reply for supported fixes, meaningful questions, uncertainty, revocation claims, data handling, and routing language.",
             "Usage may be absent or partial after failures; unknown cost is not zero.",
-            "Only three of the planned ten tickets are implemented. Live verification requires actual model runs and manual review; authored fixtures verify offline behavior only.",
+            "Live verification requires actual model runs and manual review; authored fixtures verify offline behavior only and do not establish agent performance.",
         ],
     })
 
@@ -149,7 +154,7 @@ async def evaluate_live(settings: Settings, *, live: bool,
     require_live(live)
     tickets = load_tickets()
     runs = []
-    # Sequential execution bounds this pilot to exactly the three selected tickets.
+    # Sequential execution attempts each of the ten tickets once.
     # Each failure remains saved; the next ticket is still attempted, without retry.
     for ticket in tickets:
         run = await triage_ticket(ticket, settings, live=live, output_dir=output_dir / "runs")

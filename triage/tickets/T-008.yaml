@@ -1,0 +1,18 @@
+id: T-008
+subject: We think our API key needs replacing
+body: >-
+  The invented Juniper Demo team believes authentication is the cause and asks
+  whether to replace the key. Here is the error we actually received. What does
+  this evidence support checking first?
+pasted_error: |-
+  HTTP 400
+  exception_type: BadRequestError
+  error_type: invalid_request_error
+  error_code: invalid_function_parameters
+  error_param: tools[0].parameters
+  message: Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas.
+organization: Juniper Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: selected sanitized observed schema fields with a hand-authored misleading customer assertion
+  evidence: evidence/tool_schema/broken-20261022T232240Z.json

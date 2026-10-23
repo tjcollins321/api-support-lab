@@ -49,7 +49,7 @@ def build_parser() -> argparse.ArgumentParser:
     triage.add_argument("--live", action="store_true", help="Explicitly permit API requests.")
     triage.add_argument("--output-dir", type=Path, help="Local run artifact directory.")
 
-    evaluate = commands.add_parser("evaluate", help="Evaluate three tickets or score saved results offline.")
+    evaluate = commands.add_parser("evaluate", help="Evaluate ten tickets or score saved results offline.")
     evaluate.add_argument("--output-dir", type=Path, help="Local evaluation artifact directory.")
     mode = evaluate.add_mutually_exclusive_group(required=True)
     mode.add_argument("--live", action="store_true", help="Explicitly permit model-backed evaluation.")

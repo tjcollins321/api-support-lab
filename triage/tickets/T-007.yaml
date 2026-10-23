@@ -1,0 +1,13 @@
+id: T-007
+subject: Unrecognized error in our API integration
+body: >-
+  The invented Linden Demo application returned this code. We do not know what
+  it means and have not collected the accompanying message or request settings.
+  What evidence would help?
+pasted_error: |-
+  HTTP 400
+  error_code: lunar_teapot_alignment_77
+organization: Linden Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: hand-authored synthetic unfamiliar error code; not observed API behavior or a registered mapping

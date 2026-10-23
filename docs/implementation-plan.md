@@ -2,7 +2,7 @@
 
 ## Current state and objective
 
-Slices 1–4 are implemented and checked offline, with **4 of 4 reproduction cases live-verified**. Slice 3 retains its earlier three-ticket live pilot. Slice 4's initial implementation and runbook-audience refactor made no API calls or real-credential/`.env` reads; a subsequent separately authorized six-request checkpoint on 2026-10-22 verified schema rejection, incomplete output, and client timeout with their corrections. Reviewed evidence is linked from all four support runbooks. The updated runbooks/schema mapping/instructions still need live agent evaluation. The full ten-ticket evaluation and walkthrough remain pending.
+Slices 1–4 are implemented and checked offline, with **4 of 4 reproduction cases live-verified**. Slice 3 retains its earlier three-ticket live pilot. Slice 4's initial implementation and runbook-audience refactor made no API calls or real-credential/`.env` reads; a subsequent separately authorized six-request checkpoint on 2026-10-22 verified schema rejection, incomplete output, and client timeout with their corrections. Reviewed evidence is linked from all four support runbooks. Slice 5 implements all ten fixtures, separate expectations, and scoring; its first authorized ten-ticket live pass returned 6/10 automated agreement, with one timeout and three expectation mismatches. Eight of nine drafts passed Codex-assisted review; full evaluation acceptance and the walkthrough remain pending.
 
 Build a small complete workflow before expanding coverage: real API reproduction, sanitized evidence, runbook, agent draft, and evaluation. Target 8–12 build hours and an initial $15 API allowance. Milestones are sequential; the hour ranges below are cumulative planning estimates rather than deadlines.
 
@@ -98,6 +98,8 @@ All six commands exited 0; exact-credential/pattern, field/header, and qualitati
 
 ## 5. Ten-ticket evaluation — hours 8–10
 
+Status: offline implementation complete; one later authorized live pass and Codex-assisted review are recorded, with unresolved failures. The offline phase made no API/model calls or real-credential/`.env` reads.
+
 Grow the initial three tickets into this fixed set, keeping expected outcomes separate:
 
 | Ticket | Scenario | Expected behavior to check |
@@ -119,6 +121,22 @@ Grow the initial three tickets into this fixed set, keeping expected outcomes se
 - Manually review all ten replies for useful follow-up questions, factual support, uncertainty, data-handling boundaries, and clear escalation language. Check that requested fields appear meaningfully in the draft.
 - Record all ten outcomes, including operational failures, with aggregate numerators and denominators. Save model/settings, SDK versions, ticket hashes or version, timestamp, tool use, available usage, and limitations.
 - Rerun after relevant changes or failures, within the remaining budget. Address material grounding failures or document their specific impact; do not imply that a small ticket set establishes general reliability.
+
+**Offline result:** T-001/T-005/T-009 remain unchanged. Seven new tickets complete the fixed set; T-002/T-003/T-004/T-008 use selected reviewed observations, with paths/provenance outside the three allowed model-input fields. T-007's unfamiliar code is explicitly synthetic in evaluator-only metadata. T-010 contains no sensitive content and requests handling guidance for an invented organization. Separate category/basis/action/severity/information/retrieval expectations were defined before the instruction update and authored-result fixtures. Timeout expectations request SDK/workload context and forbid demanding known-unavailable response fields.
+
+The existing scorer and live batch now account for all ten slots. Offline tests cover authored drafts for every scenario, actual SDK serialization/tool loops through in-memory transport, required follow-ups, impact, ambiguity, unknown/misleading evidence, grounding failures, hashes, operational failures, missing/duplicate/corrupt inputs, and review preservation. Model/settings/versions/available usage remain in saved runs. A failed manual review can coexist with automated agreement; neither is implicit approval to send a reply. The original public pilot is preserved and scores as a partial 3/10 set under current expectations, with seven missing runs. These checks establish software behavior only, not agent performance.
+
+The [maintainer evaluation guide](evaluation-guide.md) prepares a later separately authorized ten-ticket pass, artifact review, per-ticket qualitative findings, and offline rescoring. At offline completion, all ten live outcomes and manual reviews remained unobserved; the subsequent authorized pass below supplies the observations. No live rerun occurred.
+
+**Offline validation:** 267 tests passed using `env -u OPENAI_API_KEY UV_CACHE_DIR=/tmp/api-support-lab-uv-cache uv run --offline --locked --no-env-file pytest -q`. The pytest DNS/socket guard stayed active. The restricted sandbox stalled even a minimal asyncio worker-thread shutdown; the full suite passed outside that sandbox with the same guard and credential/env-file restrictions. Reviewed evidence, earlier pilot artifacts, the three original tickets, and locked dependencies remain unchanged. No commit/push occurred.
+
+**First live checkpoint:** one owner-authorized pass ran on 2026-10-22 at 19:58:56–20:01:23 America/New_York, loading the project-root `.env` without displaying credentials. Owner confirmation covered budget readiness and exact-credential review; numeric account spending was not supplied or inspected. The documented model/limits, zero retries, `store=False`, and disabled tracing were retained. No expectations, tickets, instructions, or runtime code were tuned to this pass.
+
+All ten tickets were attempted once. Automated agreement was **6/10**, with **one operational failure** (T-006: `APITimeoutError` / `ReadTimeout`, no draft) and **three semantic expectation mismatches** (T-002: structured schema request missing; T-007: SDK-version request missing; T-010: exact expected evidence strings omitted). Nine drafts were available: **eight passed Codex-assisted qualitative review**, T-007 failed follow-up completeness, and T-006's record failed because no reply existed. T-002 and T-010 passed prose review despite their automated mismatches. T-006's ambiguity/high-impact behavior remains unassessed. No draft is approved for customer use by these checks.
+
+The pass recorded 23 successful model responses and one timed-out model attempt. Available usage totals 34,989 input, 3,239 output, and 38,228 tokens, including 16,359 cached input and 77 reasoning output tokens. Checked standard rates estimate known usage at $0.0712859, excluding the timed-out attempt; service tier, billed charges, and numeric remaining allowance are unknown. Exact-credential/pattern, structural/settings, and qualitative artifact checks passed, and source/protected-artifact hashes were unchanged. Original runs/report remain under ignored `artifacts/evaluation/ten-ticket-live-20261022T235856Z/`; separate reviewed records and offline rescoring preserve every failure, mismatch, review, setting/version/usage record, and hash. Rescoring returned the expected exit 1 and 6/10. Earlier evidence/pilot artifacts were preserved; no rerun, extra smoke request, reply send, account change, publication, commit, or push occurred.
+
+Full acceptance remains unmet. The [recorded findings](evaluation-guide.md#recorded-slice-5-live-pass) separate operational failure, structured/prose disagreement, missing follow-up, and literal evidence-check limitations. A later agreed correction/rerun scope is needed; do not retroactively relax expectations or claim reliability from this small pass.
 
 **Checkpoint:** all ten tickets are accounted for, failed runs remain visible, and the report distinguishes automated agreement from manual findings. Scoring saved results works offline.
 
