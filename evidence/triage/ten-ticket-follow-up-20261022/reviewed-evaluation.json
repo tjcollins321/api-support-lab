@@ -1,0 +1,1241 @@
+{
+  "schema_version": 1,
+  "scorer_version": 2,
+  "expectations_hash": "8d1905cdf9cadc31a78e0294959099f8c307889c33c1a450957b302e1e62d278",
+  "captured_at": "2026-10-23T00:28:13.836064+00:00",
+  "scope": "Ten-ticket technical learning demonstration; no reliability claim.",
+  "ticket_hashes": {
+    "T-001": "86305bad18b6ff5d1f50b6f108250aff49cc8a4700e6cc97f85b5ff1488ba717",
+    "T-002": "09d4b20807cea509da074ae111d1e0e6f952d530eec40879d6a16846da6d15e5",
+    "T-003": "bb76d2871743032a0941ce69199a75882b670e72f3171d9433fc339d1dd3c3e0",
+    "T-004": "89ac6c14072a686810fcc51112742a148ff2627f8d206bbd1d155970a3d638cd",
+    "T-005": "dd51480544c7391c0e56e84da12373f44d1c0561384bd4c7efc5664bbb006f2b",
+    "T-006": "c2b567a4a698033cd3093c6706a96612ddcb661b82c3b078c9130d23d325a332",
+    "T-007": "f2c2d83250837944c48e014c447bcb810fc1cd7f780a6a77b31077ae34e2c115",
+    "T-008": "2df54f09049fd6bee3fca3046d2283ec64e750b3ef4f4d3764d93445b078054a",
+    "T-009": "db77508f717aaae1357b0b135cd61148f0a8721bc11fc0066ba4112e429d6c4a",
+    "T-010": "e5d3542ebd3d2ed60f10fc4cf0a1d179b6da86d15a22ba94ae94519998d0b516"
+  },
+  "runs": [
+    {
+      "schema_version": 1,
+      "ticket_id": "T-001",
+      "ticket_hash": "86305bad18b6ff5d1f50b6f108250aff49cc8a4700e6cc97f85b5ff1488ba717",
+      "captured_at": "2026-10-23T00:26:42.225445+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "invalid_credentials",
+        "candidate_runbooks": [
+          "invalid_credentials"
+        ],
+        "observed_evidence": [
+          "HTTP 401",
+          "exception_type: AuthenticationError",
+          "error_code: invalid_api_key",
+          "request_id: req_c610e4e44403409bbe5eecc22366c2d8",
+          "We have not described the business impact yet."
+        ],
+        "basis": "stated",
+        "severity": "unknown",
+        "action": "recommend_fix",
+        "missing": [
+          "impact"
+        ],
+        "customer_reply": "The HTTP 401 and `invalid_api_key` indicate an authentication rejection, but do not establish that the key was revoked. In the running Harbor Demo application, check locally that the intended project's credential is loaded and that there is no missing value, stale configuration reference, unintended whitespace, or wrong environment/project selection. Do not print or share the credential. Correct any identified issue through your established secret-management process; if validity remains uncertain, involve the project's credential owner.\n\nAfter a correction, have an authorized person retry the affected workflow and confirm both successful authentication and usable output—not just HTTP success.\n\nIs the affected workflow blocked, degraded with a workaround, or nonblocking?",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_Gqk62f1bXbZhu9YN6i6GxWfB",
+          "name": "diagnose",
+          "arguments": {
+            "status": 401,
+            "error_code": "invalid_api_key"
+          },
+          "status": "completed",
+          "result": [
+            "invalid_credentials"
+          ]
+        },
+        {
+          "call_id": "call_Kjteg6XbXanOy7ao4HTpHn4Z",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "invalid_credentials"
+          },
+          "status": "completed",
+          "result": "# Invalid credentials\n\nA request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.\n\nUse this runbook to investigate a customer's authentication symptoms, identify a supported correction, and confirm recovery of the affected workflow.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-21` (America/New_York; captures are dated `2026-10-22` UTC).\n- Observed evidence: [authentication rejection](../evidence/invalid_credentials/broken-20261022T032250Z.json) and [successful correction](../evidence/invalid_credentials/fixed-20261022T032341Z.json).\n- The lab observed HTTP 401, `AuthenticationError`, and `invalid_api_key`, followed by HTTP 200 with completed output. This does not establish key revocation or guarantee every authentication failure has these fields.\n\n## Evidence to request\n\n- A minimal sanitized error excerpt with available HTTP status, SDK exception type, error code/type/parameter, UTC attempt time, and request ID if received.\n- The model, SDK version, and execution environment in which the failure occurs.\n- How the application loads its credential and which project it is intended to use. Request configuration descriptions, never the credential or an environment dump.\n- Whether the workflow is blocked, degraded with a workaround, or nonblocking; impact determines severity independently of the error.\n\n## Diagnosis and alternative explanations\n\nAn explicit authentication rejection supports investigating credential loading and validity. HTTP status alone or a customer's assertion that a key was revoked does not identify the exact cause. A partial complaint such as “my key stopped working” needs distinguishing status/code/type evidence before a case-specific correction.\n\nA missing, malformed, outdated, or incorrectly loaded credential can be consistent with these symptoms. Check the application process and deployment actually making the request. Permission, model-access, billing, and connection failures may require different investigations; preserve their actual diagnostics and unfamiliar codes.\n\n## Corrective steps\n\n1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.\n2. Check for an absent value, a stale configuration reference, unintended whitespace, or selection of the wrong environment/project. Perform these checks locally without printing or sharing the credential.\n3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.\n4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.\n\n## Confirm recovery\n\nCheck the customer's affected request in the corrected execution environment. Confirm that authentication succeeds and the requested task completes with the expected usable result; HTTP success alone is insufficient. For Responses, inspect completion status and handle incomplete output or refusal separately.\n\nIf the request still fails, retain the new sanitized diagnostics and compare them with the original failure. A different error can mean authentication progressed while another issue remains. Describe recovery only to the extent actually observed.\n\n## Escalation checklist\n\n- Escalate persistent authentication rejection after loading/configuration checks to the project owner or appropriate API support channel.\n- Include minimal sanitized diagnostics, available request ID, UTC time, model/SDK, and affected environment.\n- Describe the loading checks, configuration change, and result of the customer's recovery check; identify uncertainties and unrelated errors.\n- Omit credentials, authorization headers, full logs, and environment dumps. Suggest routing without claiming a handoff occurred.\n\n## Illustrative draft reply\n\n“The supplied authentication error indicates that the request's credential was rejected; it does not establish that a key was revoked. Please confirm that the affected application loads the intended project's credential without printing or sharing it. After correcting any loading issue, check that the affected request completes successfully. If it still fails, could you provide the error code/type and request ID if available from a minimal sanitized excerpt?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.\n\n## Sources\n\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n- [API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n- [Authentication and credential handling](https://developers.openai.com/api/reference/overview)\n\nDocumentation supports the troubleshooting approach; the linked observations establish only what this lab verified.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1936,
+          "output_tokens": 26,
+          "total_tokens": 1962,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 1978,
+          "output_tokens": 20,
+          "total_tokens": 1998,
+          "input_tokens_details": {
+            "cached_tokens": 1933
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2956,
+          "output_tokens": 277,
+          "total_tokens": 3233,
+          "input_tokens_details": {
+            "cached_tokens": 1975
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 9872.526
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-002",
+      "ticket_hash": "09d4b20807cea509da074ae111d1e0e6f952d530eec40879d6a16846da6d15e5",
+      "captured_at": "2026-10-23T00:26:52.099109+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "tool_schema",
+        "candidate_runbooks": [
+          "tool_schema"
+        ],
+        "observed_evidence": [
+          "HTTP 400",
+          "error_code: invalid_function_parameters",
+          "error_param: tools[0].parameters",
+          "message: Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas."
+        ],
+        "basis": "stated",
+        "severity": "unknown",
+        "action": "recommend_fix",
+        "missing": [
+          "tool_schema",
+          "endpoint",
+          "model",
+          "sdk_version",
+          "strict_mode",
+          "schema_transformations",
+          "impact"
+        ],
+        "customer_reply": "The validation details identify the parameter schema for `support_label` at `tools[0].parameters`. The maintainer should inspect the serialized schema for `not_a_json_schema_type` and replace any invalid type declaration with a supported JSON Schema type that preserves the intended constraint. Compare the transmitted definition with the application's definition to catch serialization or transformation differences.\n\nCheck nested properties against the endpoint/model's supported schema subset. If strict mode is enabled, include every property in `required` and set `additionalProperties: false` on object definitions; do not disable strictness simply to suppress validation.\n\nPlease share the smallest sanitized serialized schema excerpt containing the affected property and its enclosing schema, plus the endpoint, model, SDK version, strict-mode setting, any schema transformations, and the workflow impact. Omit sensitive descriptions/examples and credentials.\n\nAfter the smallest correction, an authorized maintainer should check that the definition is accepted and the affected workflow completes, including function execution and result handling if a function call occurs.",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_BrrMjeewIKPMwOXjGDB5XNiY",
+          "name": "diagnose",
+          "arguments": {
+            "status": 400,
+            "error_code": "invalid_function_parameters"
+          },
+          "status": "completed",
+          "result": [
+            "tool_schema"
+          ]
+        },
+        {
+          "call_id": "call_ncJSyiTdLiignbROslwRP0Q2",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "tool_schema"
+          },
+          "status": "completed",
+          "result": "# Malformed function-tool schema\n\nA request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.\n\nUse this runbook when supplied validation details identify a function-tool schema. With an unspecified bad-request error, first request the details needed to locate the failing field.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [schema rejection](../evidence/tool_schema/broken-20261022T232240Z.json) and [successful correction](../evidence/tool_schema/fixed-20261022T232318Z.json).\n- The lab observed HTTP 400, `BadRequestError`, code `invalid_function_parameters`, and parameter `tools[0].parameters`, followed by HTTP 200 with completed output. This is one schema defect, not a universal mapping for every HTTP 400 or schema failure.\n\n## Evidence to request\n\n- A minimal sanitized validation error with available HTTP status, exception type, code/type/parameter, UTC time, and request ID if received.\n- The smallest serialized function-tool definition containing the affected property and its enclosing schema, with sensitive descriptions or examples removed.\n- The endpoint, model, SDK version, strict-mode setting, and any transformation between the application's schema and the transmitted request.\n- The affected workflow and its reported impact. Do not request credentials, full prompts, or full logs.\n\n## Diagnosis and alternative explanations\n\nValidation evidence identifying a tool schema supports investigating that definition. HTTP 400 can also concern input, model settings, or another unsupported feature. A customer's authentication explanation does not override explicit schema diagnostics.\n\nDistinguish a client-side schema error before transmission from an API rejection. Inspect the actual supplied parameter and schema rather than assuming a particular error code or wording. Connection failures, refusals, and incomplete responses are different outcomes.\n\n## Corrective steps\n\n1. Locate the tool and schema property identified by the customer's validation evidence. Compare the serialized request with the application definition to find transformations or configuration differences.\n2. Correct invalid JSON Schema types and object/property definitions. For strict function parameters, include every property in `required` and disable additional properties on object definitions.\n3. Check the supported schema subset for the endpoint and model in use, including nested objects. Preserve the intended validation constraints; do not disable strictness blindly to suppress the symptom.\n4. Have the application maintainer apply the smallest supported correction and arrange a controlled check of the affected request.\n\n## Confirm recovery\n\nConfirm that the customer's corrected tool definition is accepted and the affected workflow completes as intended. If the model requests a function call, acceptance alone does not verify the application's function execution and result handling; check those parts of the customer's workflow too.\n\nIf validation still fails, inspect the new parameter/message and the serialized definition. A different validation failure may identify another property; an unrelated API error needs its own investigation. A verified lab example does not establish the customer's exact cause or recovery.\n\n## Escalation checklist\n\n- Escalate when a schema believed to fit the supported subset still fails, or when the request transformation cannot be explained.\n- Supply the smallest sanitized schema/error excerpt, endpoint/model/SDK, strict setting, UTC time, and request ID if available.\n- Describe the correction attempted and the customer's resulting acceptance/completion behavior; retain unfamiliar codes and uncertainty.\n- Route to the application maintainer or appropriate API support channel without claiming a handoff. Omit credentials and full request/log dumps.\n\n## Illustrative draft reply\n\n“The supplied validation details point to the function-tool schema. Please inspect the affected property in the serialized request, including its JSON Schema type and strict object requirements. After correcting it, check that the affected workflow completes. If the error continues, could you share a minimal sanitized schema excerpt, the error parameter/code, and a request ID if received?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied validation evidence; otherwise request distinguishing details.\n\n## Sources\n\n- [Official function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)\n- [Official structured-output guide and supported schema subset](https://developers.openai.com/api/docs/guides/structured-outputs)\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1945,
+          "output_tokens": 26,
+          "total_tokens": 1971,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 1987,
+          "output_tokens": 20,
+          "total_tokens": 2007,
+          "input_tokens_details": {
+            "cached_tokens": 1942
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2945,
+          "output_tokens": 363,
+          "total_tokens": 3308,
+          "input_tokens_details": {
+            "cached_tokens": 1984
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 10462.165
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-003",
+      "ticket_hash": "bb76d2871743032a0941ce69199a75882b670e72f3171d9433fc339d1dd3c3e0",
+      "captured_at": "2026-10-23T00:27:02.562002+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "incomplete_output",
+        "candidate_runbooks": [
+          "incomplete_output"
+        ],
+        "observed_evidence": [
+          "structured JSON with a max_output_tokens setting of 128",
+          "HTTP 200",
+          "response_status: incomplete",
+          "incomplete_reason: max_output_tokens"
+        ],
+        "basis": "stated",
+        "severity": "unknown",
+        "action": "recommend_fix",
+        "missing": [
+          "impact"
+        ],
+        "customer_reply": "The returned status and reason establish output-budget exhaustion: HTTP 200 does not mean the structured output completed. Have the application maintainer increase max_output_tokens above 128 to a bounded allowance appropriate to the model and workload, or reduce the requested JSON payload. Account for reasoning tokens as well as visible output; there is no universal correct limit.\n\nDuring an authorized check of the affected workflow, inspect completion status before consuming the result. Confirm completed status with no incomplete reason, refusal, or response error, then parse the intended output field from the full returned output and validate both the expected schema and required content. Finally, confirm Aspen Demo successfully uses the result; parseable JSON alone is not sufficient, and partial output should not be accepted as a completed task.\n\nWhat workflow impact is this causing—for example, is the task blocked or is there a workaround?",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_o7f0i4rme0cZ9PnM4KAW8X6n",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        },
+        {
+          "call_id": "call_OGwSTGEgMq6PBjzNzRUiCPdS",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "incomplete_output"
+          },
+          "status": "completed",
+          "result": "# Incomplete structured output\n\nAn HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.\n\nUse this runbook to distinguish incomplete generation from parsing or application-validation problems, and confirm that the customer's output is complete and usable after a correction.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [budget-exhausted response](../evidence/incomplete_output/broken-20261022T232333Z.json) and [successful correction](../evidence/incomplete_output/fixed-20261022T232346Z.json).\n- The lab observed HTTP 200 with status `incomplete` and reason `max_output_tokens`, followed by a completed response whose full output passed schema/content validation. This does not establish that an arbitrary parser failure has the same cause.\n\n## Evidence to request\n\n- Response completion status, incomplete reason/details, any refusal or response error, and request ID if received.\n- The configured output-token limit, reasoning setting, model, SDK version, and UTC attempt time.\n- The parser/validation error, expected schema, and a minimal sanitized failing output excerpt. An excerpt may itself be truncated; ask whether it represents all returned text.\n- The affected workflow and its impact, including whether a report or other task is blocked. Request no sensitive records, full prompts, credentials, or full logs.\n\n## Diagnosis and alternative explanations\n\nAn explicit `incomplete` status with reason `max_output_tokens` supports output-budget exhaustion. Reasoning may consume the budget before visible JSON appears. HTTP success plus a parser failure alone does not establish that cause.\n\nOther explanations include content-filter termination, refusal, extraction of the wrong response field, a schema mismatch, or an application parser bug. A completed response that fails schema/content validation needs investigation even if it parses as JSON. Treat transport failure separately from a response that arrived incomplete.\n\n## Corrective steps\n\n1. Inspect completion status, incomplete details, refusal, and errors before parsing or consuming the output as a successful result.\n2. When the supplied reason establishes output-budget exhaustion, choose a larger bounded output allowance appropriate to the model and workload, or reduce the requested payload. Account for reasoning as well as visible output; there is no universal token limit that fixes every workload.\n3. If output is completed but parsing or validation fails, investigate response extraction, parser behavior, and the expected schema/content instead of assuming that increasing the budget will fix it.\n4. Have the application maintainer apply the supported change and arrange a controlled check of the affected workflow.\n\n## Confirm recovery\n\nInspect the customer's full returned output, not just a shortened log excerpt. Confirm completed status without an incomplete reason, refusal, or response error. Parse the intended output field and validate both its schema and the task's required content.\n\nConfirm that the previously affected workflow now uses the result successfully. HTTP 200 or parseable JSON alone is insufficient, and a partially emitted payload must not be accepted as a completed task. If the correction fails, retain the actual completion and validation details.\n\n## Escalation checklist\n\n- Escalate persistent incomplete output within appropriate workload limits, or completed output that still fails the expected schema/content checks.\n- Include status, incomplete reason, output/reasoning settings, model/SDK, UTC time, and request ID if available.\n- Supply minimal sanitized schema/output and parser-error excerpts, stating any excerpt truncation.\n- Describe the change attempted and its effect on the customer's task. Route to the application maintainer or appropriate API support channel without claiming a handoff.\n\n## Illustrative draft reply\n\n“Could you share the response status, incomplete reason, output-token limit, and a small sanitized excerpt that fails parsing? If the response confirms output-budget exhaustion, a larger bounded allowance or smaller payload may help. Then check completion, schema, and required content before using the result.”\n\nThis is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.\n\n## Sources\n\n- [Official structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs)\n- [Official reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)\n- [OpenAI Python SDK and Responses interfaces](https://developers.openai.com/api/reference/python)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1914,
+          "output_tokens": 15,
+          "total_tokens": 1929,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2078,
+          "output_tokens": 21,
+          "total_tokens": 2099,
+          "input_tokens_details": {
+            "cached_tokens": 1911
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 3045,
+          "output_tokens": 294,
+          "total_tokens": 3339,
+          "input_tokens_details": {
+            "cached_tokens": 2075
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 8950.137
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-004",
+      "ticket_hash": "89ac6c14072a686810fcc51112742a148ff2627f8d206bbd1d155970a3d638cd",
+      "captured_at": "2026-10-23T00:27:11.511565+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "timeout",
+        "candidate_runbooks": [
+          "timeout"
+        ],
+        "observed_evidence": [
+          "uses a 0.5-second client timeout and zero SDK retries",
+          "No HTTP response or request ID arrived.",
+          "exception_type: APITimeoutError",
+          "message: Request timed out.",
+          "elapsed_ms: 619.908"
+        ],
+        "basis": "stated",
+        "severity": "unknown",
+        "action": "recommend_fix",
+        "missing": [
+          "sdk_version",
+          "model",
+          "max_output_tokens",
+          "workload",
+          "network_conditions",
+          "attempt_time",
+          "retry_history",
+          "impact"
+        ],
+        "customer_reply": "The APITimeoutError indicates that the client stopped waiting after about 620 ms with a configured 0.5-second timeout. It does not establish whether server-side processing stopped or whether usage occurred. No HTTP response or request ID is available, so we do not need those fields.\n\nBefore another attempt, have the application owner review earlier attempts and application-level retries for possible duplicate work. Replace the very short client limit with a suitable bounded timeout for the application's requirements, or reduce the workload; avoid blind retries.\n\nPlease share minimal sanitized metadata: SDK version, model, configured output-token limit, approximate workload size, network/proxy conditions, the attempt's UTC time, previous attempts and any application-level retry behavior, and the workflow impact.\n\nAfter that review, an authorized person can perform a controlled check of the affected workflow, confirming both that a response arrives within the intended time bounds and that the task completes with usable output.",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_l4tzeKQEfkQheJmDvncjBnqE",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        },
+        {
+          "call_id": "call_34A4iCYwzVablJUOYsIlJxtq",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "timeout"
+          },
+          "status": "completed",
+          "result": "# Client timeout\n\nA client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable.\n\nUse this runbook to distinguish a client timeout from other connection or API failures, investigate the customer's client settings, and check recovery without assuming earlier processing stopped.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [client timeout](../evidence/timeout/broken-20261022T232402Z.json) and [successful correction](../evidence/timeout/fixed-20261022T232415Z.json).\n- The lab observed `APITimeoutError` without an HTTP status, request ID, or usage, followed by HTTP 200 with completed output under a suitable client timeout. This does not show whether the earlier request stopped processing or incurred usage.\n\n## Evidence to request\n\n- The exception type, configured client timeout and retries, elapsed time, and UTC attempt time.\n- The model, SDK version, output allowance, and a brief description of workload size and network/proxy conditions.\n- Whether any HTTP response or request ID arrived. Keep unavailable fields absent or null; a request ID is optional when no response was received.\n- Attempts already made, any application-side retry behavior, and reported workflow impact. Request only minimal sanitized metadata, never credentials, full logs, or sensitive payloads.\n\n## Diagnosis and alternative explanations\n\nAn SDK `APITimeoutError` supports a client-timeout diagnosis. A vague “timed out” complaint needs exception and timing details first. DNS/TLS failures, general connection problems, upstream HTTP timeout responses, and slow processing can present similar symptoms.\n\nPreserve any actual response fields. An absent HTTP response does not imply HTTP 408 or 504, and a generic connection error does not establish a client timeout. The SDK timeout setting is not a guarantee of the whole workflow's end-to-end duration.\n\nA client timeout means the client stopped waiting; it does not prove provider-side processing stopped. Usage and cost may be unknown. Consider earlier attempts before arranging another request.\n\n## Corrective steps\n\n1. Compare the configured timeout, observed timing, workload, and retry behavior. Check whether a client/proxy deadline or a general connection failure is actually supported by the evidence.\n2. If the client limit is impractically short for the workload, choose a suitable bounded timeout or reduce the workload according to the application's operating requirements. Do not assume one timeout value suits every customer.\n3. If the evidence instead points to connectivity or an upstream response, route investigation to the relevant application/network component and preserve the actual diagnostics.\n4. Review possible earlier processing and repeated work with the application owner before a controlled recovery check. Avoid blind retries; follow the application's established retry and duplicate-work handling.\n\n## Confirm recovery\n\nFor a controlled check of the customer's affected workflow, confirm that the client receives a response within its intended operating bounds and that the requested task completes with a usable result. HTTP success alone is insufficient. Inspect available timing and retry information to understand what actually completed.\n\nIf the request times out again, preserve the exception, elapsed time, effective settings, and any actual response metadata. Keep uncertainty about earlier server-side processing and unknown usage explicit; do not describe either as resolved without evidence.\n\n## Escalation checklist\n\n- Escalate persistent timeouts after supported client-setting checks, unexplained timing, or unresolved concern about repeated processing.\n- Include minimal sanitized exception/timing details, effective timeout/retries, workload description, model/SDK, and UTC times.\n- Include HTTP fields and request ID only if received; state when no response arrived.\n- Describe the change and recovery-check outcome, retaining uncertainty about processing/cost. Suggest the application/network maintainer or appropriate API support channel without claiming a handoff.\n\n## Illustrative draft reply\n\n“The supplied client-timeout exception means the client stopped waiting; it does not show whether server-side processing stopped. Could you share the configured timeout and retries, elapsed time, SDK version, and whether any response metadata arrived? A request ID is useful only if available. Review earlier attempts before retrying.”\n\nThis is an illustrative draft for human review, not an executed agent result. Ask for the exception type when the complaint is ambiguous.\n\n## Sources\n\n- [OpenAI Python SDK timeouts, retries, and error handling](https://developers.openai.com/api/reference/python)\n- [Official API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1921,
+          "output_tokens": 15,
+          "total_tokens": 1936,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2085,
+          "output_tokens": 19,
+          "total_tokens": 2104,
+          "input_tokens_details": {
+            "cached_tokens": 1918
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 3084,
+          "output_tokens": 365,
+          "total_tokens": 3449,
+          "input_tokens_details": {
+            "cached_tokens": 2082
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 9971.998
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-005",
+      "ticket_hash": "dd51480544c7391c0e56e84da12373f44d1c0561384bd4c7efc5664bbb006f2b",
+      "captured_at": "2026-10-23T00:27:21.484322+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "undetermined",
+        "candidate_runbooks": [
+          "invalid_credentials"
+        ],
+        "observed_evidence": [
+          "Our invented Maple Demo team thinks authentication may be the problem.",
+          "We do not have the error message or status handy.",
+          "What information would help?"
+        ],
+        "basis": "none",
+        "severity": "unknown",
+        "action": "request_info",
+        "missing": [
+          "http_status",
+          "error_code",
+          "error_type",
+          "error_message",
+          "impact"
+        ],
+        "customer_reply": "There isn’t enough evidence yet to tell whether the API key is the problem. Please share a minimal sanitized error excerpt showing the HTTP status, error code, error or SDK exception type, and accompanying message. If these aren’t handy, an authorized person can collect them during a later check of the affected workflow. Remove API keys, authorization headers, and sensitive data; don’t send full logs or request bodies. Also, is the workflow blocked, degraded with a workaround, or nonblocking?",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_JHz01LomUab57bitnigmXYlS",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        },
+        {
+          "call_id": "call_eoywpR7oWEHneqkf0Vzf2GWA",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "invalid_credentials"
+          },
+          "status": "completed",
+          "result": "# Invalid credentials\n\nA request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.\n\nUse this runbook to investigate a customer's authentication symptoms, identify a supported correction, and confirm recovery of the affected workflow.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-21` (America/New_York; captures are dated `2026-10-22` UTC).\n- Observed evidence: [authentication rejection](../evidence/invalid_credentials/broken-20261022T032250Z.json) and [successful correction](../evidence/invalid_credentials/fixed-20261022T032341Z.json).\n- The lab observed HTTP 401, `AuthenticationError`, and `invalid_api_key`, followed by HTTP 200 with completed output. This does not establish key revocation or guarantee every authentication failure has these fields.\n\n## Evidence to request\n\n- A minimal sanitized error excerpt with available HTTP status, SDK exception type, error code/type/parameter, UTC attempt time, and request ID if received.\n- The model, SDK version, and execution environment in which the failure occurs.\n- How the application loads its credential and which project it is intended to use. Request configuration descriptions, never the credential or an environment dump.\n- Whether the workflow is blocked, degraded with a workaround, or nonblocking; impact determines severity independently of the error.\n\n## Diagnosis and alternative explanations\n\nAn explicit authentication rejection supports investigating credential loading and validity. HTTP status alone or a customer's assertion that a key was revoked does not identify the exact cause. A partial complaint such as “my key stopped working” needs distinguishing status/code/type evidence before a case-specific correction.\n\nA missing, malformed, outdated, or incorrectly loaded credential can be consistent with these symptoms. Check the application process and deployment actually making the request. Permission, model-access, billing, and connection failures may require different investigations; preserve their actual diagnostics and unfamiliar codes.\n\n## Corrective steps\n\n1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.\n2. Check for an absent value, a stale configuration reference, unintended whitespace, or selection of the wrong environment/project. Perform these checks locally without printing or sharing the credential.\n3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.\n4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.\n\n## Confirm recovery\n\nCheck the customer's affected request in the corrected execution environment. Confirm that authentication succeeds and the requested task completes with the expected usable result; HTTP success alone is insufficient. For Responses, inspect completion status and handle incomplete output or refusal separately.\n\nIf the request still fails, retain the new sanitized diagnostics and compare them with the original failure. A different error can mean authentication progressed while another issue remains. Describe recovery only to the extent actually observed.\n\n## Escalation checklist\n\n- Escalate persistent authentication rejection after loading/configuration checks to the project owner or appropriate API support channel.\n- Include minimal sanitized diagnostics, available request ID, UTC time, model/SDK, and affected environment.\n- Describe the loading checks, configuration change, and result of the customer's recovery check; identify uncertainties and unrelated errors.\n- Omit credentials, authorization headers, full logs, and environment dumps. Suggest routing without claiming a handoff occurred.\n\n## Illustrative draft reply\n\n“The supplied authentication error indicates that the request's credential was rejected; it does not establish that a key was revoked. Please confirm that the affected application loads the intended project's credential without printing or sharing it. After correcting any loading issue, check that the affected request completes successfully. If it still fails, could you provide the error code/type and request ID if available from a minimal sanitized excerpt?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.\n\n## Sources\n\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n- [API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n- [Authentication and credential handling](https://developers.openai.com/api/reference/overview)\n\nDocumentation supports the troubleshooting approach; the linked observations establish only what this lab verified.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1889,
+          "output_tokens": 15,
+          "total_tokens": 1904,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2053,
+          "output_tokens": 46,
+          "total_tokens": 2099,
+          "input_tokens_details": {
+            "cached_tokens": 1886
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 24
+          }
+        },
+        {
+          "input_tokens": 3057,
+          "output_tokens": 195,
+          "total_tokens": 3252,
+          "input_tokens_details": {
+            "cached_tokens": 2050
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 8790.439
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-006",
+      "ticket_hash": "c2b567a4a698033cd3093c6706a96612ddcb661b82c3b078c9130d23d325a332",
+      "captured_at": "2026-10-23T00:27:30.276045+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "incomplete_output",
+        "candidate_runbooks": [
+          "incomplete_output"
+        ],
+        "observed_evidence": [
+          "The invented Willow Demo team's nightly report is blocked.",
+          "The API returned HTTP 200, but our JSON parser failed.",
+          "We have not saved completion details or a failing output excerpt yet.",
+          "JSONDecodeError: Expecting ',' delimiter"
+        ],
+        "basis": "inferred",
+        "severity": "high",
+        "action": "request_info",
+        "missing": [
+          "response_status",
+          "incomplete_reason",
+          "response_error",
+          "refusal",
+          "request_id",
+          "max_output_tokens",
+          "reasoning_setting",
+          "model",
+          "sdk_version",
+          "attempt_time",
+          "parser_error",
+          "output_excerpt"
+        ],
+        "customer_reply": "HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.\n\nDuring the next authorized check of the affected nightly report, please collect:\n- Response completion status, incomplete reason/details, and any response error or refusal (or note their absence); the request ID if received.\n- Configured max_output_tokens, reasoning setting, model, SDK version, and UTC attempt time.\n- Minimal sanitized parser/extraction context: which response field is parsed, the relevant parsing step, and the expected JSON structure/schema. The error line is already supplied.\n- A minimal sanitized failing output excerpt, stating whether it contains all returned text or is truncated.\n\nPlease exclude credentials, sensitive records, full prompts, and full logs. Inspect completion details before treating the output as successful; do not increase the output budget solely on the basis of this parser error.",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_kHJtXLhfUVaOvsJbQgNxYx18",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        },
+        {
+          "call_id": "call_elhJkAb96iyQJmcGHTMtseJA",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "incomplete_output"
+          },
+          "status": "completed",
+          "result": "# Incomplete structured output\n\nAn HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.\n\nUse this runbook to distinguish incomplete generation from parsing or application-validation problems, and confirm that the customer's output is complete and usable after a correction.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [budget-exhausted response](../evidence/incomplete_output/broken-20261022T232333Z.json) and [successful correction](../evidence/incomplete_output/fixed-20261022T232346Z.json).\n- The lab observed HTTP 200 with status `incomplete` and reason `max_output_tokens`, followed by a completed response whose full output passed schema/content validation. This does not establish that an arbitrary parser failure has the same cause.\n\n## Evidence to request\n\n- Response completion status, incomplete reason/details, any refusal or response error, and request ID if received.\n- The configured output-token limit, reasoning setting, model, SDK version, and UTC attempt time.\n- The parser/validation error, expected schema, and a minimal sanitized failing output excerpt. An excerpt may itself be truncated; ask whether it represents all returned text.\n- The affected workflow and its impact, including whether a report or other task is blocked. Request no sensitive records, full prompts, credentials, or full logs.\n\n## Diagnosis and alternative explanations\n\nAn explicit `incomplete` status with reason `max_output_tokens` supports output-budget exhaustion. Reasoning may consume the budget before visible JSON appears. HTTP success plus a parser failure alone does not establish that cause.\n\nOther explanations include content-filter termination, refusal, extraction of the wrong response field, a schema mismatch, or an application parser bug. A completed response that fails schema/content validation needs investigation even if it parses as JSON. Treat transport failure separately from a response that arrived incomplete.\n\n## Corrective steps\n\n1. Inspect completion status, incomplete details, refusal, and errors before parsing or consuming the output as a successful result.\n2. When the supplied reason establishes output-budget exhaustion, choose a larger bounded output allowance appropriate to the model and workload, or reduce the requested payload. Account for reasoning as well as visible output; there is no universal token limit that fixes every workload.\n3. If output is completed but parsing or validation fails, investigate response extraction, parser behavior, and the expected schema/content instead of assuming that increasing the budget will fix it.\n4. Have the application maintainer apply the supported change and arrange a controlled check of the affected workflow.\n\n## Confirm recovery\n\nInspect the customer's full returned output, not just a shortened log excerpt. Confirm completed status without an incomplete reason, refusal, or response error. Parse the intended output field and validate both its schema and the task's required content.\n\nConfirm that the previously affected workflow now uses the result successfully. HTTP 200 or parseable JSON alone is insufficient, and a partially emitted payload must not be accepted as a completed task. If the correction fails, retain the actual completion and validation details.\n\n## Escalation checklist\n\n- Escalate persistent incomplete output within appropriate workload limits, or completed output that still fails the expected schema/content checks.\n- Include status, incomplete reason, output/reasoning settings, model/SDK, UTC time, and request ID if available.\n- Supply minimal sanitized schema/output and parser-error excerpts, stating any excerpt truncation.\n- Describe the change attempted and its effect on the customer's task. Route to the application maintainer or appropriate API support channel without claiming a handoff.\n\n## Illustrative draft reply\n\n“Could you share the response status, incomplete reason, output-token limit, and a small sanitized excerpt that fails parsing? If the response confirms output-budget exhaustion, a larger bounded allowance or smaller payload may help. Then check completion, schema, and required content before using the result.”\n\nThis is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.\n\n## Sources\n\n- [Official structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs)\n- [Official reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)\n- [OpenAI Python SDK and Responses interfaces](https://developers.openai.com/api/reference/python)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1916,
+          "output_tokens": 15,
+          "total_tokens": 1931,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2080,
+          "output_tokens": 21,
+          "total_tokens": 2101,
+          "input_tokens_details": {
+            "cached_tokens": 1913
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 3047,
+          "output_tokens": 394,
+          "total_tokens": 3441,
+          "input_tokens_details": {
+            "cached_tokens": 2077
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 10367.735
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-007",
+      "ticket_hash": "f2c2d83250837944c48e014c447bcb810fc1cd7f780a6a77b31077ae34e2c115",
+      "captured_at": "2026-10-23T00:27:40.643001+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "undetermined",
+        "candidate_runbooks": [],
+        "observed_evidence": [
+          "HTTP 400",
+          "error_code: lunar_teapot_alignment_77",
+          "We do not know what it means and have not collected the accompanying message or request settings."
+        ],
+        "basis": "none",
+        "severity": "unknown",
+        "action": "request_info",
+        "missing": [
+          "error_message",
+          "error_type",
+          "endpoint",
+          "model",
+          "sdk_version",
+          "impact"
+        ],
+        "customer_reply": "The supplied HTTP 400 and code `lunar_teapot_alignment_77` do not match our local diagnostic mappings, so we cannot identify the cause from the code alone. Please collect a minimal sanitized excerpt containing the accompanying error message and type, plus the endpoint, model, and SDK name/version used. Also describe the workflow impact—for example, whether requests are blocked or a workaround exists. Omit credentials, full request bodies, and sensitive customer data.",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_tYeCpxquSMbFTJNcEXJBD0GS",
+          "name": "diagnose",
+          "arguments": {
+            "status": 400,
+            "error_code": "lunar_teapot_alignment_77"
+          },
+          "status": "completed",
+          "result": []
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1908,
+          "output_tokens": 30,
+          "total_tokens": 1938,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 1951,
+          "output_tokens": 234,
+          "total_tokens": 2185,
+          "input_tokens_details": {
+            "cached_tokens": 1905
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 7147.574
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-008",
+      "ticket_hash": "2df54f09049fd6bee3fca3046d2283ec64e750b3ef4f4d3764d93445b078054a",
+      "captured_at": "2026-10-23T00:27:47.791114+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "tool_schema",
+        "candidate_runbooks": [
+          "tool_schema"
+        ],
+        "observed_evidence": [
+          "believes authentication is the cause and asks whether to replace the key",
+          "HTTP 400",
+          "error_code: invalid_function_parameters",
+          "error_param: tools[0].parameters",
+          "message: Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas."
+        ],
+        "basis": "stated",
+        "severity": "unknown",
+        "action": "recommend_fix",
+        "missing": [
+          "tool_schema",
+          "impact"
+        ],
+        "customer_reply": "The evidence supports checking the function-tool schema first, not replacing the API key. The error explicitly identifies `tools[0].parameters` for `support_label` and rejects `not_a_json_schema_type` as invalid schema content; it does not establish an authentication problem.\n\nHave the application maintainer inspect the serialized tool definition, locate that invalid type value, and replace it with the intended supported JSON Schema type while preserving the intended constraints. Compare the transmitted schema with the application definition for any transformations. After the correction, an authorized maintainer should confirm that the request is accepted and the affected workflow completes, including function execution and result handling if applicable.\n\nPlease share the smallest sanitized serialized schema excerpt containing the affected property and its enclosing schema, with sensitive descriptions/examples removed, so the precise correction can be confirmed. Also, is the affected workflow blocked, degraded with a workaround, or unaffected?",
+        "escalation_note": ""
+      },
+      "tool_use": [
+        {
+          "call_id": "call_lslpVnRJ9CfILWrSmyWD2RtM",
+          "name": "diagnose",
+          "arguments": {
+            "status": 400,
+            "error_code": "invalid_function_parameters"
+          },
+          "status": "completed",
+          "result": [
+            "tool_schema"
+          ]
+        },
+        {
+          "call_id": "call_89Z8XGxbWQ2ojHR73tRSiTbc",
+          "name": "get_runbook",
+          "arguments": {
+            "case": "tool_schema"
+          },
+          "status": "completed",
+          "result": "# Malformed function-tool schema\n\nA request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.\n\nUse this runbook when supplied validation details identify a function-tool schema. With an unspecified bad-request error, first request the details needed to locate the failing field.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [schema rejection](../evidence/tool_schema/broken-20261022T232240Z.json) and [successful correction](../evidence/tool_schema/fixed-20261022T232318Z.json).\n- The lab observed HTTP 400, `BadRequestError`, code `invalid_function_parameters`, and parameter `tools[0].parameters`, followed by HTTP 200 with completed output. This is one schema defect, not a universal mapping for every HTTP 400 or schema failure.\n\n## Evidence to request\n\n- A minimal sanitized validation error with available HTTP status, exception type, code/type/parameter, UTC time, and request ID if received.\n- The smallest serialized function-tool definition containing the affected property and its enclosing schema, with sensitive descriptions or examples removed.\n- The endpoint, model, SDK version, strict-mode setting, and any transformation between the application's schema and the transmitted request.\n- The affected workflow and its reported impact. Do not request credentials, full prompts, or full logs.\n\n## Diagnosis and alternative explanations\n\nValidation evidence identifying a tool schema supports investigating that definition. HTTP 400 can also concern input, model settings, or another unsupported feature. A customer's authentication explanation does not override explicit schema diagnostics.\n\nDistinguish a client-side schema error before transmission from an API rejection. Inspect the actual supplied parameter and schema rather than assuming a particular error code or wording. Connection failures, refusals, and incomplete responses are different outcomes.\n\n## Corrective steps\n\n1. Locate the tool and schema property identified by the customer's validation evidence. Compare the serialized request with the application definition to find transformations or configuration differences.\n2. Correct invalid JSON Schema types and object/property definitions. For strict function parameters, include every property in `required` and disable additional properties on object definitions.\n3. Check the supported schema subset for the endpoint and model in use, including nested objects. Preserve the intended validation constraints; do not disable strictness blindly to suppress the symptom.\n4. Have the application maintainer apply the smallest supported correction and arrange a controlled check of the affected request.\n\n## Confirm recovery\n\nConfirm that the customer's corrected tool definition is accepted and the affected workflow completes as intended. If the model requests a function call, acceptance alone does not verify the application's function execution and result handling; check those parts of the customer's workflow too.\n\nIf validation still fails, inspect the new parameter/message and the serialized definition. A different validation failure may identify another property; an unrelated API error needs its own investigation. A verified lab example does not establish the customer's exact cause or recovery.\n\n## Escalation checklist\n\n- Escalate when a schema believed to fit the supported subset still fails, or when the request transformation cannot be explained.\n- Supply the smallest sanitized schema/error excerpt, endpoint/model/SDK, strict setting, UTC time, and request ID if available.\n- Describe the correction attempted and the customer's resulting acceptance/completion behavior; retain unfamiliar codes and uncertainty.\n- Route to the application maintainer or appropriate API support channel without claiming a handoff. Omit credentials and full request/log dumps.\n\n## Illustrative draft reply\n\n“The supplied validation details point to the function-tool schema. Please inspect the affected property in the serialized request, including its JSON Schema type and strict object requirements. After correcting it, check that the affected workflow completes. If the error continues, could you share a minimal sanitized schema excerpt, the error parameter/code, and a request ID if received?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied validation evidence; otherwise request distinguishing details.\n\n## Sources\n\n- [Official function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)\n- [Official structured-output guide and supported schema subset](https://developers.openai.com/api/docs/guides/structured-outputs)\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1959,
+          "output_tokens": 26,
+          "total_tokens": 1985,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2001,
+          "output_tokens": 20,
+          "total_tokens": 2021,
+          "input_tokens_details": {
+            "cached_tokens": 1956
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        },
+        {
+          "input_tokens": 2959,
+          "output_tokens": 337,
+          "total_tokens": 3296,
+          "input_tokens_details": {
+            "cached_tokens": 1998
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 10420.583
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-009",
+      "ticket_hash": "db77508f717aaae1357b0b135cd61148f0a8721bc11fc0066ba4112e429d6c4a",
+      "captured_at": "2026-10-23T00:27:58.212415+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "out_of_scope",
+        "candidate_runbooks": [],
+        "observed_evidence": [
+          "Can you enable SSO and configure identity-provider groups for the invented Cedar Demo employee portal?",
+          "We need someone to route this setup request."
+        ],
+        "basis": "none",
+        "severity": "unknown",
+        "action": "escalate",
+        "missing": [],
+        "customer_reply": "SSO enablement and identity-provider group configuration are outside API Support Lab’s troubleshooting scope. Please route this setup request to the Cedar Demo portal administrator or your organization’s identity and access management team. They can coordinate the configuration with the identity-provider administrator. No configuration changes or handoff have been performed here.",
+        "escalation_note": "Suggested routing: employee portal administrator or identity and access management team. The customer requests SSO enablement and identity-provider group configuration for the invented Cedar Demo employee portal, specifically asking for routing. No diagnostic error or workflow impact was supplied. This is a setup request outside the available troubleshooting runbooks; no handoff has occurred."
+      },
+      "tool_use": [
+        {
+          "call_id": "call_uGwrJpMn0nX8KuJWZMd8t9IK",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1890,
+          "output_tokens": 29,
+          "total_tokens": 1919,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 12
+          }
+        },
+        {
+          "input_tokens": 2068,
+          "output_tokens": 206,
+          "total_tokens": 2274,
+          "input_tokens_details": {
+            "cached_tokens": 1887
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 6701.315
+    },
+    {
+      "schema_version": 1,
+      "ticket_id": "T-010",
+      "ticket_hash": "e5d3542ebd3d2ed60f10fc4cf0a1d179b6da86d15a22ba94ae94519998d0b516",
+      "captured_at": "2026-10-23T00:28:04.913194+00:00",
+      "model": "gpt-6.1-sol",
+      "settings": {
+        "model": "gpt-6.1-sol",
+        "timeout_seconds": 60.0,
+        "max_output_tokens": 2048,
+        "agent_max_output_tokens": 4096,
+        "max_turns": 8,
+        "max_retries": 0,
+        "reasoning_effort": "low",
+        "api": "responses",
+        "store": false,
+        "tracing_disabled": true
+      },
+      "sdk_versions": {
+        "openai": "3.36.0",
+        "openai-agents": "0.24.0"
+      },
+      "status": "completed",
+      "failure": null,
+      "result": {
+        "category": "out_of_scope",
+        "candidate_runbooks": [],
+        "observed_evidence": [
+          "Our diagnostic material might contain sensitive records.",
+          "Before sharing anything, how should we route the handling question and what minimal sanitized metadata could help?",
+          "This ticket contains no diagnostic payload, personal information, credentials, or actual sensitive content."
+        ],
+        "basis": "none",
+        "severity": "unknown",
+        "action": "escalate",
+        "missing": [
+          "diagnostic_summary",
+          "impact"
+        ],
+        "customer_reply": "Before sharing diagnostic material, route the handling question through your organization’s established support/security or data-handling process to determine what may be shared and through which approved channel. This lab cannot approve a sensitive-data sharing channel. Initially, please provide only a brief sanitized diagnostic summary describing the technical symptom and the affected workflow’s impact, such as whether it is blocked or has a workaround. Exclude sensitive records, credentials, full logs, and request bodies; no underlying diagnostic payload is needed at this stage.",
+        "escalation_note": "Suggested routing: the organization’s established support/security or data-handling process for guidance before diagnostic material is shared. The ticket raises possible sensitive-record exposure but explicitly contains no diagnostic payload or actual sensitive content. No technical failure or workflow impact has been supplied, so no API cause can be assessed. This is a routing recommendation only; no handoff has occurred."
+      },
+      "tool_use": [
+        {
+          "call_id": "call_xgQ79I7zp8dr6N5r9Tkmexlc",
+          "name": "list_runbooks",
+          "arguments": {},
+          "status": "completed",
+          "result": {
+            "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+            "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+            "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+            "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+          }
+        }
+      ],
+      "usage": [
+        {
+          "input_tokens": 1924,
+          "output_tokens": 32,
+          "total_tokens": 1956,
+          "input_tokens_details": {
+            "cached_tokens": 0
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 15
+          }
+        },
+        {
+          "input_tokens": 2105,
+          "output_tokens": 310,
+          "total_tokens": 2415,
+          "input_tokens_details": {
+            "cached_tokens": 1921
+          },
+          "output_tokens_details": {
+            "reasoning_tokens": 0
+          }
+        }
+      ],
+      "elapsed_ms": 8918.326
+    }
+  ],
+  "tickets": [
+    {
+      "ticket_id": "T-001",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-002",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-003",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-004",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-005",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-006",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-007",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-008",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-009",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    },
+    {
+      "ticket_id": "T-010",
+      "operational_failure": null,
+      "checks": {
+        "ticket_hash": true,
+        "category": true,
+        "basis": true,
+        "action": true,
+        "severity": true,
+        "missing": true,
+        "unavailable_information": true,
+        "retrieval": true,
+        "observed_evidence": true
+      },
+      "automated_pass": true
+    }
+  ],
+  "input_issues": [],
+  "summary": {
+    "total": 10,
+    "automated_pass": 10,
+    "operational_failures": 0,
+    "semantic_mismatches": 0
+  },
+  "manual_reviews": {
+    "T-001": {
+      "status": "pass",
+      "notes": "Supplied authentication evidence and retrieved guidance support local credential/environment checks. Reply does not assert revocation or request a secret; it asks about impact and checks usable workflow recovery."
+    },
+    "T-002": {
+      "status": "pass",
+      "notes": "Schema evidence identifies the invalid parameter type. Reply gives supported bounded correction, requests the smallest sanitized serialized property/enclosing schema with endpoint/model/SDK/strictness/transformation/impact context, and aligns these questions with missing. Customer workflow acceptance/completion checks are appropriate."
+    },
+    "T-003": {
+      "status": "pass",
+      "notes": "Explicit incomplete/max_output_tokens evidence supports a larger bounded budget or smaller payload, accounting for reasoning. Requires completed full output and schema/content/workflow validation; no universal token budget or HTTP-success recovery claim."
+    },
+    "T-004": {
+      "status": "pass",
+      "notes": "Explicit client exception and short configured limit support recommend_fix alongside contextual questions. Preserves unknown earlier processing/usage, excludes unavailable HTTP/request-ID fields, reviews retry/duplicate work before controlled recovery, and meaningfully asks SDK/workload context."
+    },
+    "T-005": {
+      "status": "pass",
+      "notes": "Authentication remains a suspicion. The reply now requests HTTP status, code, exception/error type and message in a minimal sanitized excerpt, distinguishing not-handy metadata from impossible fields and permitting later authorized collection. Every listed missing field is meaningful in prose, including impact."
+    },
+    "T-006": {
+      "status": "pass",
+      "notes": "Retrieves completion guidance, keeps budget exhaustion tentative with inferred basis, and assigns high severity from the blocked nightly report. Requests completion/reason/error/refusal, configured budget, parser/extraction/schema context, and a sanitized failing excerpt with truncation context. Request ID is optional if received; no unsupported budget increase or cause assertion."
+    },
+    "T-007": {
+      "status": "pass",
+      "notes": "Preserves lunar_teapot_alignment_77 unchanged and undetermined after an empty mapping result. Requests accompanying message/type, endpoint, model, SDK name/version and impact, without inventing a known schema/authentication match."
+    },
+    "T-008": {
+      "status": "pass",
+      "notes": "Prefers pasted schema diagnostics over the customer authentication assertion and avoids credential replacement. Retrieves schema guidance, gives a supported correction, requests minimal sanitized serialized schema and impact in both structured/prose fields, and checks affected workflow recovery."
+    },
+    "T-009": {
+      "status": "pass",
+      "notes": "Treats SSO setup as outside troubleshooting scope, suggests portal/IAM routing, and explicitly claims neither a handoff nor configuration changes. No forced runbook diagnosis or invented impact."
+    },
+    "T-010": {
+      "status": "pass",
+      "notes": "Evidence establishes possible sensitivity, handling request and absent payload. Reply routes handling through the established organizational process before sharing, initially requests only sanitized diagnostic summary and impact, excludes sensitive records and broad dumps, and does not claim this lab approves a channel or that a handoff occurred."
+    }
+  },
+  "limitations": [
+    "Automated checks do not establish reply usefulness or factual correctness.",
+    "Review every reply for supported fixes, meaningful questions, uncertainty, revocation claims, data handling, and routing language.",
+    "Usage may be absent or partial after failures; unknown cost is not zero.",
+    "Live verification requires actual model runs and manual review; authored fixtures verify offline behavior only and do not establish agent performance."
+  ]
+}

@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "2fbf2e2",
+  "evaluation_date": "2026-10-22 America/New_York",
+  "selected_cycle": 3,
+  "scorer_version": 2,
+  "expectations_hash": "8d1905cdf9cadc31a78e0294959099f8c307889c33c1a450957b302e1e62d278",
+  "automated_summary": {
+    "total": 10,
+    "automated_pass": 10,
+    "operational_failures": 0,
+    "semantic_mismatches": 0
+  },
+  "original_rubric_summary": {
+    "total": 10,
+    "automated_pass": 9,
+    "operational_failures": 0,
+    "semantic_mismatches": 1
+  },
+  "manual_review": {
+    "reviewer": "Codex-assisted qualitative review",
+    "pass": 10,
+    "fail": 0,
+    "human_approval_required_before_customer_use": true
+  },
+  "cycle_outcomes": [
+    {
+      "cycle": 1,
+      "automated_summary": {
+        "total": 10,
+        "automated_pass": 7,
+        "operational_failures": 0,
+        "semantic_mismatches": 3
+      },
+      "original_rubric_summary": {
+        "total": 10,
+        "automated_pass": 6,
+        "operational_failures": 0,
+        "semantic_mismatches": 4
+      },
+      "manual_summary": {
+        "pass": 8,
+        "fail": 2
+      }
+    },
+    {
+      "cycle": 2,
+      "automated_summary": {
+        "total": 10,
+        "automated_pass": 9,
+        "operational_failures": 0,
+        "semantic_mismatches": 1
+      },
+      "original_rubric_summary": {
+        "total": 10,
+        "automated_pass": 8,
+        "operational_failures": 0,
+        "semantic_mismatches": 2
+      },
+      "manual_summary": {
+        "pass": 9,
+        "fail": 1
+      }
+    },
+    {
+      "cycle": 3,
+      "automated_summary": {
+        "total": 10,
+        "automated_pass": 10,
+        "operational_failures": 0,
+        "semantic_mismatches": 0
+      },
+      "original_rubric_summary": {
+        "total": 10,
+        "automated_pass": 9,
+        "operational_failures": 0,
+        "semantic_mismatches": 1
+      },
+      "manual_summary": {
+        "pass": 10,
+        "fail": 0
+      }
+    }
+  ],
+  "cycle_3_usage": {
+    "input_tokens": 60681,
+    "output_tokens": 3371,
+    "total_tokens": 64052,
+    "cached_input_tokens": 33413,
+    "reasoning_output_tokens": 51
+  },
+  "cycle_3_recorded_responses": 27,
+  "cycle_3_known_usage_standard_estimate_usd": 0.0915873,
+  "all_follow_up_usage": {
+    "input_tokens": 160667,
+    "output_tokens": 9654,
+    "total_tokens": 170321,
+    "cached_input_tokens": 86205,
+    "reasoning_output_tokens": 183
+  },
+  "all_follow_up_recorded_responses": 78,
+  "all_follow_up_known_usage_standard_estimate_usd": 0.2540845,
+  "selected_report_sha256": "e06b30bc1e727f09f3b520831ae0695f353a8e690d0fb143561b94cd7e4152e5",
+  "selection": "Unchanged owner-reviewed report; prior authorized credential/pattern/settings review passed. Offline rescore and byte-copy checks passed at selection.",
+  "limitations": [
+    "The same ten tickets were used for tuning and evaluation; no held-out reliability claim.",
+    "The frozen 6/10 baseline scores 7/10 under scorer 2 solely from the rubric change.",
+    "T-010 is the sole mismatch under the original rubric; all earlier failed outcomes remain recorded.",
+    "Usage estimates are not billed charges; account billing and service tier were not inspected."
+  ]
+}

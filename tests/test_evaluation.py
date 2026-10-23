@@ -310,3 +310,82 @@ def test_new_required_information_fields_are_enforced(records, ticket_id):
     index = next(i for i, record in enumerate(records) if record["ticket_id"] == ticket_id)
     records[index]["result"]["missing"] = []
     assert not score(records)["tickets"][index]["checks"]["missing"]
+
+
+@pytest.mark.parametrize("evidence", [
+    ["potentially sensitive", "how should we route", "no diagnostic payload"],
+    ["might contain sensitive records", "what minimal sanitized metadata", "no diagnostic payload"],
+    ["might contain sensitive records", "Before sharing anything", "no diagnostic payload"],
+])
+def test_handling_evidence_accepts_grounded_alternatives(records, evidence):
+    records[9]["result"]["observed_evidence"] = evidence
+    assert evaluation.report_passed(score(records))
+
+
+@pytest.mark.parametrize("omit", [0, 1, 2])
+def test_handling_evidence_requires_each_supporting_fact(records, omit):
+    records[9]["result"]["observed_evidence"].pop(omit)
+    report = score(records)
+    assert report["tickets"][9]["operational_failure"] is None
+    assert not report["tickets"][9]["checks"]["observed_evidence"]
+
+
+def test_sector_label_alone_does_not_support_handling_escalation(records):
+    records[9]["result"]["observed_evidence"] = ["public-sector"]
+    assert not score(records)["tickets"][9]["checks"]["observed_evidence"]
+
+
+def test_matching_evidence_substrings_still_require_verbatim_ticket_support(records):
+    records[9]["result"]["observed_evidence"] = [
+        "An actual agency sent potentially sensitive records; how should we route with no diagnostic payload?",
+    ]
+    assert score(records)["tickets"][9]["operational_failure"] == "invalid_or_ungrounded_result"
+
+
+def test_report_identifies_scorer_and_expectations_without_changing_runs(records):
+    expectations = evaluation.load_expected()
+    first = evaluation.score_runs(records, load_tickets(), expectations)
+    reordered = evaluation.score_runs(records, load_tickets(), dict(reversed(list(expectations.items()))))
+    assert first["scorer_version"] == 2
+    assert first["expectations_hash"] == reordered["expectations_hash"]
+    assert first["runs"] == records
+    expectations["T-007"].required_missing.append("attempt_time_utc")
+    changed = evaluation.score_runs(records, load_tickets(), expectations)
+    assert changed["expectations_hash"] != first["expectations_hash"]
+    assert changed["summary"]["automated_pass"] == 9
+
+
+def test_frozen_ten_ticket_baseline_keeps_original_score_under_new_scoring(tmp_path):
+    import hashlib
+    from api_support_lab.runbooks import PROJECT_ROOT
+
+    path = PROJECT_ROOT / "evidence/triage/ten-ticket-baseline-20261022/reviewed-evaluation.json"
+    before = path.read_bytes()
+    assert hashlib.sha256(before).hexdigest() == "abb9b8f607ba123f0ba93258317355501dadf11ee57f04492e48dd76e18d0eec"
+    original = json.loads(before)
+    rescored, _ = evaluation.score_saved(path, output_dir=tmp_path)
+    assert original["summary"]["automated_pass"] == 6
+    assert rescored["summary"]["automated_pass"] == 7  # Scorer revision, not improved model output.
+    assert rescored["runs"] == original["runs"]
+    assert rescored["manual_reviews"] == original["manual_reviews"]
+    assert rescored["tickets"][5]["operational_failure"] == "APITimeoutError"
+    assert not rescored["tickets"][1]["checks"]["missing"]
+    assert not rescored["tickets"][6]["checks"]["missing"]
+    assert path.read_bytes() == before
+
+
+def test_generic_summary_does_not_replace_distinguishing_diagnostic_fields(records):
+    records[4]["result"].update(
+        missing=["diagnostic_summary", "impact"],
+        customer_reply="Please share a sanitized symptom summary and impact, including any exception or code you can access.",
+    )
+    row = score(records)["tickets"][4]
+    assert row["operational_failure"] is None
+    assert row["checks"]["category"] and row["checks"]["basis"]
+    assert not row["checks"]["missing"]
+
+
+@pytest.mark.parametrize("index,field", [(4, "http_status"), (4, "error_code"), (6, "sdk_version")])
+def test_each_distinguishing_field_is_independently_required(records, index, field):
+    records[index]["result"]["missing"].remove(field)
+    assert not score(records)["tickets"][index]["checks"]["missing"]

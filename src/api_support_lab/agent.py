@@ -31,12 +31,25 @@ class TriageResult(BaseModel):
     category: Literal["invalid_credentials", "tool_schema", "incomplete_output", "timeout",
                       "undetermined", "out_of_scope"]
     candidate_runbooks: list[CaseId]
-    observed_evidence: list[str]
+    observed_evidence: list[str] = Field(description=(
+        "Brief verbatim ticket extracts supporting the diagnosis, reported impact, "
+        "or escalation reason. Preserve diagnostic codes exactly."
+    ))
     basis: Literal["stated", "inferred", "none"]
     severity: Literal["low", "medium", "high", "unknown"]
     action: Literal["recommend_fix", "request_info", "escalate"]
-    missing: list[str]
-    customer_reply: str = Field(min_length=1)
+    missing: list[str] = Field(description=(
+        "Canonical names of all information requested in the reply, including "
+        "conditional follow-up requests. Include sdk_version for SDK version, "
+        "tool_schema for a serialized tool definition, parser_error for parser "
+        "or extraction context, and output_excerpt for sanitized failing output. "
+        "Do not request fields already supplied or known to be unavailable."
+    ))
+    customer_reply: str = Field(min_length=1, description=(
+        "Concise draft for human review, grounded in ticket evidence and retrieved "
+        "guidance. Ask meaningfully for every missing information item; keep "
+        "conditional questions consistent with missing too."
+    ))
     escalation_note: str
 
 

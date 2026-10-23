@@ -1,8 +1,11 @@
 # Evaluation guide for lab maintainers
 
-Slice 5 covers T-001 through T-010. One authorized live pass and Codex-assisted
-reply/artifact review are complete, with 6/10 automated agreement and unresolved
-failures. The earlier reviewed three-ticket pilot and reproduction evidence remain
+Slice 5 covers T-001 through T-010. The first authorized live pass and Codex-assisted
+review remain preserved at 6/10. Three later authorized follow-up cycles reached
+10/10 under scorer 2 and 10/10 qualitative passes; the final output scores 9/10
+under the original rubric. See the [follow-up record](evaluation-follow-up.md) and
+[owner-reviewed evidence](../evidence/triage/ten-ticket-follow-up-20261022/README.md).
+The earlier reviewed three-ticket pilot and reproduction evidence remain
 unchanged. Authored results under
 `tests/fixtures/` exercise software behavior; they do not establish agent performance.
 
@@ -57,7 +60,10 @@ the reviewed pilot report with a current score.
 Missing, duplicate, corrupt, failed, invalid, or ungrounded runs remain visible.
 Checks include ticket hashes, categories, basis, action, severity, information
 requests, evidence extracts, supporting retrieval, and ticket-grounded lookup
-arguments. T-004 also rejects requests for known-unavailable response fields.
+arguments. Scorer 2 saves its version/expectations hash and supports groups of
+alternative grounded excerpts for T-010. Each required handling fact must still
+be present; field and prose approval remain separate. The frozen 6/10 report
+rescored under version 2 gives 7/10 without improved model output. T-004 also rejects requests for known-unavailable response fields.
 Reports retain original runs, settings, versions, available usage, and manual
 reviews. Invalid manual-review records are retained and flagged as input issues.
 Exit 0 means full automated agreement with no input issues. It never approves a
@@ -184,3 +190,14 @@ findings. Later work should distinguish T-002's structured/prose inconsistency,
 T-007's follow-up omission, T-010's literal evidence-check limitation, and T-006's
 unassessed behavior. Do not tune expectations merely to make this report pass.
 Any correction verification or later live run requires a separately agreed scope.
+
+
+The owner subsequently authorized up to ten follow-up cycles without additional
+permission, reporting $0.11 spent of $15. Baseline commit `2fbf2e2` and its selected
+reviewed report were pushed before tuning. Three follow-up cycles were sufficient
+for a clean reviewed pass, with 281 offline tests passing. Source snapshots,
+per-cycle failures, scores under both rubrics, manual findings, usage, and offline
+rescores are preserved locally. This standing authorization superseded the earlier
+per-pass authorization boundary for those cycles. No further cycle was started
+after success. The [follow-up record](evaluation-follow-up.md) gives the complete
+comparison and scoring rationale; the original pass above remains unchanged.

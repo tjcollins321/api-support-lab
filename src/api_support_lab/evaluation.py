@@ -1,5 +1,6 @@
 """Ten-ticket execution and offline scoring, with failures in denominators."""
 
+import hashlib
 import json
 from pathlib import Path
 
@@ -12,6 +13,8 @@ from api_support_lab.config import Settings, require_live
 from api_support_lab.runbooks import PROJECT_ROOT
 from api_support_lab.tickets import Ticket, load_tickets
 
+SCORER_VERSION = 2
+
 
 class Expected(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True)
@@ -23,6 +26,7 @@ class Expected(BaseModel):
     required_runbooks: list[str]
     required_evidence: list[str]
     forbidden_missing: list[str] = Field(default_factory=list)
+    required_evidence_any: list[list[str]] = Field(default_factory=list)
 
 
 def load_expected() -> dict[str, Expected]:
@@ -85,7 +89,11 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
                         "missing": set(expected.required_missing) <= set(result.missing),
                         "unavailable_information": not set(expected.forbidden_missing) & set(result.missing),
                         "retrieval": set(expected.required_runbooks) <= retrieved,
-                        "observed_evidence": all(fact in evidence for fact in expected.required_evidence),
+                        "observed_evidence": (
+                            all(fact in evidence for fact in expected.required_evidence)
+                            and all(any(fact in evidence for fact in alternatives)
+                                    for alternatives in expected.required_evidence_any)
+                        ),
                     }
                     row["automated_pass"] = all(row["checks"].values())
         review = (manual_reviews or {}).get(ticket.id, {"status": "pending", "notes": ""})
@@ -96,6 +104,11 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
         rows.append(row)
     return sanitize({
         "schema_version": 1,
+        "scorer_version": SCORER_VERSION,
+        "expectations_hash": hashlib.sha256(json.dumps(
+            {key: value.model_dump() for key, value in expectations.items()},
+            sort_keys=True,
+        ).encode()).hexdigest(),
         "captured_at": timestamp(),
         "scope": "Ten-ticket technical learning demonstration; no reliability claim.",
         "ticket_hashes": {ticket.id: ticket.content_hash() for ticket in tickets},
