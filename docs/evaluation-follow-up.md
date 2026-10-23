@@ -1,21 +1,8 @@
 # Evaluation follow-up
 
-The owner authorized a baseline commit/push, offline tuning, and up to ten new
-live evaluation/tuning cycles without additional authorization. Reported total
-spending at authorization was **$0.11 of $15**, leaving $14.89. This is an owner
-checkpoint, not an inspection of account billing. The same project-root `.env`
-and redaction-review workflow remain authorized. A successful reviewed pass ends
-the loop early; ten cycles is a ceiling, not a target.
+This record documents tuning on ten fixed synthetic tickets. The [preserved baseline](../evidence/triage/ten-ticket-baseline-20261022/README.md), committed as `2fbf2e2` before tuning, returned 6/10 automated agreement, one operational timeout, and three expectation mismatches. The [selected final report](../evidence/triage/ten-ticket-follow-up-20261022/README.md) and comparison summary preserve the final outcome; earlier failures remain recorded.
 
-Baseline commit **2fbf2e2** was pushed to `origin/main` over SSH before tuning.
-The [unchanged reviewed baseline](../evidence/triage/ten-ticket-baseline-20261022/README.md)
-retains **6/10**, one operational timeout, three expectation mismatches, and its
-original manual findings. Earlier evidence and pilot artifacts remain intact.
-
-The owner subsequently reviewed cycle 3 and its summary and authorized committing
-and pushing the follow-up implementation, documentation, and selected reviewed
-evidence. The [public follow-up record](../evidence/triage/ten-ticket-follow-up-20261022/README.md)
-includes an unchanged copy of the final reviewed report and its comparison summary.
+The final outputs score 10/10 under scorer 2 and 9/10 under the original rubric, with ten recorded Codex-assisted qualitative passes. The scorer change and agent improvements are explained separately below. For an example-oriented reading path, see the [walkthrough](walkthrough.md).
 
 | Follow-up cycle | Scorer 2 | Original rubric | Codex-assisted qualitative records |
 | --- | --- | --- | --- |
@@ -58,6 +45,8 @@ every handling fact and verbatim support; baseline tests verify the original
 software behavior, not agent performance.
 
 ## Authorized live cycles
+
+The tuning checkpoint permitted up to ten cycles and reported $0.11 spent from a $15 allowance. This was an owner-reported budget checkpoint, not an inspection of account billing. The loop stopped after three cycles.
 
 Each cycle attempts all ten tickets sequentially once, with `gpt-6.1-sol`, low
 reasoning, eight turns per ticket, 4,096 output tokens per response, a 60-second
@@ -165,6 +154,4 @@ Fresh local cycle folders, source snapshots, audits, reviewed copies and offline
 scores remain under ignored `artifacts/evaluation/slice5-follow-up-20261023T002058Z/`.
 An unchanged copy of cycle 3's owner-reviewed report and an adapted summary are
 selected in [public evidence](../evidence/triage/ten-ticket-follow-up-20261022/README.md).
-The original committed baseline remains unchanged. Next work is the planned
-documentation example/walkthrough, with human approval before any customer use.
-A held-out evaluation would be separate future work.
+The original committed baseline remains unchanged. The [README example](../README.md#a-saved-example) and [written walkthrough](walkthrough.md) now present selected saved results. Human review remains necessary before customer use. A held-out evaluation would be separate future work.

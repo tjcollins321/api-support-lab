@@ -1,16 +1,8 @@
 # Implementation plan
 
-## Current state and objective
+This is the historical build sequence and checkpoint record. For current usage, read the [README](../README.md); for the implemented design, read [architecture](architecture.md). The [walkthrough](walkthrough.md) and [development notes](development-notes.md) provide the written examples and learning account. Detailed evaluation results live in the [evaluation record](evaluation-follow-up.md).
 
-Slices 1–4 are implemented and checked offline, with **4 of 4 reproduction cases live-verified**. Slice 3 retains its earlier three-ticket live pilot. Slice 4's initial implementation and runbook-audience refactor made no API calls or real-credential/`.env` reads; a subsequent separately authorized six-request checkpoint on 2026-10-22 verified schema rejection, incomplete output, and client timeout with their corrections. Reviewed evidence is linked from all four support runbooks. Slice 5 implements all ten fixtures, separate expectations, and scoring; its first authorized ten-ticket live pass returned 6/10 automated agreement, with one timeout and three expectation mismatches. That baseline was committed/pushed as `2fbf2e2` before tuning. Three authorized follow-ups reached 10/10 with scorer 2 and 10/10 Codex-assisted qualitative passes; the final output scores 9/10 under the original rubric. The [follow-up record](evaluation-follow-up.md) preserves comparisons and limitations. The worked example and walkthrough remain pending.
-
-Build a small complete workflow before expanding coverage: real API reproduction, sanitized evidence, runbook, agent draft, and evaluation. Target 8–12 build hours and an initial $15 API allowance. Milestones are sequential; the hour ranges below are cumulative planning estimates rather than deadlines.
-
-The full scope is an optimistic 12-hour target with little contingency; eight hours may require the documented reduced release. Reassess effort and spending after the first complete three-ticket workflow. Preserve honest limitations when cutting reproduction breadth.
-
-The [requirements](requirements.md) define success and scope. The [architecture](architecture.md) supplies the component, interface, execution, and data contracts. Update those documents when an implementation finding changes the design; keep this plan synchronized.
-
-Runbooks serve support staff and the triage agent: collect customer evidence, distinguish causes, suggest a supported correction, and confirm the customer's affected workflow recovers. Brief confidence notes retain lab status, dates, and reviewed evidence links. The [maintainer reproduction guide](reproduction-guide.md) holds lab execution and pair-verification procedures; these are separate from customer troubleshooting and are not exposed through runbook tools.
+The original target was 8–12 build hours with a $15 API allowance. The hour ranges below are cumulative planning estimates, not measured build times. Historical milestone details retain their original context.
 
 ## 1. Environment and execution boundaries — hours 0–2
 
@@ -148,13 +140,16 @@ The follow-ups recorded 78 responses, 160,667 input and 9,654 output tokens (170
 
 ## 6. Documentation, example, and walkthrough — hours 10–12
 
-- Replace intended command examples with commands checked against the implementation and locked environment. Keep planned and delivered features clearly distinguished.
-- Provide the real code, CLI, runbooks, selected sanitized evidence, ticket fixtures, evaluation artifacts, and tests alongside the documentation. Do not publish local credentials or arbitrary run logs.
-- Develop the README example from an actual saved run and label its provenance. Retain the Codex pairing disclosure and synthetic-data labels.
-- Record a short walkthrough showing one supported recommendation, one focused request for information, and one escalation. Explain evidence and limitations in learning-lab terms.
-- Inspect public files for credentials, real customer data, unsupported claims, and material outside the project's technical learning purpose. Review Git history if available before publication.
+The documentation now includes:
 
-**Checkpoint:** a fresh environment can follow the setup instructions, run the default offline checks without credentials, and understand the saved example and report without a live model call. List delivered cases and known limitations accurately.
+- A concise [README](../README.md) with an actual saved example, setup, offline commands, capability table, workflow diagram, and limitations.
+- A [written walkthrough](walkthrough.md) covering a supported correction, missing-information request, escalation, and a code-reading path.
+- [Development notes](development-notes.md) describing Codex collaboration, the runbook-audience correction, and evaluation lessons.
+- Current architecture and maintainer guides, with historical experiment records linked separately.
+
+The written walkthrough presents existing saved drafts and evidence.
+
+**Checkpoint:** documented offline commands work without credentials after setup, and a reader can understand the saved examples and report without a live model call. Personal-learning claims must accurately reflect the author's contribution.
 
 ## Requirement mapping
 
@@ -179,6 +174,6 @@ The follow-ups recorded 78 responses, 160,667 input and 9,654 output tokens (170
 
 ## Documentation foundation validation
 
-The foundation consists of the README, requirements, architecture, and this plan. Check their links, terminology, scope, requirement mapping, implementation-status labels, and learning-lab framing before treating them as ready for implementation.
+The original foundation consisted of the README, requirements, architecture, and this plan. Current documentation checks cover links, command behavior, evidence fidelity, capability boundaries, and learning-lab framing.
 
 Git was initialized on `main` on 2026-10-21 after slice 2's live verification. The initial snapshot includes the specification, offline implementation and tests, and reviewed authentication evidence. Earlier revisions were not tracked in this repository, so no pre-initialization history audit is available.

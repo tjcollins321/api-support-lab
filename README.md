@@ -1,149 +1,109 @@
 # API Support Lab
 
-A Python learning lab for reproducing API failures, developing support runbooks, and evaluating agent-assisted ticket triage.
+A personal Python learning lab for reproducing OpenAI API failures, capturing diagnostic evidence, and using an agent to draft support replies for human review.
 
-**Status: slice 5 has a reviewed ten-ticket pass after follow-up tuning.** Reproduction coverage remains 4 of 4 live-verified cases. Baseline commit `2fbf2e2` preserves the first 6/10 report. Three authorized follow-up cycles reached 7/10, 9/10, and 10/10 under scorer 2; the final pass scored 9/10 under the original rubric and all ten drafts passed Codex-assisted qualitative review. The one-point rubric difference concerns T-010's evidence excerpts and is documented separately from agent improvements. All earlier failures/evidence remain preserved. Human approval is required before customer use; the worked example and walkthrough remain pending. See the [follow-up results](docs/evaluation-follow-up.md).
+The project connects a small failure lab to a support workflow: investigate a symptom, retrieve relevant guidance, distinguish evidence from assumptions, and suggest the next useful step. It explores Python automation with the OpenAI Responses API and Agents SDK, developed with Codex as a pair-programming assistant.
 
-## Learning goals
+## A saved example
 
-- Reproduce common failures against the OpenAI API and collect useful diagnostic evidence.
-- Distinguish similar symptoms without assuming that an HTTP status identifies the cause.
-- Write runbooks with practical fixes, clear customer replies, and escalation checklists.
-- Explore function tools and structured agent outputs, including when to ask for more information.
-- Evaluate drafts against synthetic tickets and make limitations visible.
+A synthetic ticket reports: “The API returned HTTP 200, but our JSON parser failed.” The nightly report is blocked, and completion details have not been saved.
 
-## Intended workflow
+The agent retrieved the incomplete-output runbook and returned these fields:
+
+```json
+{
+  "category": "incomplete_output",
+  "basis": "inferred",
+  "severity": "high",
+  "action": "request_info"
+}
+```
+
+Its saved reply begins:
+
+> HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.
+
+The category is a hypothesis. The blocked report supports high severity; the parser error does not establish the cause. The next step is collecting completion details and a sanitized failing excerpt.
+
+This is an excerpt from [T-006](triage/tickets/T-006.yaml) in the [saved live evaluation](evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json), not a newly generated response. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
+
+## What is implemented
+
+| Capability | Experiment or behavior | Evidence |
+| --- | --- | --- |
+| Invalid credentials | Compare an intentionally invalid credential with a valid environment-provided credential | [Runbook and live pair](runbooks/invalid_credentials.md) |
+| Malformed tool schema | Compare an invalid function parameter type with a supported schema | [Runbook and live pair](runbooks/tool_schema.md) |
+| Incomplete structured output | Compare a restrictive output budget with a sufficient bounded budget; validate full corrected output | [Runbook and live pair](runbooks/incomplete_output.md) |
+| Client timeout | Compare a very short client timeout with a suitable bounded timeout | [Runbook and live pair](runbooks/timeout.md) |
+| Ticket triage | One agent uses three read-only tools and returns a structured decision plus a draft reply | [Ten-ticket evaluation](evidence/triage/ten-ticket-follow-up-20261022/README.md) |
+
+The shared tools are ordinary Python functions: `diagnose`, `list_runbooks`, and `get_runbook`. Exact diagnostic matches come from reviewed observations. Unknown codes remain unmatched, and symptom-based retrieval supports cases without a diagnostic status/code mapping.
+
+## Quick start
+
+Use Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installation/) on your `PATH`. Run these commands from a checkout:
+
+```sh
+uv sync --locked
+uv run --offline --locked --no-env-file python -m api_support_lab --help
+```
+
+Setup may download Python or dependencies. After setup, help, diagnostic lookup, saved-result scoring, and the default tests need no API key or model calls:
+
+```sh
+uv run --offline --locked --no-env-file python -m api_support_lab diagnose \
+  --status 401 --error-code invalid_api_key
+env -u OPENAI_API_KEY uv run --offline --locked --no-env-file pytest -q
+```
+
+The diagnosis command prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline test execution. `uv --offline` itself only controls dependency downloads.
+
+Rescore the checked-in final report:
+
+```sh
+env -u OPENAI_API_KEY uv run --offline --locked --no-env-file python -m api_support_lab evaluate \
+  --results evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json \
+  --output-dir artifacts/evaluation/offline-scores
+```
+
+This writes a new local report and prints **10/10 automated agreement**, with zero operational failures and zero semantic mismatches. It checks the saved outputs against current expectations without rerunning the agent or approving the replies. Generated artifacts stay under ignored `artifacts/`; selected public evidence lives under `evidence/`.
+
+For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
+
+```sh
+uv run --locked --env-file .env python -m api_support_lab triage triage/tickets/T-006.yaml --live
+```
+
+The application does not automatically load `.env`; it is ignored by Git. Live commands require `--live` and may incur charges. The agent reads runbooks and drafts replies; it cannot send messages, run reproductions, or change accounts. Review every draft before use.
+
+## How it works
 
 ```mermaid
 flowchart TD
     A[Broken or corrected client call] --> B[OpenAI Responses API]
     B --> C[Capture response or SDK exception]
     C --> D[Sanitized evidence]
-    D --> E[Support runbooks]
+    D -->|Write and review guidance| E[Support runbooks]
     T[Synthetic ticket] --> F[Triage agent]
     F <--> G[Diagnosis lookup and runbook tools]
     E --> G
-    F --> H[Structured result and draft reply]
+    F --> H[Structured decision and draft reply]
     H --> I[Human review]
-    H --> J[Evaluation against separate expected outcomes]
+    H --> J[Evaluation against separate expectations]
 ```
 
-Live reproductions use the real API. The client mistake and customer tickets are synthetic. Saved evidence supports offline checks; the triage agent reads runbooks and drafts replies for a person to review. Model behavior has offline SDK checks and one live three-ticket pilot; these do not establish general reliability.
+Evidence capture retains selected diagnostics, effective settings, bounded output, and available usage. Runtime validation checks structured output, supporting retrieval, and ticket-grounded lookup arguments. The model interprets symptoms and drafts prose; those checks cannot establish that every sentence is correct or useful.
 
-## Initial cases
+## Results and limits
 
-| Case | Intended experiment | Corrected behavior |
-| --- | --- | --- |
-| Invalid credentials | Make a request with an intentionally invalid credential | Repeat the request using a valid environment-provided credential |
-| Malformed tool schema | Send an invalid function-tool schema | Send a supported schema for the same task |
-| Incomplete structured output | Restrict the output budget until the response is incomplete | Use a sufficient bounded budget and verify completion and parsed output |
-| Client timeout | Set an impractically short client timeout | Use a suitable timeout for the same bounded request |
+Each of the four reproduction cases has one reviewed live broken/corrected pair. The final ten-ticket pass reached 10/10 automated agreement after tuning on those same synthetic tickets; it is not a held-out reliability result. The original baseline and failed outcomes remain preserved. The [evaluation record](docs/evaluation-follow-up.md) separates agent improvements from a scorer revision; the final outputs score 9/10 under the original rubric.
 
-Reviewed observations are linked from the [authentication](runbooks/invalid_credentials.md), [tool schema](runbooks/tool_schema.md), [incomplete output](runbooks/incomplete_output.md), and [client timeout](runbooks/timeout.md) runbooks. Each case has one reviewed live pair; these examples do not establish general reliability or diagnose a customer's request. Offline fixtures remain authored examples, never API observations. The invalid-credential experiment does not establish that a particular key was revoked.
+The suite has **281 offline tests**. These verify software behavior, not general agent performance. All organizations and tickets are invented; live captures concern synthetic API workloads. Redaction needs review before sharing. Rate limits, quota exhaustion, model-access failures, external ticketing integrations, and broader evaluations remain outside the implemented coverage.
 
-The implementation includes one agent, three read-only tools, and ten synthetic evaluation tickets; the ten-ticket set has offline verification, a frozen 6/10 live baseline, and three follow-up passes with every outcome retained. Context overflow, model-access failure cases, rate limits, and quota exhaustion are deferred.
+## Explore further
 
-## Illustrative example
-
-This example describes intended behavior; it is not a captured API response or an executed agent result.
-
-**Ticket:** “The API returns HTTP 200, but our JSON parser sometimes fails. The nightly report is blocked.”
-
-**Expected approach:** retrieve the incomplete-output runbook, retain output exhaustion as a hypothesis, and ask for the response completion status, incomplete reason, configured output limit, and a sanitized failing excerpt. Other causes remain possible.
-
-**Draft reply:** “Could you share the response status and incomplete details, the configured output limit, and a small sanitized example that fails to parse? That will help distinguish an incomplete response from a parsing issue.”
-
-The result should use `request_info` and mark the diagnosis as inferred. HTTP success alone does not establish that the requested task completed.
-
-## Setup and current usage
-
-Use Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installation/),
-installed and available on your `PATH`. Install the locked dependencies from the checkout:
-
-```sh
-uv sync --locked
-uv run --offline --locked --no-env-file python -m api_support_lab --help
-env -u OPENAI_API_KEY uv run --offline --locked --no-env-file pytest
-uv run --offline --locked --no-env-file python -m api_support_lab diagnose --status 401 --error-code invalid_api_key
-```
-
-Setup may download dependencies; the help command and default tests need neither network access nor credentials after setup.
-
-The CLI implements `reproduce CASE --variant broken|fixed --live` for all four case IDs. Each invocation makes one request with retries disabled and `store=False`. Only broken authentication avoids loading the environment key; all other variants require `OPENAI_API_KEY` after live opt-in. Authentication's reviewed pair was observed on 2026-10-21 in America/New_York (2026-10-22 UTC); the other three pairs were observed on 2026-10-22 in both time zones. Future live execution remains separately authorized, explicitly opted-in work.
-
-Help and valid offline diagnosis return exit code 0, including an empty candidate list for unknown codes. Reproduction exit code 0 means that single attempt matched its expected behavior; other outcomes remain saved and return 1. Neither one passing attempt nor HTTP 200 alone verifies a pair. Configuration/argument errors and missing live opt-in return 2.
-
-| Case | Broken-attempt check | Corrected-attempt check |
-| --- | --- | --- |
-| `invalid_credentials` | HTTP 401 and SDK `AuthenticationError` | HTTP success, completed status, nonempty text |
-| `tool_schema` | HTTP 400, SDK `BadRequestError`, parameter identifying `tools` | HTTP success, completed status, nonempty text |
-| `incomplete_output` | HTTP success, `incomplete`, reason `max_output_tokens` | Completed HTTP success plus strict schema and expected-content validation of the full JSON |
-| `timeout` | SDK `APITimeoutError` captured as `client_timeout` | HTTP success, completed status, nonempty text |
-
-The schema predicate is conservative: the live rejection supplied `invalid_function_parameters` at `tools[0].parameters`, but the attempt check does not require an exact code/message. New corrected checks also reject response errors and incomplete details. No visible JSON is required for budget exhaustion, although the observed broken response emitted partial JSON. A timeout without a response retains null HTTP fields and request ID; it does not prove that server processing stopped. `output_valid` is a boolean only when structured-output validation applies, otherwise null. It is computed before saving a sanitized excerpt capped at 1,000 characters.
-
-The new broken defaults are 128 output tokens for incomplete output and a 0.5-second client timeout for timeout. Other defaults remain 2,048 tokens and 60 seconds. `--max-output-tokens N` and `--timeout-seconds N` override the effective limits for either variant, and the artifact records them. Both variants use the same workload/schema except for the intended defect or limit. Do not loop automatically to find a trigger; future live investigation is limited to the documented 30-minute timebox, spending review, and explicit authorization. The [maintainer reproduction guide](docs/reproduction-guide.md) contains the experiment procedures and command forms; offline CLI checks do not imply live verification.
-
-## Triage and ten-ticket evaluation
-
-The ordinary `diagnose`, `list_runbooks`, and `get_runbook` functions operate offline. The registry exposes all four verified runbooks. Reviewed errors support the authentication 401/`invalid_api_key` and schema 400/`invalid_function_parameters` mappings. Incomplete output and client timeout use symptom-based discovery/retrieval; no HTTP-success or timeout-status mapping is invented. A status-only candidate remains a hypothesis; an unfamiliar code does not match. Registered IDs restrict access, and resources resolve from the checkout rather than the caller's working directory. Run this lab from an installed checkout; standalone wheel resource packaging is outside this slice.
-
-Runbooks serve support staff and the triage agent investigating customer symptoms. They cover evidence to request, diagnosis, corrective steps, customer recovery checks, and escalation, with brief confidence notes and evidence links. The customer's affected workflow determines recovery. Synthetic lab execution, pair verification, and evidence-publication procedures belong in the separate maintainer guide, which the runbook tools do not expose. The earlier pilot's saved retrievals remain unchanged; the first ten-ticket pass timed out on T-006; subsequent reviewed follow-up runs assessed that case while retaining the original failure.
-
-The ten-ticket set retains the earlier pilot tickets T-001, T-005, and T-009 and adds clear schema, incomplete-output, and timeout evidence; ambiguous parser failure with a blocked report; an invented unknown code; a misleading customer authentication claim; and a fictional public-sector diagnostic-handling question. Selected reviewed observed fields support T-001/T-002/T-003/T-004/T-008; surrounding stories and other scenarios are authored synthetic data. Only subject, body, and pasted error reach the agent. Provenance, evidence paths, and [expected outcomes](triage/expected.yaml) stay outside its ticket input. The evaluator loads expectations after execution. The [maintainer evaluation guide](docs/evaluation-guide.md) explains expectations and the later authorized checkpoint.
-
-These live command forms are implemented and exercised against an in-memory transport with dummy credentials. Evaluation completed an earlier three-ticket pilot, the ten-ticket baseline, and three authorized follow-up passes on 2026-10-22 in America/New_York; the single-ticket CLI form has only offline checks. The owner reviewed cycle 3 and authorized selecting its [unchanged reviewed report and comparison summary](evidence/triage/ten-ticket-follow-up-20261022/README.md) alongside the preserved baseline. The follow-up loop stopped after a clean reviewed pass; the following examples describe live command forms:
-
-```sh
-uv run --locked --env-file .env python -m api_support_lab triage triage/tickets/T-001.yaml --live
-uv run --locked --env-file .env python -m api_support_lab evaluate --live
-```
-
-Triage prints a draft for human review and saves a separate sanitized JSON run under `artifacts/triage/`. Evaluation runs the ten tickets sequentially, saves each run under `artifacts/evaluation/runs/`, and writes a unique report under `artifacts/evaluation/`. Both accept `--output-dir PATH`. No command sends the reply or changes an account. Each run uses Responses, low reasoning, a 4,096-token cap per response, eight turns, an explicit 60-second client timeout, zero client/runner retries, `store=False`, and disabled remote tracing. These are request bounds, not a billing ceiling or whole-run deadline.
-
-Before accepting a draft, the workflow validates structured output, successful retrieval for every referenced case ID, and lookup arguments against explicit ticket fields. Observed evidence must be short verbatim ticket extracts. The conservative field recognizer accepts `HTTP NNN`, `status: NNN` / `http_status: NNN`, and `code: value` / `error_code: value`, including quoted JSON fields; other prose should prompt clarification. Tool errors, API errors, timeouts, refusals, incomplete/invalid outputs, unsupported retrieval, and turn exhaustion save failed runs with no accepted draft. Logs retain sanitized tool arguments/results and available per-response usage. Failure records retain exception types, without raw exception messages or response/prompt dumps. Missing usage means unknown cost.
-
-Score existing artifacts without credentials or model calls:
-
-```sh
-env -u OPENAI_API_KEY uv run --offline --locked --no-env-file python -m api_support_lab evaluate --results PATH
-```
-
-`PATH` may be a single run, an evaluation report containing `runs`, or a directory of individual run JSON files. Scoring uses the current ten tickets and separate expectations. Missing/duplicate tickets, invalid results, failed retrieval, invented lookup arguments, mismatches, and ticket hash changes remain visible. Unknown or corrupt directory entries create report input issues. Scoring one ticket uses a denominator of ten; the nine absent tickets fail. The unchanged earlier pilot scores 3/10 under the expanded set, with seven missing runs; its original reviewed report remains a historical three-ticket result. A report preserves model/settings/SDK versions and usage inside its run records. Scorer 2 also records its version and expectations hash and permits alternative grounded evidence excerpts for T-010. The frozen ten-ticket baseline remains 6/10; rescoring its unchanged outputs with scorer 2 gives 7/10, which is a scoring change rather than improved agent performance. Offline scoring creates no client and does not load live settings or credentials.
-
-Triage returns 0 for an accepted draft and 1 for a failed run. Evaluation returns 0 only when all ten automated outcomes agree and there are no input issues; otherwise it returns 1. This is automated agreement, not reply approval. Each report has `manual_reviews` keyed by ticket ID, initially `{"status": "pending", "notes": ""}`. Review each actual reply for useful questions, supported fixes, uncertainty, sensitive-data requests, and routing language; record `pass` or `fail` with notes. Rescoring a report preserves those reviews. Schema and retrieval checks cannot prove prose correctness.
-
-Configuration defaults to `gpt-6.1-sol`, Responses, low reasoning, a 60-second request timeout, and no automatic retries. Authentication requests use a 2,048-token output cap and disable response storage with `store=False`; agent responses use a 4,096-token cap and eight turns. `API_SUPPORT_LAB_MODEL` overrides the model. Credentials are loaded separately from `OPENAI_API_KEY` only when constructing an explicitly authorized live client that needs the environment credential; they are never stored in the settings object. The Agents SDK setup helper explicitly disables remote tracing. Importing the package or invoking CLI help creates no SDK client.
-
-The application does not automatically load `.env`. Use `uv run --env-file .env` explicitly for a later authorized fixed request; `.env` is ignored by version control. Default tests need no credentials. `--no-env-file` prevents uv from loading an environment file for offline checks; uv's `--offline` controls dependency downloads and does not block an application's own network requests. The pytest network tripwire supplies that test boundary.
-
-Capture stores only allowlisted diagnostic fields, bounded text output, selected usage counts, and effective request settings. It redacts the active credential plus recognizable key/bearer strings before truncating output or writing JSON. When a server error body exists, capture selects only its structured message field; a missing message stays null rather than falling back to a dump of the body. Missing HTTP fields stay null; refusals are distinct from completed text and incomplete responses. Programming mistakes propagate instead of being recorded as API failures.
-
-Each attempt gets a separate timestamped, uniquely named JSON file under the checkout's ignored `artifacts/evidence/`. Optional `--output-dir PATH` overrides the directory. A failed expectation does not remove its artifact. Filesystem failures do not trigger another request. Review sanitization before deliberately selecting any observation for the public tree; redaction is not a guarantee that arbitrary sensitive content will be recognized.
-
-Tests block DNS resolution and outbound socket connections inside offline test execution. Tests marked `live` are skipped unless `--run-live` is supplied; selecting the marker alone does not enable them. The current suite has no live API tests. Its opt-in checks use a harmless generated test; authentication tests use dummy credentials and an in-memory transport, including real SDK request serialization, parsing, and exception handling. All test artifacts stay in temporary directories and are never public evidence. The network tripwire is a pytest fixture, not a production guard framework or an OS network sandbox.
-
-The environment and local interfaces were checked on Python 3.14.4 with uv 0.13.5, OpenAI SDK 3.36.0, Agents SDK 0.24.0, Pydantic 2.14.1, PyYAML 6.0.3, and pytest 9.1.1. Exact runtime and test dependencies are in `uv.lock`. Slice 5 has **281 passing offline tests**, compared with slice 4's 222 and slice 3's 148. Coverage includes strict function-tool schemas, the ten-ticket asynchronous SDK loop through an in-memory transport, authored scenario outcomes, saved-result scoring/failures, and observation-backed/unknown diagnosis checks. Authored fixtures remain separate from live observations and do not establish agent performance.
-
-Slice 5's offline phase made no API/model calls, real-credential/`.env` reads, commits, or pushes. Validation removed `OPENAI_API_KEY`, disabled uv env-file loading/downloads, and kept the pytest DNS/socket guard active. In this restricted workspace, uv needed a writable `UV_CACHE_DIR=/tmp/api-support-lab-uv-cache`, and asynchronous tests ran outside the filesystem/network sandbox after a minimal worker-thread program also stalled during shutdown there. The pytest network guard remained active. A subsequent owner confirmation authorized one ten-ticket live pass, project-root `.env` loading, redaction checks, and budget readiness. No numeric account spending was supplied or inspected; see the [evaluation guide](docs/evaluation-guide.md#recorded-slice-5-live-pass) for the first pass; the [follow-up record](docs/evaluation-follow-up.md) documents subsequent fixes, scoring changes, and the clean reviewed pass.
-
-Slice 4's initial implementation and runbook-audience refactor made no API calls or real-credential/`.env` reads. A subsequent authorized live checkpoint loaded the project-root `.env` without displaying credentials and made exactly six requests. Schema rejection/correction, budget exhaustion/correction, and client timeout/correction all matched their intended outcomes; captures passed exact-credential, recognizable-pattern, structural, and qualitative review. Reviewed copies are linked from the runbooks; originals and the local audit remain under ignored `artifacts/evidence/slice4-live-20261022/`. Available usage totals 331 input and 475 output tokens (806 total) across four responses, with no cached or reasoning tokens reported. At documented standard rates this estimates to $0.005412 for the known usage only, not a billed-charge confirmation. Rejected-request and timeout usage/cost remain unknown; service tier and account billing were not inspected. The [maintainer guide](docs/reproduction-guide.md#reviewed-slice-4-observations) records the results and limits. No agent evaluation ran during that reproduction checkpoint; slice 5 subsequently added the ten-ticket set and its first live pass.
-
-Slice 2's live checkpoint is complete: one broken and one corrected request, both with zero retries; reviewed evidence is linked from the authentication runbook. The correction reported 13 input and 5 output tokens. Its standard-rate token estimate is $0.000076, not a confirmed billing charge; rejected-request usage and the remaining account balance are unknown.
-
-Slice 3's implementation phase accessed no real key or `.env` contents and made no API calls. The subsequent explicitly authorized live pilot loaded the project-root `.env` without displaying credentials and ran evaluation exactly once. It produced six recorded model responses across the three tickets (3/2/1 respectively), with 7,863 input tokens, 814 output tokens, and 8,677 total tokens reported; 1,064 input tokens were cached and 59 output tokens were reasoning tokens. The settings matched the requested bounds: `gpt-6.1-sol`, low reasoning, eight turns per ticket, 4,096 output tokens per response, a 60-second client timeout, zero retries, disabled tracing, and `store=False`. There were no recorded failures or semantic mismatches, and saved results passed offline rescoring. Exact-match/pattern and qualitative artifact review found no exposed credential, unexpected sensitive fields, or prompt/environment dumps. Codex-assisted reply review found all three intended actions supported; T-001's draft could be shortened before customer use. The [selected reviewed report and pilot summary](evidence/triage/README.md) are included as public learning-lab evidence. Original runs, the reviewed report, and its offline score remain unchanged under the ignored local `artifacts/evaluation/live-pilot-20261022/`. No reply was sent and no account settings were changed. No rerun occurred. Billed charges and account spending were not inspected; review them before more live work. This pilot does not complete the ten-ticket release evaluation.
-
-The initial experiment budget is $15, with a target of 8–12 build hours. These are planning limits, not a cost estimate or an automatic billing guarantee. Live calls and agent runs may incur charges.
-
-## Project documentation
-
-- [Requirements](docs/requirements.md): capabilities, constraints, scope, and acceptance criteria.
-- [Architecture](docs/architecture.md): components, interfaces, data handling, and design tradeoffs.
-- [Implementation plan](docs/implementation-plan.md): build order, verification checkpoints, and cut lines.
-- [Evaluation follow-up](docs/evaluation-follow-up.md): authorized cycles, scorer revision, comparisons with the baseline, and final review.
-- [Maintainer evaluation guide](docs/evaluation-guide.md): offline scoring, expectations, later live execution, and manual reply review.
-- [Maintainer reproduction guide](docs/reproduction-guide.md): synthetic experiments, CLI commands, attempt checks, and evidence/pair review; support troubleshooting remains in the runbooks.
-
-All customer organizations and tickets are invented. Reviewed evidence is sanitized, and results are presented as a small learning demonstration rather than a reliability benchmark. A future walkthrough will show a supported diagnosis, a request for missing evidence, and an escalation.
-
-This project is being developed with Codex as a pair-programming assistant.
+- [Walkthrough](docs/walkthrough.md): three saved decisions, actual replies, and a code-reading path.
+- [Development notes](docs/development-notes.md): working with Codex, design corrections, and evaluation lessons.
+- [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
+- [Reproduction guide](docs/reproduction-guide.md) and [evaluation guide](docs/evaluation-guide.md): operating the lab and inspecting results.
+- [Requirements](docs/requirements.md): the learning project's capability and acceptance criteria.

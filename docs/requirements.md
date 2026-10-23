@@ -1,12 +1,12 @@
 # Requirements
 
-Status: first-release specification; slices 1–4 and the offline portion of slice 5 are implemented and checked offline, with all 4 of 4 target reproduction pairs now live-verified. Slice 4's schema, incomplete-output, and timeout pairs were observed in six authorized requests on 2026-10-22 and reviewed before linking sanitized evidence from their runbooks. This completes R1's four-case checkpoint; R2/R3 have offline coverage and reviewed observations. One earlier separately authorized three-ticket live pilot passed automated checks, Codex-assisted reply review, artifact review, and offline rescoring. Human approval is still required before using a draft. One later ten-ticket live pass used the expanded workflow: 6/10 automated agreement, one operational timeout, and three expectation mismatches. That baseline retained its failures. Three authorized follow-ups reached 10/10 with scorer 2, 9/10 with the original rubric, and 10/10 Codex-assisted qualitative passes; the [follow-up record](evaluation-follow-up.md) separates scorer changes from agent improvement. This document defines full-release acceptance; R6's ten-ticket fixtures, expectations, and saved scoring are implemented offline; its baseline and follow-up live passes/reviews are recorded, including a clean demonstration checkpoint under scorer 2; the worked example and walkthrough remain outstanding. See the [evaluation guide](evaluation-guide.md#recorded-slice-5-live-pass) for per-ticket findings. Authored results do not establish agent performance.
+These criteria define the lab's implemented workflow and its boundaries. The four reproduction cases have reviewed live pairs; the agent and ten-ticket evaluation have saved results. The [README](../README.md) provides setup and a compact example, and the [walkthrough](walkthrough.md) follows three actual saved drafts. See the [evaluation record](evaluation-follow-up.md) for results and limitations.
 
 ## Purpose and boundaries
 
 API Support Lab explores a complete support workflow: reproduce a failure, capture evidence, write a runbook, draft a response to a synthetic ticket, and evaluate the draft. It is a local Python learning project with human review of all suggested replies.
 
-The target is 8–12 build hours and an initial $15 API spending allowance. Reassess before increasing either. Protect the complete workflow when reducing scope.
+The original build target was 8–12 hours with a $15 API spending allowance. Those were planning constraints; request bounds do not enforce a billing ceiling.
 
 ## Functional requirements
 
@@ -19,7 +19,7 @@ The target is 8–12 build hours and an initial $15 API spending allowance. Reas
 | R5 | Use one Agents SDK agent with read-only tools to produce structured triage drafts | Three initial tickets demonstrate the complete workflow; final examples include supported guidance, missing evidence, and escalation |
 | R6 | Evaluate ten static synthetic tickets against separate expected outcomes | A saved report includes per-ticket results, automated checks, manual reply review, model/settings, and failed runs |
 | R7 | Separate offline operation from live and model-backed operation | Default tests need neither a key nor network access; paid commands and live tests require explicit opt-in |
-| R8 | Make the project understandable and reproducible | A README, verified setup/usage instructions, worked example, and short walkthrough reflect the delivered capabilities |
+| R8 | Make the project understandable and reproducible | The [README](../README.md), checked setup/usage instructions, and [written walkthrough](walkthrough.md) reflect the delivered capabilities |
 
 ## Triage behavior
 
@@ -44,14 +44,14 @@ Expected outcomes allow multiple acceptable categories when justified, specify r
 - Target Python 3.14, `uv`, locked dependencies, and configurable `gpt-6.1-sol` with low reasoning through Responses. Verify compatibility and access before live experiments.
 - Load credentials from the environment. Capture allowlisted fields, redact credentials in text, and inspect artifacts before sharing them.
 - Use invented organizations and synthetic workloads only. Public documentation describes learning goals and technical behavior.
-- Mark evidence as observed, examples as illustrative, and unavailable reproductions as unverified. Verification dates apply only to actual observations.
+- Distinguish saved observations from illustrative examples, and mark unavailable reproductions as unverified. Verification dates apply only to actual observations.
 - Default to offline checks. Bound live requests, output budgets, and agent turns; review spending between milestones.
-- Keep a public repository containing the eventual code and artifacts. Disclose Codex pairing without attributing unverified work or results.
+- Keep code and selected reviewed artifacts in the public repository. Disclose Codex pairing without attributing unverified work or results.
 
 ## Deferred features and completion
 
 Defer context overflow, model-access failure cases, rate limits, quota exhaustion, MCP, expanded evaluations, hosting, a UI, databases, embeddings, and external ticketing integrations. Checking access to the configured model remains a prerequisite for live work.
 
-The target first release has all four verified cases and runbooks, the working agent, and ten evaluated tickets. If a trigger exceeds 30 minutes, preserve the workflow and publish its reproduction limitation explicitly. A reduced release must state its verified case count and which R1 criteria remain unmet; it must not claim full coverage. All offline checks must pass, and material grounding failures must be addressed or documented in the evaluation report.
+The implemented workflow has all four verified cases and runbooks, the working agent, and ten evaluated tickets. If a trigger exceeds 30 minutes, preserve the workflow and publish its reproduction limitation explicitly. A reduced release must state its verified case count and which R1 criteria remain unmet; it must not claim full coverage. All offline checks must pass, and material grounding failures must be addressed or documented in the evaluation report.
 
-See [architecture](architecture.md) for the design and [implementation plan](implementation-plan.md) for the sequence and requirement mapping.
+See [architecture](architecture.md) for the design. The [historical implementation plan](implementation-plan.md) retains the build sequence and requirement mapping.

@@ -1,13 +1,6 @@
 # Evaluation guide for lab maintainers
 
-Slice 5 covers T-001 through T-010. The first authorized live pass and Codex-assisted
-review remain preserved at 6/10. Three later authorized follow-up cycles reached
-10/10 under scorer 2 and 10/10 qualitative passes; the final output scores 9/10
-under the original rubric. See the [follow-up record](evaluation-follow-up.md) and
-[owner-reviewed evidence](../evidence/triage/ten-ticket-follow-up-20261022/README.md).
-The earlier reviewed three-ticket pilot and reproduction evidence remain
-unchanged. Authored results under
-`tests/fixtures/` exercise software behavior; they do not establish agent performance.
+Use this guide to execute the ten-ticket evaluation, score saved results offline, and review drafts. The [evaluation record](evaluation-follow-up.md) explains the baseline, follow-up results, scorer change, and limitations. The [walkthrough](walkthrough.md) illustrates three saved decisions. Authored drafts under `tests/fixtures/` exercise software behavior and do not establish live agent performance.
 
 ## Tickets and expectations
 
