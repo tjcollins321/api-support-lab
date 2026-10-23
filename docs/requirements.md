@@ -48,10 +48,12 @@ Expected outcomes allow multiple acceptable categories when justified, specify r
 - Default to offline checks. Bound live requests, output budgets, and agent turns; review spending between milestones.
 - Keep code and selected reviewed artifacts in the public repository. Disclose Codex pairing without attributing unverified work or results.
 
-## Deferred features and completion
+## Scope and current status
 
-Defer context overflow, model-access failure cases, rate limits, quota exhaustion, MCP, expanded evaluations, hosting, a UI, databases, embeddings, and external ticketing integrations. Checking access to the configured model remains a prerequisite for live work.
+The failure scope was deliberately limited to four cases to leave more time for the triage agent and ticket-based testing. Context overflow, model-access failures, rate limits, and quota exhaustion are outside the current reproduction coverage.
 
-The implemented workflow has all four verified cases and runbooks, the working agent, and ten evaluated tickets. If a trigger exceeds 30 minutes, preserve the workflow and publish its reproduction limitation explicitly. A reduced release must state its verified case count and which R1 criteria remain unmet; it must not claim full coverage. All offline checks must pass, and material grounding failures must be addressed or documented in the evaluation report.
+The project remains a local, single-agent workflow. MCP, hosting, a UI, databases, embeddings, external ticketing integrations, and evaluations beyond the ten synthetic tickets are outside the current scope.
+
+The implemented workflow includes all four reviewed live broken/corrected pairs and support runbooks, the triage agent, and a saved ten-ticket evaluation with manual review. The [evaluation record](evaluation-follow-up.md) documents the results and their limitations. All offline checks must pass, and material grounding failures must be addressed or documented in the evaluation report.
 
 See [architecture](architecture.md) for the design. The [historical implementation plan](implementation-plan.md) retains the build sequence and requirement mapping.

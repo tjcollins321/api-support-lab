@@ -1,6 +1,10 @@
 # Development notes
 
-I designed the lab specification and worked with Codex as a pair-programming assistant to choose the failure cases, ticket scenarios, and runbooks. I narrowed the failure-pattern scope to leave more time for the triage agent and ticket-based testing. I directed the runbook template, sections, and structure; Codex handled code generation and prose drafting.
+These notes explain the decisions behind the lab’s scope, support runbooks, and evaluation process, including the distinction between software tests and live observations and the preservation of earlier evaluation results.
+
+I designed the specification and scope, selected failure cases and ticket scenarios with Codex, and directed the runbook structure. Codex handled code generation and prose drafting; my review covered the evidence, saved drafts, summaries, tickets, and test fixtures, along with reading the ticket, runbook, agent, and evaluation modules against the saved T-006 run.
+
+The failure cases were kept deliberately limited to leave more time for the triage agent and ticket-based testing.
 
 ## Keeping runbooks focused on support
 
@@ -18,11 +22,11 @@ Keeping those sources separate makes the results easier to interpret. A passing 
 
 ## Evaluation review and baseline preservation
 
-After the first evaluation returned 6/10, I requested preserving the baseline and inspected the failed drafts. My review covered evidence files, draft replies, summaries, tickets, and triage test fixtures.
+After the first evaluation returned 6/10, I requested preserving the baseline and inspected the failed drafts.
 
 My [review notes](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) assess the suggested next steps and identify improvements to diagnostic follow-up, information requests, customer communication, and escalation. Recommendations included comparing failed and successful requests, collecting timestamps for log correlation, and checking workload changes against earlier successful runs.
 
-My implementation inspection was limited to skimming portions of the Python code.
+I ran the offline test suite and rescored the saved report myself.
 
 The [evaluation follow-up](evaluation-follow-up.md) preserves the distinction between improving agent output and changing a scorer. Under scorer 2, the unchanged baseline scores 7/10; the selected final run scores 10/10. Under the original rubric, the final outputs score 9/10. Tuning on the same ten tickets limits what either comparison establishes.
 

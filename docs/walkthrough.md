@@ -77,7 +77,7 @@ The category remains a hypothesis. High severity follows the blocked report, ind
 
 The twelve `missing` fields cover completion, configuration, timing, parsing, and output. The complete request is appropriate for distinguishing the cause of this blocked workflow. Recorded review passed the grounded questions and uncertainty; automated agreement alone does not establish usefulness.
 
-TJ's [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-006) recommends comparing the failed report with an earlier successful run, checking dataset-size changes and existing completion logs, and considering a smaller-payload diagnostic trial without assuming token-budget exhaustion.
+In my [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-006), I recommend comparing the failed report with an earlier successful run, checking dataset-size changes and existing completion logs, and considering a smaller-payload diagnostic trial without assuming token-budget exhaustion.
 
 ## 3. Escalation: an unsupported setup request
 
@@ -101,7 +101,7 @@ Only `list_runbooks` with `{}` appears in the log. No case runbook was retrieved
 
 The escalation note suggests the portal administrator or identity team and records no supplied error or impact. A person must identify the owner and perform the handoff.
 
-TJ's [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-009) recommends making the routing actionable with official setup documentation or an appropriate assistance link once the platform or identity provider is known.
+In my [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-009), I recommend making the routing actionable with official setup documentation or an appropriate assistance link once the platform or identity provider is known.
 
 ## 4. Misleading diagnosis: a key-replacement request with schema evidence
 
@@ -147,7 +147,7 @@ Inspect T-006's `result`, `tool_use`, and evaluation row. The model chose the ac
 
 ## What the results establish
 
-All four examples passed automated checks in the saved final report. TJ manually reviewed all ten saved drafts, recorded **10 passes**, and documented recommendations for diagnostic follow-up, customer communication, and escalation in the [owner review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md). The saved evaluation report reached 10/10 after tuning on the same ten tickets. The preserved baseline includes an operational timeout on T-006; the [evaluation record](evaluation-follow-up.md) explains subsequent changes and the separate scorer revision. These are documented support cases with saved outputs and manual review; they do not establish general reliability or approval for customer use.
+All four examples passed automated checks in the saved final report. I reviewed all ten saved final drafts and found their general suggested next steps accurate. My [review notes](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) record recommendations for diagnostic follow-up, customer communication, and escalation. The saved evaluation report reached 10/10 after tuning on the same ten tickets. The preserved baseline includes an operational timeout on T-006; the [evaluation record](evaluation-follow-up.md) explains subsequent changes and the separate scorer revision. These are documented support cases with saved outputs and manual review; they do not establish general reliability or approval for customer use.
 
 The runbooks have since received documentation edits without a new live evaluation. The saved tool logs retain the guidance used for these replies; offline agreement does not validate the revised runbooks.
 

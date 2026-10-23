@@ -2,18 +2,19 @@
 
 This record documents tuning on ten fixed synthetic tickets. The [preserved baseline](../evidence/triage/ten-ticket-baseline-20261022/README.md), committed as `2fbf2e2` before tuning, returned 6/10 automated agreement, one operational timeout, and three expectation mismatches. The [selected final report](../evidence/triage/ten-ticket-follow-up-20261022/README.md) and comparison summary preserve the final outcome; earlier failures remain recorded.
 
-TJ's later [manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) records **10 passes out of 10 saved cycle-3 drafts**, with feedback on diagnostic follow-up, customer communication, and escalation. The automated scores are **10/10 under scorer 2** and **9/10 under the original rubric**. The saved report also retains the Codex-assisted qualitative assessment recorded during tuning. The scorer change and agent improvements are explained separately below. For an example-oriented reading path, see the [walkthrough](walkthrough.md).
+I reviewed all ten saved final drafts and found their general suggested next steps accurate. My later [manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) records recommendations for diagnostic follow-up, customer communication, and escalation. The automated scores are **10/10 under scorer 2** and **9/10 under the original rubric**. The saved report also retains the Codex-assisted qualitative assessment recorded during tuning. The scorer change and agent improvements are explained separately below. For an example-oriented reading path, see the [walkthrough](walkthrough.md).
 
-| Follow-up cycle | Scorer 2 | Original rubric | Codex-assisted qualitative records | TJ manual review |
+| Follow-up cycle | Scorer 2 | Original rubric | Codex-assisted qualitative records | My manual review |
 | --- | --- | --- | --- | --- |
 | 1 | 7/10 | 6/10 | 8 pass, 2 fail | — |
 | 2 | 9/10 | 8/10 | 9 pass, 1 fail | — |
 | 3 | **10/10** | **9/10** | **10 pass, 0 fail** | **10/10** |
 
-TJ's review assesses the unchanged saved drafts. A pass means the general
+My review assesses the unchanged saved drafts. A pass means the general
 suggested next step is accurate; tone and prose suggestions are editorial
 feedback. This was a manual review of saved outputs, not a new live evaluation.
-The dashes indicate that no separate TJ tally is recorded for cycles 1 and 2.
+The dashes indicate that no separate counts from my review are recorded for
+cycles 1 and 2.
 
 All three cycles had zero operational failures. The original 6/10 baseline and
 earlier failed outcomes remain preserved; the scoring change is explained below.
@@ -151,8 +152,8 @@ rescoring retained all results, metadata, hashes and manual notes. The final
 implementation has **281 passing offline tests**. Its instructions and field
 descriptions were not altered after the successful pass.
 
-TJ subsequently reviewed all ten saved drafts, recorded **10 passes**, and
-provided ticket-specific diagnostic and support-workflow feedback in the
+I subsequently reviewed all ten saved drafts and provided ticket-specific
+diagnostic and support-workflow recommendations in my
 [manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md).
 
 Fresh local cycle folders, source snapshots, audits, reviewed copies and offline
@@ -160,5 +161,5 @@ scores remain under ignored `artifacts/evaluation/slice5-follow-up-20261023T0020
 The unchanged cycle-3 report, including its historical Codex-assisted review
 records, is preserved in
 [public evidence](../evidence/triage/ten-ticket-follow-up-20261022/README.md)
-alongside an adapted summary and TJ's later manual review.
+alongside an adapted summary and my later manual review.
 The original committed baseline remains unchanged. The [README example](../README.md#a-saved-example) and [written walkthrough](walkthrough.md) now present selected saved results. Human review remains necessary before customer use. A held-out evaluation would be separate future work.

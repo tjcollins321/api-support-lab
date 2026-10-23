@@ -3,11 +3,10 @@
 [reviewed-evaluation.json](reviewed-evaluation.json) is the unchanged final report
 from cycle 3.
 
-I manually reviewed all ten saved cycle-3 drafts for accuracy of their suggested
-next steps and recorded **10 passes**. My review documented recommendations for
-diagnostic follow-up, troubleshooting clarity, customer communication, and
-escalation. The per-ticket findings are recorded in
-[owner-review.md](owner-review.md); the original model responses remain unchanged.
+I reviewed all ten saved cycle-3 drafts and found their general suggested next
+steps accurate. My [review notes](owner-review.md) record recommendations for
+diagnostic follow-up, customer communication, and escalation. The original model
+responses remain unchanged.
 
 [review-summary.json](review-summary.json) records the comparison, usage, and
 selected report hash. Original runs, snapshots, reviews, audits, and offline

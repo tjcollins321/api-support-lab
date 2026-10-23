@@ -23,7 +23,7 @@ flowchart LR
     X[Separate expected outcomes] --> V
 ```
 
-TJ directed the runbook template, sections, and structure, with prose drafted by Codex. Runbook authoring and review are separate from the capture pipeline; captures do not automatically become support guidance. Evaluation expectations are loaded by the evaluator after model execution, never supplied to the agent or its tools.
+Runbook authoring and review are separate from the capture pipeline; captures do not automatically become support guidance. Evaluation expectations are loaded by the evaluator after model execution, never supplied to the agent or its tools.
 
 ## Components and storage
 

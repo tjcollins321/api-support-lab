@@ -184,7 +184,7 @@ T-007's follow-up omission, T-010's literal evidence-check limitation, and T-006
 unassessed behavior. Do not tune expectations merely to make this report pass.
 Any correction verification or later live run requires a separately agreed scope.
 
-The original baseline was preserved before three follow-up tuning cycles. TJ
+The original baseline was preserved before three follow-up tuning cycles. I
 requested baseline preservation and inspected the failed drafts. The tuning
 checkpoint reported $0.11 spent from the $15 allowance, without an inspection of
 account billing. Baseline commit `2fbf2e2` preserves the unchanged reviewed report.
@@ -192,6 +192,6 @@ The three cycles reached a clean reviewed pass, with 281 offline tests passing.
 Source snapshots, per-cycle failures, scores under both rubrics, manual findings,
 usage, and offline rescores are preserved locally. The
 [follow-up record](evaluation-follow-up.md) documents the comparison and scorer
-changes; [TJ's later manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md)
+changes; [my later manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md)
 records feedback on all ten final drafts. No further cycle was started after
 success, and the original pass above remains unchanged.
