@@ -4,6 +4,26 @@ An HTTP-success response is incomplete or a JSON parser fails; check response co
 
 Use this runbook to distinguish incomplete generation from parsing or application-validation problems, and confirm that the customer's output is complete and usable after a correction.
 
+## The error as the customer sees it
+
+The request returned HTTP 200 with no response error. Selected fields from
+[the capture](../evidence/incomplete_output/broken-20261022T232333Z.json) show the
+incomplete response and its actual partial JSON:
+
+```text
+http_status:        200
+response_status:    incomplete
+incomplete_reason:  max_output_tokens
+usage.output_tokens: 128
+output_excerpt: {"status":"READY","items":[{"index":1,"label":"item_1"},{"index":2,"label":"item_2"},{"index":3,"label":"item_3"},{"index":4,"label":"item_4"},{"index":5,"label":"item_5"},{"index":6,"label":"item_6"},{"index":7,"label":"item_7"},{"index":8,"label":"item_8"},{"index":9,"label":"item_9"},{"index":10,"label":"item_10"},{"index":11,"label":"item_11"},{"index":12
+```
+
+The capture normalizes `response.status` and `response.incomplete_details.reason`
+into `response_status` and `incomplete_reason`. The 128 output tokens match the
+request's recorded `max_output_tokens`. The text stops mid-object; parsing it
+before checking completion status can surface a `JSONDecodeError` while hiding
+the completion reason.
+
 ## Evidence and confidence
 
 - Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
@@ -46,7 +66,7 @@ Confirm that the previously affected workflow now uses the result successfully. 
 
 ## Illustrative draft reply
 
-“Could you share the response status, incomplete reason, output-token limit, and a small sanitized excerpt that fails parsing? If the response confirms output-budget exhaustion, a larger bounded allowance or smaller payload may help. Then check completion, schema, and required content before using the result.”
+“HTTP 200 means a response arrived, but it does not show that the JSON finished. Could you share the completion status and incomplete reason, the output-token limit, and a small sanitized failing excerpt? Please say whether that excerpt contains all returned text. If the response says `incomplete` because of `max_output_tokens`, increase the bounded allowance to suit the workload or request a smaller payload, accounting for reasoning tokens too. Check completion before parsing, then validate the full output's schema and required content and confirm that your application can use it. A parser error alone is not enough to choose a larger budget.”
 
 This is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.
 

@@ -1,8 +1,10 @@
 # API Support Lab
 
-A personal Python learning lab for reproducing OpenAI API failures, capturing diagnostic evidence, and using an agent to draft support replies for human review.
+A Python project that reproduces four OpenAI API failures against the live API, documents each in a support runbook, and runs a triage agent that uses those runbooks to draft replies to synthetic support tickets. Every reply is a draft for human review.
 
-The project connects a small failure lab to a support workflow: investigate a symptom, retrieve relevant guidance, distinguish evidence from assumptions, and suggest the next useful step. It explores Python automation with the OpenAI Responses API and Agents SDK, developed with Codex as a pair-programming assistant.
+Built on the OpenAI Responses API and the Agents SDK (`openai-agents`).
+
+I designed the lab specification and set its scope, selected the failure cases and ticket scenarios collaboratively with Codex, and directed the runbook structure. I reviewed evidence, draft replies, summaries, tickets, and triage test fixtures. Codex handled code generation and prose drafting. The [development notes](docs/development-notes.md) describe those decisions and contributions.
 
 ## A saved example
 
@@ -29,44 +31,33 @@ This is an excerpt from [T-006](triage/tickets/T-006.yaml) in the [saved live ev
 
 ## What is implemented
 
-| Capability | Experiment or behavior | Evidence |
-| --- | --- | --- |
-| Invalid credentials | Compare an intentionally invalid credential with a valid environment-provided credential | [Runbook and live pair](runbooks/invalid_credentials.md) |
-| Malformed tool schema | Compare an invalid function parameter type with a supported schema | [Runbook and live pair](runbooks/tool_schema.md) |
-| Incomplete structured output | Compare a restrictive output budget with a sufficient bounded budget; validate full corrected output | [Runbook and live pair](runbooks/incomplete_output.md) |
-| Client timeout | Compare a very short client timeout with a suitable bounded timeout | [Runbook and live pair](runbooks/timeout.md) |
-| Ticket triage | One agent uses three read-only tools and returns a structured decision plus a draft reply | [Ten-ticket evaluation](evidence/triage/ten-ticket-follow-up-20261022/README.md) |
+| Case | Synthetic reproduction setup | Observed result (live, 2026-10-22 UTC) | Runbook |
+| --- | --- | --- | --- |
+| Invalid credentials | Deliberately invalid API key | HTTP 401 `AuthenticationError`, code `invalid_api_key` | [invalid_credentials](runbooks/invalid_credentials.md) |
+| Malformed tool schema | `"type": "not_a_json_schema_type"` in a strict function tool | HTTP 400 `BadRequestError`, code `invalid_function_parameters`, param `tools[0].parameters` | [tool_schema](runbooks/tool_schema.md) |
+| Incomplete structured output | `max_output_tokens: 128` for a 32-item JSON-schema workload | HTTP 200 with `response_status: incomplete`, `incomplete_reason: max_output_tokens` | [incomplete_output](runbooks/incomplete_output.md) |
+| Client timeout | 0.5-second client timeout, zero retries | `APITimeoutError` after about 620 ms; no HTTP status, request ID, or usage | [timeout](runbooks/timeout.md) |
+
+The table combines request setup from the [case implementations](src/api_support_lab/cases/) with observed fields from the captures linked in each runbook. Authentication was captured on October 21 in America/New_York, October 22 UTC.
+
+For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply. The [ten-ticket evaluation](evidence/triage/ten-ticket-follow-up-20261022/README.md) preserves its saved results.
+
+The four cases cover two errors with a diagnostic code to look up (401 and 400), an HTTP-success response whose output is incomplete, and a client timeout without a received response. Status alone does not settle the diagnosis across these cases. Rate limits, quota exhaustion, model-access failures, and other deferred coverage are listed in [requirements](docs/requirements.md#deferred-features-and-completion).
 
 The shared tools are ordinary Python functions: `diagnose`, `list_runbooks`, and `get_runbook`. Exact diagnostic matches come from reviewed observations. Unknown codes remain unmatched, and symptom-based retrieval supports cases without a diagnostic status/code mapping.
 
 ## Quick start
 
-Use Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installation/) on your `PATH`. Run these commands from a checkout:
+Needs Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installation/) on your `PATH`; uv can fetch Python if needed. Run these commands from a checkout:
 
 ```sh
 uv sync --locked
-uv run --offline --locked --no-env-file python -m api_support_lab --help
+uv run python -m api_support_lab diagnose --status 401 --error-code invalid_api_key
+uv run pytest -q
+uv run python -m api_support_lab evaluate --results evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json
 ```
 
-Setup may download Python or dependencies. After setup, help, diagnostic lookup, saved-result scoring, and the default tests need no API key or model calls:
-
-```sh
-uv run --offline --locked --no-env-file python -m api_support_lab diagnose \
-  --status 401 --error-code invalid_api_key
-env -u OPENAI_API_KEY uv run --offline --locked --no-env-file pytest -q
-```
-
-The diagnosis command prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline test execution. `uv --offline` itself only controls dependency downloads.
-
-Rescore the checked-in final report:
-
-```sh
-env -u OPENAI_API_KEY uv run --offline --locked --no-env-file python -m api_support_lab evaluate \
-  --results evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json \
-  --output-dir artifacts/evaluation/offline-scores
-```
-
-This writes a new local report and prints **10/10 automated agreement**, with zero operational failures and zero semantic mismatches. It checks the saved outputs against current expectations without rerunning the agent or approving the replies. Generated artifacts stay under ignored `artifacts/`; selected public evidence lives under `evidence/`.
+None of these commands need an API key. Setup may download Python or dependencies. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` rescores the saved report against current expectations without calling the model and prints **10/10 automated agreement**, with zero operational failures and zero semantic mismatches. It does not approve the replies or test revised runbooks in a new live run. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
 
 For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
 
@@ -94,16 +85,26 @@ flowchart TD
 
 Evidence capture retains selected diagnostics, effective settings, bounded output, and available usage. Runtime validation checks structured output, supporting retrieval, and ticket-grounded lookup arguments. The model interprets symptoms and drafts prose; those checks cannot establish that every sentence is correct or useful.
 
+Three rules shape the agent:
+
+- It passes only ticket-stated status/code values to `diagnose`. For [T-005](triage/tickets/T-005.yaml), the customer's authentication suspicion supplies neither; the saved agent run lists runbooks, retrieves credential guidance, and asks for diagnostics instead of guessing a lookup code.
+- It must retrieve supporting guidance before recommending a case-specific fix. A result referencing a runbook it never retrieved is rejected.
+- `basis` records whether supplied diagnostics directly support the category (`stated`), symptoms support a hypothesis (`inferred`), or no supported category is determined (`none`). It does not independently prove the diagnosis. For [T-008](triage/tickets/T-008.yaml), pasted schema diagnostics take precedence over the customer's authentication claim.
+
 ## Results and limits
 
-Each of the four reproduction cases has one reviewed live broken/corrected pair. The final ten-ticket pass reached 10/10 automated agreement after tuning on those same synthetic tickets; it is not a held-out reliability result. The original baseline and failed outcomes remain preserved. The [evaluation record](docs/evaluation-follow-up.md) separates agent improvements from a scorer revision; the final outputs score 9/10 under the original rubric.
+Each case has one reviewed live broken/corrected pair, a reproduction rather than a benchmark. The first ten-ticket evaluation scored 6/10 and is preserved unchanged. After three follow-up tuning cycles on those same ten synthetic tickets, the saved final outputs score 10/10 under scorer 2 and 9/10 under the original rubric. The [evaluation record](docs/evaluation-follow-up.md) separates agent improvements from the scorer revision; these results do not establish held-out reliability.
 
-The suite has **281 offline tests**. These verify software behavior, not general agent performance. All organizations and tickets are invented; live captures concern synthetic API workloads. Redaction needs review before sharing. Rate limits, quota exhaustion, model-access failures, external ticketing integrations, and broader evaluations remain outside the implemented coverage.
+I manually reviewed all ten saved final drafts and recorded **10 passes**, with ticket-specific feedback on diagnostic follow-up, customer communication, and escalation. My [review notes](evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) explain the pass criterion and recommendations.
+
+The runbooks have since received documentation edits that change what future tool calls return. Their revised text has not been evaluated live; the saved report retains the original retrieved guidance. Offline rescoring checks saved outputs against current tickets and expectations.
+
+The suite has **281 offline tests** covering capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. These checks verify software behavior; they do not establish live reply quality or general agent performance. All organizations and tickets are invented; live captures concern synthetic API workloads. External ticketing integrations and broader evaluations remain deferred alongside the cases listed in requirements.
 
 ## Explore further
 
-- [Walkthrough](docs/walkthrough.md): three saved decisions, actual replies, and a code-reading path.
-- [Development notes](docs/development-notes.md): working with Codex, design corrections, and evaluation lessons.
+- [Walkthrough](docs/walkthrough.md): four saved decisions, actual replies, and a code-reading path.
+- [Development notes](docs/development-notes.md): project design, runbook redesign, baseline preservation, and manual review.
 - [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
 - [Reproduction guide](docs/reproduction-guide.md) and [evaluation guide](docs/evaluation-guide.md): operating the lab and inspecting results.
-- [Requirements](docs/requirements.md): the learning project's capability and acceptance criteria.
+- [Requirements](docs/requirements.md): capabilities and acceptance criteria.

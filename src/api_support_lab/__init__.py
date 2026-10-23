@@ -1,1 +1,1 @@
-"""A technical learning lab for API failures and support triage."""
+"""Reproduce OpenAI API failures, write the support runbook, and triage synthetic tickets with an agent."""

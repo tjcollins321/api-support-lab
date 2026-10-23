@@ -4,6 +4,23 @@ A client raises `APITimeoutError` while awaiting a response; an absent HTTP resp
 
 Use this runbook to distinguish a client timeout from other connection or API failures, investigate the customer's client settings, and check recovery without assuming earlier processing stopped.
 
+## The error as the customer sees it
+
+Selected fields from [the capture](../evidence/timeout/broken-20261022T232402Z.json):
+
+```text
+openai.APITimeoutError: Request timed out.
+elapsed_ms: 619.908
+timeout_seconds: 0.5
+max_retries: 0
+```
+
+The client stopped waiting after about 620 ms with no HTTP status, request ID,
+or usage received. The locked SDK defaults to two retries, so other client
+settings can result in extra attempts and a longer wait; a later attempt might
+also succeed. Inspect the effective retry settings rather than predicting the
+final exception from this single capture.
+
 ## Evidence and confidence
 
 - Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
@@ -48,7 +65,7 @@ If the request times out again, preserve the exception, elapsed time, effective 
 
 ## Illustrative draft reply
 
-“The supplied client-timeout exception means the client stopped waiting; it does not show whether server-side processing stopped. Could you share the configured timeout and retries, elapsed time, SDK version, and whether any response metadata arrived? A request ID is useful only if available. Review earlier attempts before retrying.”
+“`APITimeoutError` means the SDK stopped waiting; the server may still have processed the request. Please review earlier attempts before retrying, especially if repeating the job could duplicate work. Could you share the timeout and retry settings, SDK version, and approximate workload size? If no response arrived, we do not need a request ID. For a limit that is too short for the workload, choose a suitable bounded timeout or reduce the workload. Then check that the affected job receives a response and completes with usable output. Keep retry behavior consistent with your application's duplicate-work handling.”
 
 This is an illustrative draft for human review, not an executed agent result. Ask for the exception type when the complaint is ambiguous.
 

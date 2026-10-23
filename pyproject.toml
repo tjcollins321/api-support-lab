@@ -1,7 +1,7 @@
 [project]
 name = "api-support-lab"
 version = "0.1.0"
-description = "A technical learning lab for API failures and support triage."
+description = "Reproduce OpenAI API failures, write the support runbook, and triage synthetic tickets with an agent."
 readme = "README.md"
 requires-python = ">=3.14,<3.15"
 dependencies = [

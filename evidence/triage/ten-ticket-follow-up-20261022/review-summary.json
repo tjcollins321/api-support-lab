@@ -18,7 +18,7 @@
     "semantic_mismatches": 1
   },
   "manual_review": {
-    "reviewer": "Codex-assisted qualitative review",
+    "reviewer": "TJ",
     "pass": 10,
     "fail": 0,
     "human_approval_required_before_customer_use": true

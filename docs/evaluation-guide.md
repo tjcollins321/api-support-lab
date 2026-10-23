@@ -1,6 +1,6 @@
 # Evaluation guide for lab maintainers
 
-Use this guide to execute the ten-ticket evaluation, score saved results offline, and review drafts. The [evaluation record](evaluation-follow-up.md) explains the baseline, follow-up results, scorer change, and limitations. The [walkthrough](walkthrough.md) illustrates three saved decisions. Authored drafts under `tests/fixtures/` exercise software behavior and do not establish live agent performance.
+Use this guide to execute the ten-ticket evaluation, score saved results offline, and review drafts. The [evaluation record](evaluation-follow-up.md) explains the baseline, follow-up results, scorer change, and limitations. The [walkthrough](walkthrough.md) illustrates four saved decisions. Authored drafts under `tests/fixtures/` exercise software behavior and do not establish live agent performance.
 
 ## Tickets and expectations
 
@@ -124,9 +124,9 @@ authorized scope. This small demonstration cannot establish general reliability.
 
 ## Recorded slice 5 live pass
 
-One authorized pass ran on **2026-10-22 at 19:58:56–20:01:23 America/New_York**
-(2026-10-22 23:58:56–2026-10-23 00:01:23 UTC). The owner confirmed `.env` loading,
-exact-credential checks, and budget readiness within the $15 allowance; no numeric
+One pass ran on **2026-10-22 at 19:58:56–20:01:23 America/New_York**
+(2026-10-22 23:58:56–2026-10-23 00:01:23 UTC), loading the project-root `.env`
+without displaying credentials. The planning allowance was $15; no numeric
 current spend was supplied. All ten tickets were attempted sequentially once,
 with the documented model/settings, zero retries, and no reruns or extra smoke
 requests. Expectations, tickets, instructions, and runtime code were unchanged.
@@ -184,13 +184,14 @@ T-007's follow-up omission, T-010's literal evidence-check limitation, and T-006
 unassessed behavior. Do not tune expectations merely to make this report pass.
 Any correction verification or later live run requires a separately agreed scope.
 
-
-The owner subsequently authorized up to ten follow-up cycles without additional
-permission, reporting $0.11 spent of $15. Baseline commit `2fbf2e2` and its selected
-reviewed report were pushed before tuning. Three follow-up cycles were sufficient
-for a clean reviewed pass, with 281 offline tests passing. Source snapshots,
-per-cycle failures, scores under both rubrics, manual findings, usage, and offline
-rescores are preserved locally. This standing authorization superseded the earlier
-per-pass authorization boundary for those cycles. No further cycle was started
-after success. The [follow-up record](evaluation-follow-up.md) gives the complete
-comparison and scoring rationale; the original pass above remains unchanged.
+The original baseline was preserved before three follow-up tuning cycles. TJ
+requested baseline preservation and inspected the failed drafts. The tuning
+checkpoint reported $0.11 spent from the $15 allowance, without an inspection of
+account billing. Baseline commit `2fbf2e2` preserves the unchanged reviewed report.
+The three cycles reached a clean reviewed pass, with 281 offline tests passing.
+Source snapshots, per-cycle failures, scores under both rubrics, manual findings,
+usage, and offline rescores are preserved locally. The
+[follow-up record](evaluation-follow-up.md) documents the comparison and scorer
+changes; [TJ's later manual review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md)
+records feedback on all ten final drafts. No further cycle was started after
+success, and the original pass above remains unchanged.

@@ -1,10 +1,10 @@
 # Requirements
 
-These criteria define the lab's implemented workflow and its boundaries. The four reproduction cases have reviewed live pairs; the agent and ten-ticket evaluation have saved results. The [README](../README.md) provides setup and a compact example, and the [walkthrough](walkthrough.md) follows three actual saved drafts. See the [evaluation record](evaluation-follow-up.md) for results and limitations.
+These criteria define the lab's implemented workflow and its boundaries. The four reproduction cases have reviewed live pairs; the agent and ten-ticket evaluation have saved results. The [README](../README.md) provides setup and a compact example, and the [walkthrough](walkthrough.md) follows four actual saved drafts. See the [evaluation record](evaluation-follow-up.md) for results and limitations.
 
 ## Purpose and boundaries
 
-API Support Lab explores a complete support workflow: reproduce a failure, capture evidence, write a runbook, draft a response to a synthetic ticket, and evaluate the draft. It is a local Python learning project with human review of all suggested replies.
+API Support Lab implements a local Python workflow for failure reproduction, evidence capture, runbook-based ticket triage, and evaluation. All suggested replies require human review.
 
 The original build target was 8–12 hours with a $15 API spending allowance. Those were planning constraints; request bounds do not enforce a billing ceiling.
 
@@ -43,7 +43,7 @@ Expected outcomes allow multiple acceptable categories when justified, specify r
 
 - Target Python 3.14, `uv`, locked dependencies, and configurable `gpt-6.1-sol` with low reasoning through Responses. Verify compatibility and access before live experiments.
 - Load credentials from the environment. Capture allowlisted fields, redact credentials in text, and inspect artifacts before sharing them.
-- Use invented organizations and synthetic workloads only. Public documentation describes learning goals and technical behavior.
+- Use invented organizations and synthetic workloads only. Public documentation describes design decisions, implemented behavior, and evaluation findings.
 - Distinguish saved observations from illustrative examples, and mark unavailable reproductions as unverified. Verification dates apply only to actual observations.
 - Default to offline checks. Bound live requests, output budgets, and agent turns; review spending between milestones.
 - Keep code and selected reviewed artifacts in the public repository. Disclose Codex pairing without attributing unverified work or results.

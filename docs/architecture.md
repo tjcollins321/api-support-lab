@@ -23,7 +23,7 @@ flowchart LR
     X[Separate expected outcomes] --> V
 ```
 
-The evidence-to-runbook step is a human documentation task, not automatic model generation. Evaluation expectations are loaded by the evaluator after model execution, never supplied to the agent or its tools.
+TJ directed the runbook template, sections, and structure, with prose drafted by Codex. Runbook authoring and review are separate from the capture pipeline; captures do not automatically become support guidance. Evaluation expectations are loaded by the evaluator after model execution, never supplied to the agent or its tools.
 
 ## Components and storage
 
@@ -213,4 +213,4 @@ The implemented evaluation uses T-001 through T-010 and a denominator of ten, re
 | Four cases before expanding coverage | Leaves time for evaluation; many real errors remain outside the registry |
 | Python 3.14 and one model default | A single documented environment; dependency and account compatibility must be checked |
 
-Offline tests cover strict tool schemas, asynchronous in-memory SDK execution, request settings, failure handling, and saved scoring. Authored fixtures verify software behavior. Reviewed [reproduction observations](reproduction-guide.md#current-verification-status) and [live evaluation results](evaluation-follow-up.md) document actual API and model behavior, with historical outcomes preserved. The written [walkthrough](walkthrough.md) connects three selected runs to their supporting evidence and code. Broader reliability and the correctness of any future customer draft remain unverified.
+Offline tests cover strict tool schemas, asynchronous in-memory SDK execution, request settings, failure handling, and saved scoring. Authored fixtures verify software behavior. Reviewed [reproduction observations](reproduction-guide.md#current-verification-status) and [live evaluation results](evaluation-follow-up.md) document actual API and model behavior, with historical outcomes preserved. The written [walkthrough](walkthrough.md) connects four selected runs to their supporting evidence and code. Broader reliability and the correctness of any future customer draft remain unverified.

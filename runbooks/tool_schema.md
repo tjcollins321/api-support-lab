@@ -4,6 +4,25 @@ A request is rejected while validating a function tool's parameter schema; HTTP 
 
 Use this runbook when supplied validation details identify a function-tool schema. With an unspecified bad-request error, first request the details needed to locate the failing field.
 
+## The error as the customer sees it
+
+Captured on 2026-10-22 with `openai` 3.36.0 and retries disabled.
+Selected fields from [the capture](../evidence/tool_schema/broken-20261022T232240Z.json):
+
+```text
+HTTP 400 — openai.BadRequestError
+error_type:  invalid_request_error
+error_code:  invalid_function_parameters
+param:       tools[0].parameters
+message:     Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas.
+request_id:  req_ed8455b8b9d34759b15ecfaed73816f7
+```
+
+`param` identifies the tool index and field; the message names the function and
+invalid value. The [request implementation](../src/api_support_lab/cases/tool_schema.py)
+sets `tool_choice="none"` in both variants, so this rejection occurred even with
+tool selection disabled.
+
 ## Evidence and confidence
 
 - Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
@@ -46,7 +65,7 @@ If validation still fails, inspect the new parameter/message and the serialized 
 
 ## Illustrative draft reply
 
-“The supplied validation details point to the function-tool schema. Please inspect the affected property in the serialized request, including its JSON Schema type and strict object requirements. After correcting it, check that the affected workflow completes. If the error continues, could you share a minimal sanitized schema excerpt, the error parameter/code, and a request ID if received?”
+“The validation error points to the function tool's parameter schema. Check the property named in the error against the serialized definition your application sends, and replace the invalid type with the supported type for the intended value. If strict mode is enabled, also check the enclosing object's `required` list and `additionalProperties` setting. Could you share the smallest sanitized excerpt containing that property and its enclosing schema? Remove sensitive descriptions and examples. After the correction, confirm that the request is accepted and the affected workflow completes, including function execution if a tool is called.”
 
 This is an illustrative draft for human review, not an executed agent result. Use it with supplied validation evidence; otherwise request distinguishing details.
 

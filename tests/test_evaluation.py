@@ -361,7 +361,7 @@ def test_frozen_ten_ticket_baseline_keeps_original_score_under_new_scoring(tmp_p
 
     path = PROJECT_ROOT / "evidence/triage/ten-ticket-baseline-20261022/reviewed-evaluation.json"
     before = path.read_bytes()
-    assert hashlib.sha256(before).hexdigest() == "abb9b8f607ba123f0ba93258317355501dadf11ee57f04492e48dd76e18d0eec"
+    assert hashlib.sha256(before.replace(b"\r\n", b"\n")).hexdigest() == "abb9b8f607ba123f0ba93258317355501dadf11ee57f04492e48dd76e18d0eec"
     original = json.loads(before)
     rescored, _ = evaluation.score_saved(path, output_dir=tmp_path)
     assert original["summary"]["automated_pass"] == 6

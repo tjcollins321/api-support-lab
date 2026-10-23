@@ -27,7 +27,7 @@ def http_status(value: str) -> int:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="api_support_lab",
-        description="API Support Lab: a technical learning lab for API failures and support triage.",
+        description="Reproduce OpenAI API failures, write the support runbook, and triage synthetic tickets with an agent.",
         epilog="Reproduction, triage, and model-backed evaluation require --live.",
     )
     commands = parser.add_subparsers(dest="command", required=True)

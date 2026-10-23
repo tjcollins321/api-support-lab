@@ -4,6 +4,24 @@ A request is rejected during authentication, potentially reported as HTTP 401 or
 
 Use this runbook to investigate a customer's authentication symptoms, identify a supported correction, and confirm recovery of the affected workflow.
 
+## The error as the customer sees it
+
+Captured on 2026-10-21 in America/New_York (2026-10-22 UTC), with
+`openai` 3.36.0 and retries disabled. These are selected normalized fields from
+[the sanitized capture](../evidence/invalid_credentials/broken-20261022T032250Z.json):
+
+```text
+HTTP 401 — openai.AuthenticationError
+error_type:  invalid_request_error
+error_code:  invalid_api_key
+message:     Incorrect API key provided: [REDACTED]************************-lab. You can find your API key at https://platform.openai.com/account/api-keys.
+request_id:  req_c610e4e44403409bbe5eecc22366c2d8
+```
+
+The capture's `[REDACTED]` marker replaced a recognizable key prefix in the
+server-masked message. This is the saved sanitized text, not a reconstruction of
+the original credential fragment. Do not paste a key into a support reply.
+
 ## Evidence and confidence
 
 - Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
@@ -27,7 +45,7 @@ A missing, malformed, outdated, or incorrectly loaded credential can be consiste
 ## Corrective steps
 
 1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.
-2. Check for an absent value, a stale configuration reference, unintended whitespace, or selection of the wrong environment/project. Perform these checks locally without printing or sharing the credential.
+2. Confirm that `OPENAI_API_KEY` is set in the process making the request, if that is the application's credential source. Check deployment secret references and unintended whitespace locally, without printing the value. Use the intended project's API-key settings or secret-management records to check whether the configured key still exists and belongs to that project; a key prefix alone does not prove project identity or validity.
 3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.
 4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.
 
@@ -46,7 +64,7 @@ If the request still fails, retain the new sanitized diagnostics and compare the
 
 ## Illustrative draft reply
 
-“The supplied authentication error indicates that the request's credential was rejected; it does not establish that a key was revoked. Please confirm that the affected application loads the intended project's credential without printing or sharing it. After correcting any loading issue, check that the affected request completes successfully. If it still fails, could you provide the error code/type and request ID if available from a minimal sanitized excerpt?”
+“The 401 with `invalid_api_key` means the API rejected the key this request sent; it does not tell us whether the key was revoked. Check the credential loaded by the running process, including deployment secret references, the intended project, and accidental whitespace. Please keep those checks local and do not paste the key. After correcting a loading issue, check that the affected request completes with usable output. If it still fails, send the `error_code`, `error_type`, and `request_id` if received, from a minimal sanitized excerpt.”
 
 This is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.
 

@@ -92,4 +92,4 @@ assert 'agents' not in sys.modules
         env=environment, capture_output=True, text=True, check=False,
     )
     assert helped.returncode == 0, helped.stderr
-    assert "technical learning lab" in helped.stdout
+    assert "Reproduce OpenAI API failures" in helped.stdout

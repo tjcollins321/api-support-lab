@@ -1,8 +1,8 @@
-# Walkthrough: three saved support decisions
+# Walkthrough: four saved support decisions
 
 These examples come from the [final live evaluation](../evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json) on 2026-10-22, America/New_York. Search its `runs` entries by `ticket_id` for complete records. No installation or API access is needed to follow along.
 
-All tickets and organizations are invented. T-003 uses selected fields from a real synthetic API experiment; T-006 and T-009 are authored scenarios. Quoted drafts preserve recorded wording; Markdown list spacing is adjusted for readability. Commentary appears outside the quotes.
+All tickets and organizations are invented. T-003's pasted diagnostics quote selected fields from a saved live API capture in `evidence/`; T-006 and T-009 are authored scenarios. Quoted drafts preserve recorded wording; Markdown list spacing is adjusted for readability. Commentary appears outside the quotes.
 
 ## 1. Supported correction: incomplete output
 
@@ -77,6 +77,8 @@ The category remains a hypothesis. High severity follows the blocked report, ind
 
 The twelve `missing` fields cover completion, configuration, timing, parsing, and output. The complete request is appropriate for distinguishing the cause of this blocked workflow. Recorded review passed the grounded questions and uncertainty; automated agreement alone does not establish usefulness.
 
+TJ's [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-006) recommends comparing the failed report with an earlier successful run, checking dataset-size changes and existing completion logs, and considering a smaller-payload diagnostic trial without assuming token-budget exhaustion.
+
 ## 3. Escalation: an unsupported setup request
 
 [T-009](../triage/tickets/T-009.yaml) asks:
@@ -99,6 +101,37 @@ Only `list_runbooks` with `{}` appears in the log. No case runbook was retrieved
 
 The escalation note suggests the portal administrator or identity team and records no supplied error or impact. A person must identify the owner and perform the handoff.
 
+TJ's [review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md#t-009) recommends making the routing actionable with official setup documentation or an appropriate assistance link once the platform or identity provider is known.
+
+## 4. Misleading diagnosis: a key-replacement request with schema evidence
+
+[T-008](../triage/tickets/T-008.yaml) says the team "believes authentication is the cause and asks whether to replace the key", but pastes HTTP 400 `invalid_function_parameters` for `tools[0].parameters`.
+
+Two tool calls completed in order:
+
+| Tool | Saved JSON arguments | Status |
+| --- | --- | --- |
+| `diagnose` | `{"status": 400, "error_code": "invalid_function_parameters"}` | `completed` |
+| `get_runbook` | `{"case": "tool_schema"}` | `completed` |
+
+| Saved field | Value |
+| --- | --- |
+| `category` | `tool_schema` |
+| `basis` | `stated` |
+| `severity` | `unknown` |
+| `action` | `recommend_fix` |
+| `missing` | `["tool_schema", "impact"]` |
+
+**Saved customer draft, complete:**
+
+> The evidence supports checking the function-tool schema first, not replacing the API key. The error explicitly identifies `tools[0].parameters` for `support_label` and rejects `not_a_json_schema_type` as invalid schema content; it does not establish an authentication problem.
+>
+> Have the application maintainer inspect the serialized tool definition, locate that invalid type value, and replace it with the intended supported JSON Schema type while preserving the intended constraints. Compare the transmitted schema with the application definition for any transformations. After the correction, an authorized maintainer should confirm that the request is accepted and the affected workflow completes, including function execution and result handling if applicable.
+>
+> Please share the smallest sanitized serialized schema excerpt containing the affected property and its enclosing schema, with sensitive descriptions/examples removed, so the precise correction can be confirmed. Also, is the affected workflow blocked, degraded with a workaround, or unaffected?
+
+The customer's assertion appears in `observed_evidence` as a quoted extract, but it does not become the category. The reply identifies the invalid type from the error, requests the smallest schema excerpt containing it, and does not suggest replacing the key.
+
 ## Follow T-006 through the code
 
 Read the saved run alongside these entry points:
@@ -114,6 +147,8 @@ Inspect T-006's `result`, `tool_use`, and evaluation row. The model chose the ac
 
 ## What the results establish
 
-All three examples passed automated checks and recorded Codex-assisted qualitative review in the final report. That report reached 10/10 after tuning on the same ten tickets. The preserved baseline includes an operational timeout on T-006; the [evaluation record](evaluation-follow-up.md) explains subsequent changes and the separate scorer revision. These are inspectable learning examples, not evidence of general reliability or approval for customer use.
+All four examples passed automated checks in the saved final report. TJ manually reviewed all ten saved drafts, recorded **10 passes**, and documented recommendations for diagnostic follow-up, customer communication, and escalation in the [owner review](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md). The saved evaluation report reached 10/10 after tuning on the same ten tickets. The preserved baseline includes an operational timeout on T-006; the [evaluation record](evaluation-follow-up.md) explains subsequent changes and the separate scorer revision. These are documented support cases with saved outputs and manual review; they do not establish general reliability or approval for customer use.
+
+The runbooks have since received documentation edits without a new live evaluation. The saved tool logs retain the guidance used for these replies; offline agreement does not validate the revised runbooks.
 
 Use the [offline rescoring command](../README.md#quick-start) to create a new local score without generating another reply or changing public evidence.
