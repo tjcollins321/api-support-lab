@@ -1,0 +1,12 @@
+id: T-012
+subject: Intermittent JSON missing its closing bracket
+body: >-
+  Rowan Demo here. Every so often the JSON we get back is missing the closing
+  bracket and our job dies, maybe one in twenty. Running the job again usually
+  works. We haven't kept the completion details. What should we collect to
+  figure out why this happens?
+pasted_error: null
+organization: Rowan Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: authored held-out symptom report; frozen before the live re-run; not used for tuning
