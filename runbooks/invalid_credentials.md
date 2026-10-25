@@ -36,6 +36,8 @@ the original credential fragment. Do not paste a key into a support reply.
 - How the application loads its credential and which project it is intended to use. Request configuration descriptions, never the credential or an environment dump.
 - Whether the workflow is blocked, degraded with a workaround, or nonblocking; impact determines severity independently of the error.
 
+- When the failure started and whether anything changed around then (a deploy, a key rotation, a new environment); whether every request fails or only some; a timestamp from a failing attempt.
+
 ## Diagnosis and alternative explanations
 
 An explicit authentication rejection supports investigating credential loading and validity. HTTP status alone or a customer's assertion that a key was revoked does not identify the exact cause. A partial complaint such as “my key stopped working” needs distinguishing status/code/type evidence before a case-specific correction.
@@ -47,7 +49,7 @@ A missing, malformed, outdated, or incorrectly loaded credential can be consiste
 1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.
 2. Confirm that `OPENAI_API_KEY` is set in the process making the request, if that is the application's credential source. Check deployment secret references and unintended whitespace locally, without printing the value. Use the intended project's API-key settings or secret-management records to check whether the configured key still exists and belongs to that project; a key prefix alone does not prove project identity or validity.
 3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.
-4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.
+4. After the change, have the customer rerun the failing request and confirm it completes with usable output, not just a 200.
 
 ## Confirm recovery
 
@@ -60,11 +62,19 @@ If the request still fails, retain the new sanitized diagnostics and compare the
 - Escalate persistent authentication rejection after loading/configuration checks to the project owner or appropriate API support channel.
 - Include minimal sanitized diagnostics, available request ID, UTC time, model/SDK, and affected environment.
 - Describe the loading checks, configuration change, and result of the customer's recovery check; identify uncertainties and unrelated errors.
-- Omit credentials, authorization headers, full logs, and environment dumps. Suggest routing without claiming a handoff occurred.
+- Omit credentials, credential-bearing headers, full logs, and environment dumps. Name the team the ticket should go to.
 
 ## Illustrative draft reply
 
-“The 401 with `invalid_api_key` means the API rejected the key this request sent; it does not tell us whether the key was revoked. Check the credential loaded by the running process, including deployment secret references, the intended project, and accidental whitespace. Please keep those checks local and do not paste the key. After correcting a loading issue, check that the affected request completes with usable output. If it still fails, send the `error_code`, `error_type`, and `request_id` if received, from a minimal sanitized excerpt.”
+Thanks for sending the error details. The 401 with `invalid_api_key` means the API rejected the key this request actually sent — on its own it doesn't mean the key was revoked. Check whether the running process is loading a different key than you expect: an old value in the deployment's environment, a key from another project, or unintended whitespace.
+
+Could you check, in the environment where it fails and without pasting the key:
+
+1. that `OPENAI_API_KEY` is set in the process making the request, not just in your shell;
+2. that the key still exists in the intended project's settings, without printing or sharing its value;
+3. when this started and whether anything changed around then, such as a deploy or a key rotation.
+
+If it still fails after that, send the `error_code`, `error_type`, `request_id` if received, and a timestamp, and we'll take it from there.
 
 This is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.
 

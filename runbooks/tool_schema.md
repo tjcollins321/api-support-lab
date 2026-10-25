@@ -37,6 +37,8 @@ tool selection disabled.
 - The endpoint, model, SDK version, strict-mode setting, and any transformation between the application's schema and the transmitted request.
 - The affected workflow and its reported impact. Do not request credentials, full prompts, or full logs.
 
+- Whether this schema ever worked and what changed since; whether every request that includes the tool fails or only some (if some, the smallest sanitized serialized `tools` excerpts from one failing and one passing request).
+
 ## Diagnosis and alternative explanations
 
 Validation evidence identifying a tool schema supports investigating that definition. HTTP 400 can also concern input, model settings, or another unsupported feature. A customer's authentication explanation does not override explicit schema diagnostics.
@@ -48,7 +50,7 @@ Distinguish a client-side schema error before transmission from an API rejection
 1. Locate the tool and schema property identified by the customer's validation evidence. Compare the serialized request with the application definition to find transformations or configuration differences.
 2. Correct invalid JSON Schema types and object/property definitions. For strict function parameters, include every property in `required` and disable additional properties on object definitions.
 3. Check the supported schema subset for the endpoint and model in use, including nested objects. Preserve the intended validation constraints; do not disable strictness blindly to suppress the symptom.
-4. Have the application maintainer apply the smallest supported correction and arrange a controlled check of the affected request.
+4. Apply the smallest correction that fixes the named property, then rerun the failing request.
 
 ## Confirm recovery
 
@@ -61,11 +63,15 @@ If validation still fails, inspect the new parameter/message and the serialized 
 - Escalate when a schema believed to fit the supported subset still fails, or when the request transformation cannot be explained.
 - Supply the smallest sanitized schema/error excerpt, endpoint/model/SDK, strict setting, UTC time, and request ID if available.
 - Describe the correction attempted and the customer's resulting acceptance/completion behavior; retain unfamiliar codes and uncertainty.
-- Route to the application maintainer or appropriate API support channel without claiming a handoff. Omit credentials and full request/log dumps.
+- Name the team the ticket should go to. Omit credentials and full request/log dumps.
 
 ## Illustrative draft reply
 
-“The validation error points to the function tool's parameter schema. Check the property named in the error against the serialized definition your application sends, and replace the invalid type with the supported type for the intended value. If strict mode is enabled, also check the enclosing object's `required` list and `additionalProperties` setting. Could you share the smallest sanitized excerpt containing that property and its enclosing schema? Remove sensitive descriptions and examples. After the correction, confirm that the request is accepted and the affected workflow completes, including function execution if a tool is called.”
+Thanks — the error tells us a lot already. `invalid_function_parameters` at `tools[0].parameters` means the API rejected the schema of your first tool, and the message names the property and the offending value, so this isn't an authentication or quota problem.
+
+To fix it, replace the invalid `type` in that property with the JSON Schema type you intend (for example `string`). If you're using `strict: true`, also make sure every property is listed in `required` and each object has `additionalProperties: false`.
+
+Could you send the smallest excerpt of the tool definition that includes that property, with any sensitive descriptions removed? It also helps to know whether this schema ever worked and what changed since. Once you've made the change, rerun the request and let us know what comes back.
 
 This is an illustrative draft for human review, not an executed agent result. Use it with supplied validation evidence; otherwise request distinguishing details.
 

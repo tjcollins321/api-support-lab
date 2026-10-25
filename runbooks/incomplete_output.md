@@ -31,12 +31,16 @@ the completion reason.
 - Observed evidence: [budget-exhausted response](../evidence/incomplete_output/broken-20261022T232333Z.json) and [successful correction](../evidence/incomplete_output/fixed-20261022T232346Z.json).
 - The lab observed HTTP 200 with status `incomplete` and reason `max_output_tokens`, followed by a completed response whose full output passed schema/content validation. This does not establish that an arbitrary parser failure has the same cause.
 
+The saved excerpts are cut at 1,000 characters, so the corrected capture's `output_excerpt` also ends mid-array; `output_valid: true` was computed on the full text before the cut.
+
 ## Evidence to request
 
 - Response completion status, incomplete reason/details, any refusal or response error, and request ID if received.
 - The configured output-token limit, reasoning setting, model, SDK version, and UTC attempt time.
 - The parser/validation error, expected schema, and a minimal sanitized failing output excerpt. An excerpt may itself be truncated; ask whether it represents all returned text.
 - The affected workflow and its impact, including whether a report or other task is blocked. Request no sensitive records, full prompts, credentials, or full logs.
+
+- A timestamp from a failing run and from the last successful run, and whether the input size or dataset changed between them; any completion-status logging that already exists.
 
 ## Diagnosis and alternative explanations
 
@@ -49,7 +53,7 @@ Other explanations include content-filter termination, refusal, extraction of th
 1. Inspect completion status, incomplete details, refusal, and errors before parsing or consuming the output as a successful result.
 2. When the supplied reason establishes output-budget exhaustion, choose a larger bounded output allowance appropriate to the model and workload, or reduce the requested payload. Account for reasoning as well as visible output; there is no universal token limit that fixes every workload.
 3. If output is completed but parsing or validation fails, investigate response extraction, parser behavior, and the expected schema/content instead of assuming that increasing the budget will fix it.
-4. Have the application maintainer apply the supported change and arrange a controlled check of the affected workflow.
+4. Apply the change, rerun the job, and check completion status before parsing.
 
 ## Confirm recovery
 
@@ -62,11 +66,15 @@ Confirm that the previously affected workflow now uses the result successfully. 
 - Escalate persistent incomplete output within appropriate workload limits, or completed output that still fails the expected schema/content checks.
 - Include status, incomplete reason, output/reasoning settings, model/SDK, UTC time, and request ID if available.
 - Supply minimal sanitized schema/output and parser-error excerpts, stating any excerpt truncation.
-- Describe the change attempted and its effect on the customer's task. Route to the application maintainer or appropriate API support channel without claiming a handoff.
+- Describe the change attempted and its effect on the customer's task. Name the team the ticket should go to.
 
 ## Illustrative draft reply
 
-“HTTP 200 means a response arrived, but it does not show that the JSON finished. Could you share the completion status and incomplete reason, the output-token limit, and a small sanitized failing excerpt? Please say whether that excerpt contains all returned text. If the response says `incomplete` because of `max_output_tokens`, increase the bounded allowance to suit the workload or request a smaller payload, accounting for reasoning tokens too. Check completion before parsing, then validate the full output's schema and required content and confirm that your application can use it. A parser error alone is not enough to choose a larger budget.”
+Thanks for the details. HTTP 200 means the response arrived, but `status: incomplete` with `incomplete_reason: max_output_tokens` means the model hit the output limit (128 tokens here) before it finished the JSON — so the parser is receiving partial JSON.
+
+The fix is to raise `max_output_tokens` to a value that fits the full output, or ask for less per request. The limit covers reasoning tokens too, if you're using a reasoning model. Then check `response.status` before parsing, so an incomplete response is caught rather than parsed.
+
+Two things would help us confirm: a timestamp from a failing run and from your last successful one, and whether the input size changed between them. Once you've adjusted the limit, rerun and send the completion status and token usage from that response.
 
 This is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.
 
