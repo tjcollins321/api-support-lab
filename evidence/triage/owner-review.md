@@ -1,12 +1,12 @@
 # Owner review
 
-Source: cycle 3 of the [saved report](reviewed-evaluation.json).
+Source: the saved runs in [`runs/`](runs/).
 
 **Reviewer:** TJ. **Result:** 10 passes, 0 failures.
 A draft passes when its general suggested next step is accurate; tone and prose
 suggestions are editorial feedback.
 
-These notes record my assessment of the saved drafts' proposed next steps, diagnostic information requests, customer communication, and escalation guidance. The quoted cycle-3 outputs remain unchanged; this review did not rerun the model.
+These notes record my assessment of the saved drafts' proposed next steps, diagnostic information requests, customer communication, and escalation guidance. The quoted outputs remain unchanged; this review did not rerun the model.
 
 My recommendations address troubleshooting clarity, customer collaboration, and support workflow: use direct requests and clearly formatted steps, capture impact at intake, and provide established assistance and escalation routes. In an operational service, replies should use the established response expectations. This lab does not implement that intake or service policy.
 

@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-009",
+  "ticket_hash": "db77508f717aaae1357b0b135cd61148f0a8721bc11fc0066ba4112e429d6c4a",
+  "captured_at": "2026-10-23T00:27:58.212415+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "out_of_scope",
+    "candidate_runbooks": [],
+    "observed_evidence": [
+      "Can you enable SSO and configure identity-provider groups for the invented Cedar Demo employee portal?",
+      "We need someone to route this setup request."
+    ],
+    "basis": "none",
+    "severity": "unknown",
+    "action": "escalate",
+    "missing": [],
+    "customer_reply": "SSO enablement and identity-provider group configuration are outside API Support Lab’s troubleshooting scope. Please route this setup request to the Cedar Demo portal administrator or your organization’s identity and access management team. They can coordinate the configuration with the identity-provider administrator. No configuration changes or handoff have been performed here.",
+    "escalation_note": "Suggested routing: employee portal administrator or identity and access management team. The customer requests SSO enablement and identity-provider group configuration for the invented Cedar Demo employee portal, specifically asking for routing. No diagnostic error or workflow impact was supplied. This is a setup request outside the available troubleshooting runbooks; no handoff has occurred."
+  },
+  "tool_use": [
+    {
+      "call_id": "call_uGwrJpMn0nX8KuJWZMd8t9IK",
+      "name": "list_runbooks",
+      "arguments": {},
+      "status": "completed",
+      "result": {
+        "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+        "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+        "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+        "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+      }
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1890,
+      "output_tokens": 29,
+      "total_tokens": 1919,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 12
+      }
+    },
+    {
+      "input_tokens": 2068,
+      "output_tokens": 206,
+      "total_tokens": 2274,
+      "input_tokens_details": {
+        "cached_tokens": 1887
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 6701.315
+}

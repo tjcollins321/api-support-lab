@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-004",
+  "ticket_hash": "89ac6c14072a686810fcc51112742a148ff2627f8d206bbd1d155970a3d638cd",
+  "captured_at": "2026-10-23T00:27:11.511565+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "timeout",
+    "candidate_runbooks": [
+      "timeout"
+    ],
+    "observed_evidence": [
+      "uses a 0.5-second client timeout and zero SDK retries",
+      "No HTTP response or request ID arrived.",
+      "exception_type: APITimeoutError",
+      "message: Request timed out.",
+      "elapsed_ms: 619.908"
+    ],
+    "basis": "stated",
+    "severity": "unknown",
+    "action": "recommend_fix",
+    "missing": [
+      "sdk_version",
+      "model",
+      "max_output_tokens",
+      "workload",
+      "network_conditions",
+      "attempt_time",
+      "retry_history",
+      "impact"
+    ],
+    "customer_reply": "The APITimeoutError indicates that the client stopped waiting after about 620 ms with a configured 0.5-second timeout. It does not establish whether server-side processing stopped or whether usage occurred. No HTTP response or request ID is available, so we do not need those fields.\n\nBefore another attempt, have the application owner review earlier attempts and application-level retries for possible duplicate work. Replace the very short client limit with a suitable bounded timeout for the application's requirements, or reduce the workload; avoid blind retries.\n\nPlease share minimal sanitized metadata: SDK version, model, configured output-token limit, approximate workload size, network/proxy conditions, the attempt's UTC time, previous attempts and any application-level retry behavior, and the workflow impact.\n\nAfter that review, an authorized person can perform a controlled check of the affected workflow, confirming both that a response arrives within the intended time bounds and that the task completes with usable output.",
+    "escalation_note": ""
+  },
+  "tool_use": [
+    {
+      "call_id": "call_l4tzeKQEfkQheJmDvncjBnqE",
+      "name": "list_runbooks",
+      "arguments": {},
+      "status": "completed",
+      "result": {
+        "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+        "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+        "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+        "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+      }
+    },
+    {
+      "call_id": "call_34A4iCYwzVablJUOYsIlJxtq",
+      "name": "get_runbook",
+      "arguments": {
+        "case": "timeout"
+      },
+      "status": "completed",
+      "result": "# Client timeout\n\nA client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable.\n\nUse this runbook to distinguish a client timeout from other connection or API failures, investigate the customer's client settings, and check recovery without assuming earlier processing stopped.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [client timeout](../evidence/timeout/broken-20261022T232402Z.json) and [successful correction](../evidence/timeout/fixed-20261022T232415Z.json).\n- The lab observed `APITimeoutError` without an HTTP status, request ID, or usage, followed by HTTP 200 with completed output under a suitable client timeout. This does not show whether the earlier request stopped processing or incurred usage.\n\n## Evidence to request\n\n- The exception type, configured client timeout and retries, elapsed time, and UTC attempt time.\n- The model, SDK version, output allowance, and a brief description of workload size and network/proxy conditions.\n- Whether any HTTP response or request ID arrived. Keep unavailable fields absent or null; a request ID is optional when no response was received.\n- Attempts already made, any application-side retry behavior, and reported workflow impact. Request only minimal sanitized metadata, never credentials, full logs, or sensitive payloads.\n\n## Diagnosis and alternative explanations\n\nAn SDK `APITimeoutError` supports a client-timeout diagnosis. A vague “timed out” complaint needs exception and timing details first. DNS/TLS failures, general connection problems, upstream HTTP timeout responses, and slow processing can present similar symptoms.\n\nPreserve any actual response fields. An absent HTTP response does not imply HTTP 408 or 504, and a generic connection error does not establish a client timeout. The SDK timeout setting is not a guarantee of the whole workflow's end-to-end duration.\n\nA client timeout means the client stopped waiting; it does not prove provider-side processing stopped. Usage and cost may be unknown. Consider earlier attempts before arranging another request.\n\n## Corrective steps\n\n1. Compare the configured timeout, observed timing, workload, and retry behavior. Check whether a client/proxy deadline or a general connection failure is actually supported by the evidence.\n2. If the client limit is impractically short for the workload, choose a suitable bounded timeout or reduce the workload according to the application's operating requirements. Do not assume one timeout value suits every customer.\n3. If the evidence instead points to connectivity or an upstream response, route investigation to the relevant application/network component and preserve the actual diagnostics.\n4. Review possible earlier processing and repeated work with the application owner before a controlled recovery check. Avoid blind retries; follow the application's established retry and duplicate-work handling.\n\n## Confirm recovery\n\nFor a controlled check of the customer's affected workflow, confirm that the client receives a response within its intended operating bounds and that the requested task completes with a usable result. HTTP success alone is insufficient. Inspect available timing and retry information to understand what actually completed.\n\nIf the request times out again, preserve the exception, elapsed time, effective settings, and any actual response metadata. Keep uncertainty about earlier server-side processing and unknown usage explicit; do not describe either as resolved without evidence.\n\n## Escalation checklist\n\n- Escalate persistent timeouts after supported client-setting checks, unexplained timing, or unresolved concern about repeated processing.\n- Include minimal sanitized exception/timing details, effective timeout/retries, workload description, model/SDK, and UTC times.\n- Include HTTP fields and request ID only if received; state when no response arrived.\n- Describe the change and recovery-check outcome, retaining uncertainty about processing/cost. Suggest the application/network maintainer or appropriate API support channel without claiming a handoff.\n\n## Illustrative draft reply\n\n“The supplied client-timeout exception means the client stopped waiting; it does not show whether server-side processing stopped. Could you share the configured timeout and retries, elapsed time, SDK version, and whether any response metadata arrived? A request ID is useful only if available. Review earlier attempts before retrying.”\n\nThis is an illustrative draft for human review, not an executed agent result. Ask for the exception type when the complaint is ambiguous.\n\n## Sources\n\n- [OpenAI Python SDK timeouts, retries, and error handling](https://developers.openai.com/api/reference/python)\n- [Official API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1921,
+      "output_tokens": 15,
+      "total_tokens": 1936,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2085,
+      "output_tokens": 19,
+      "total_tokens": 2104,
+      "input_tokens_details": {
+        "cached_tokens": 1918
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 3084,
+      "output_tokens": 365,
+      "total_tokens": 3449,
+      "input_tokens_details": {
+        "cached_tokens": 2082
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 9971.998
+}

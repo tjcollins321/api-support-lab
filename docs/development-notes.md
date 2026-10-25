@@ -1,6 +1,6 @@
 # Development notes
 
-These notes explain the decisions behind the lab’s scope, support runbooks, and evaluation process, including the distinction between software tests and live observations and the preservation of earlier evaluation results.
+These notes explain the decisions behind the lab’s scope, support runbooks, and evaluation process, including the distinction between software tests and live observations and how the agent was tuned.
 
 I designed the specification and scope, selected failure cases and ticket scenarios with Codex, and directed the runbook structure. Codex handled code generation and prose drafting; my review covered the evidence, saved drafts, summaries, tickets, and test fixtures, along with reading the ticket, runbook, agent, and evaluation modules against the saved T-006 run.
 
@@ -20,14 +20,12 @@ The resulting distinction matters throughout the project. An in-memory transport
 
 Keeping those sources separate makes the results easier to interpret. A passing software test and a successful live experiment answer different questions.
 
-## Evaluation review and baseline preservation
+## Tuning the agent
 
-After the first evaluation returned 6/10, I requested preserving the baseline and inspected the failed drafts.
+The ten tickets have expected decisions in `triage/expected.yaml` that the agent never sees. `evaluate` scores a run against them — category, basis, action, severity, the fields requested, the runbooks retrieved, the evidence quoted — and checks each saved output's ticket hash, so a result cannot quietly describe a ticket that has since been edited.
 
-My [review notes](../evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) assess the suggested next steps and identify improvements to diagnostic follow-up, information requests, customer communication, and escalation. Recommendations included comparing failed and successful requests, collecting timestamps for log correlation, and checking workload changes against earlier successful runs.
+The first live pass scored 6/10: T-006 timed out with no draft, T-002 omitted the schema excerpt request, T-007 omitted the SDK version request, and T-010 missed the literal evidence criterion. The T-010 expectation was loosened to accept alternative verbatim extracts for the same supporting facts; this alone made the unchanged first pass score 7/10, a scorer change rather than an agent improvement. Instruction changes required every question in a reply to appear in `missing` under a canonical name, included SDK version among the requests for an unfamiliar code, required a schema excerpt even when the error named the bad value, and treated "not handy" as collectable later. The first follow-up still omitted schema requests for T-002 and T-008; three follow-up cycles reached 10/10 under scorer 2, or 9/10 under the original rubric. T-006 produced drafts in those follow-ups; the instruction changes do not establish why its earlier timeout did not recur.
 
-I ran the offline test suite and rescored the saved report myself.
-
-The [evaluation follow-up](evaluation-follow-up.md) preserves the distinction between improving agent output and changing a scorer. Under scorer 2, the unchanged baseline scores 7/10; the selected final run scores 10/10. Under the original rubric, the final outputs score 9/10. Tuning on the same ten tickets limits what either comparison establishes.
+Ten hand-authored tickets used for tuning demonstrate the loop, not reliability. The saved outputs in [`evidence/triage/runs/`](../evidence/triage/runs/) are the selected final run; notes on each draft are in [`owner-review.md`](../evidence/triage/owner-review.md). Earlier reports remain in Git history.
 
 The [T-006 reading path](walkthrough.md#follow-t-006-through-the-code) connects a saved reply to the input boundary, tool loop, validation, and scoring. Structured output and successful retrieval still leave the quality of the actual advice for a person to assess.

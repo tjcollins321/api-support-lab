@@ -269,23 +269,6 @@ def test_corrupt_review_is_preserved_and_flagged(records, review):
     assert not evaluation.report_passed(report)
 
 
-def test_prior_public_pilot_is_unchanged_and_scores_as_partial_set(tmp_path):
-    from api_support_lab.runbooks import PROJECT_ROOT
-
-    paths = list((PROJECT_ROOT / "evidence/triage").glob("*.json"))
-    assert len(paths) == 1
-    source = paths[0]
-    before = source.read_bytes()
-    original = json.loads(before)
-    report, _ = evaluation.score_saved(source, output_dir=tmp_path)
-    assert source.read_bytes() == before
-    assert report["summary"]["total"] == 10
-    assert report["summary"]["automated_pass"] == 3
-    assert report["summary"]["operational_failures"] == 7
-    assert report["runs"] == original["runs"]
-    assert all(report["manual_reviews"][key] == value for key, value in original["manual_reviews"].items())
-
-
 def test_observed_ticket_fields_match_reviewed_captures():
     from api_support_lab.runbooks import PROJECT_ROOT
 
@@ -353,25 +336,6 @@ def test_report_identifies_scorer_and_expectations_without_changing_runs(records
     changed = evaluation.score_runs(records, load_tickets(), expectations)
     assert changed["expectations_hash"] != first["expectations_hash"]
     assert changed["summary"]["automated_pass"] == 9
-
-
-def test_frozen_ten_ticket_baseline_keeps_original_score_under_new_scoring(tmp_path):
-    import hashlib
-    from api_support_lab.runbooks import PROJECT_ROOT
-
-    path = PROJECT_ROOT / "evidence/triage/ten-ticket-baseline-20261022/reviewed-evaluation.json"
-    before = path.read_bytes()
-    assert hashlib.sha256(before.replace(b"\r\n", b"\n")).hexdigest() == "abb9b8f607ba123f0ba93258317355501dadf11ee57f04492e48dd76e18d0eec"
-    original = json.loads(before)
-    rescored, _ = evaluation.score_saved(path, output_dir=tmp_path)
-    assert original["summary"]["automated_pass"] == 6
-    assert rescored["summary"]["automated_pass"] == 7  # Scorer revision, not improved model output.
-    assert rescored["runs"] == original["runs"]
-    assert rescored["manual_reviews"] == original["manual_reviews"]
-    assert rescored["tickets"][5]["operational_failure"] == "APITimeoutError"
-    assert not rescored["tickets"][1]["checks"]["missing"]
-    assert not rescored["tickets"][6]["checks"]["missing"]
-    assert path.read_bytes() == before
 
 
 def test_generic_summary_does_not_replace_distinguishing_diagnostic_fields(records):

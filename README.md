@@ -4,6 +4,8 @@ A Python project that reproduces four OpenAI API failures against the live API, 
 
 Built on the OpenAI Responses API and the Agents SDK (`openai-agents`), with Codex as the pair-programming assistant.
 
+The saved reproductions and agent runs used `gpt-6.1-sol` (`openai` 3.36.0; the agent also used `openai-agents` 0.24.0). The reproduction captures are dated 2026-10-22 UTC; the agent runs are dated 2026-10-22 America/New_York.
+
 ## A saved example
 
 A synthetic ticket reports: “The API returned HTTP 200, but our JSON parser failed.” The nightly report is blocked, and completion details have not been saved.
@@ -23,9 +25,9 @@ Its saved reply begins:
 
 > HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.
 
-The category is a hypothesis. The blocked report supports high severity; the parser error does not establish the cause. The next step is collecting completion details and a sanitized failing excerpt.
+The category is a hypothesis; the severity comes from the blocked report; the next step is to collect completion details and a sanitized failing excerpt.
 
-This is an excerpt from [T-006](triage/tickets/T-006.yaml) in the [saved live evaluation](evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json), not a newly generated response. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
+This is an excerpt from [T-006](triage/tickets/T-006.yaml) in its [saved run](evidence/triage/runs/T-006.json), not a newly generated response. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
 
 ## What is implemented
 
@@ -38,11 +40,11 @@ This is an excerpt from [T-006](triage/tickets/T-006.yaml) in the [saved live ev
 
 The table combines request setup from the [case implementations](src/api_support_lab/cases/) with observed fields from the captures linked in each runbook.
 
-For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply. The [ten-ticket evaluation](evidence/triage/ten-ticket-follow-up-20261022/README.md) preserves its saved results.
+For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply. Its [saved outputs](evidence/triage/runs/) for the ten tickets are in the repo, one file per ticket.
 
-The four cases cover two errors with a diagnostic code to look up (401 and 400), an HTTP-success response whose output is incomplete, and a client timeout without a received response. Status alone does not settle the diagnosis across these cases.
+The four cases cover two errors with a diagnostic code to look up (401 and 400), an HTTP-success response whose output is incomplete, and a client timeout without a received response. In two of the four, the status code alone does not tell you what went wrong.
 
-The failure scope was kept deliberately small to leave more time for the triage agent and ticket-based testing. See [requirements](docs/requirements.md#scope-and-current-status) for the coverage boundaries.
+The failure scope was kept deliberately small to leave more time for the triage agent and ticket-based testing. Rate limits, quota, model access, and context overflow are out of scope, as are MCP, hosting, and external ticketing.
 
 The shared tools are ordinary Python functions: `diagnose`, `list_runbooks`, and `get_runbook`. Exact diagnostic matches come from reviewed observations. Unknown codes remain unmatched, and symptom-based retrieval supports cases without a diagnostic status/code mapping.
 
@@ -54,10 +56,10 @@ Needs Python 3.14 and [uv](https://docs.astral.sh/uv/getting-started/installatio
 uv sync --locked
 uv run python -m api_support_lab diagnose --status 401 --error-code invalid_api_key
 uv run pytest -q
-uv run python -m api_support_lab evaluate --results evidence/triage/ten-ticket-follow-up-20261022/reviewed-evaluation.json
+uv run python -m api_support_lab evaluate --results evidence/triage/runs
 ```
 
-None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` rescores the saved report against current expectations without calling the model and prints **10/10 automated agreement**, with zero operational failures and zero semantic mismatches. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
+None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` scores the saved outputs against `triage/expected.yaml` without calling the model and prints 10/10. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
 
 For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
 
@@ -83,28 +85,27 @@ flowchart TD
     H --> J[Evaluation against separate expectations]
 ```
 
-Evidence capture retains selected diagnostics, effective settings, bounded output, and available usage. Runtime validation checks structured output, supporting retrieval, and ticket-grounded lookup arguments. The model interprets symptoms and drafts prose; those checks cannot establish that every sentence is correct or useful.
+Capture keeps the diagnostic fields, effective settings, a bounded output excerpt, and available usage. Code checks the shape of the result, that any runbook the agent cites was actually retrieved, and that lookup arguments came from the ticket. Whether the prose is right is still a person's call.
 
 Three rules shape the agent:
 
 - It passes only ticket-stated status/code values to `diagnose`. For [T-005](triage/tickets/T-005.yaml), the customer's authentication suspicion supplies neither; the saved agent run lists runbooks, retrieves credential guidance, and asks for diagnostics instead of guessing a lookup code.
 - It must retrieve supporting guidance before recommending a case-specific fix. A result referencing a runbook it never retrieved is rejected.
-- `basis` records whether supplied diagnostics directly support the category (`stated`), symptoms support a hypothesis (`inferred`), or no supported category is determined (`none`). It does not independently prove the diagnosis. For [T-008](triage/tickets/T-008.yaml), pasted schema diagnostics take precedence over the customer's authentication claim.
+- `basis` records whether supplied diagnostics directly support the category (`stated`), symptoms support a hypothesis (`inferred`), or no supported category is determined (`none`). For [T-008](triage/tickets/T-008.yaml), pasted schema diagnostics take precedence over the customer's authentication claim.
 
 ## Results and limits
 
-Each case has one reviewed live broken/corrected pair, a reproduction rather than a benchmark. The first ten-ticket evaluation scored 6/10 and is preserved unchanged. After three follow-up tuning cycles on those same ten synthetic tickets, the saved final outputs score 10/10 under scorer 2 and 9/10 under the original rubric. The [evaluation record](docs/evaluation-follow-up.md) separates agent improvements from the scorer revision; these results do not establish held-out reliability.
+Each case has one reviewed live broken/corrected pair — a reproduction, not a benchmark.
 
-I reviewed all ten saved final drafts and found their general suggested next steps accurate. My [review notes](evidence/triage/ten-ticket-follow-up-20261022/owner-review.md) record recommendations for diagnostic follow-up, customer communication, and escalation, including comparing a failed report with an earlier successful run and collecting a timestamp for log correlation.
+The agent's saved outputs for the ten tickets are in [`evidence/triage/runs/`](evidence/triage/runs/), one file per ticket, with notes on each draft in [`owner-review.md`](evidence/triage/owner-review.md). They score 10/10 against the expected decisions. The instructions were tuned against these same hand-authored tickets — the [development notes](docs/development-notes.md#tuning-the-agent) say how — so this shows the loop works, not how reliable the agent is.
 
-The runbooks were edited after this evaluation to add quoted errors and revise sample replies. The saved runs retain the earlier text; the agent has not been rerun live with the revised guidance.
+The runbooks were edited after this run to add quoted errors and revise sample replies; the saved outputs used the earlier text, and the agent has not been rerun with the revised guidance.
 
-The suite has **281 offline tests** covering capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. These checks verify software behavior; they do not establish live reply quality or general agent performance. All organizations and tickets are invented; live captures concern synthetic API workloads. External ticketing integrations and broader evaluations are outside the current scope described in requirements.
+The offline tests (279, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
 
 ## Explore further
 
 - [Walkthrough](docs/walkthrough.md): four saved decisions, actual replies, and a code-reading path.
-- [Development notes](docs/development-notes.md): project design, runbook redesign, baseline preservation, and manual review.
+- [Development notes](docs/development-notes.md): project attribution, the design calls, and how the agent was tuned.
 - [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
-- [Reproduction guide](docs/reproduction-guide.md) and [evaluation guide](docs/evaluation-guide.md): operating the lab and inspecting results.
-- [Requirements](docs/requirements.md): capabilities and acceptance criteria.
+- [Reproduction guide](docs/reproduction-guide.md): running the cases and publishing evidence.

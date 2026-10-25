@@ -1,0 +1,107 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-005",
+  "ticket_hash": "dd51480544c7391c0e56e84da12373f44d1c0561384bd4c7efc5664bbb006f2b",
+  "captured_at": "2026-10-23T00:27:21.484322+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "undetermined",
+    "candidate_runbooks": [
+      "invalid_credentials"
+    ],
+    "observed_evidence": [
+      "Our invented Maple Demo team thinks authentication may be the problem.",
+      "We do not have the error message or status handy.",
+      "What information would help?"
+    ],
+    "basis": "none",
+    "severity": "unknown",
+    "action": "request_info",
+    "missing": [
+      "http_status",
+      "error_code",
+      "error_type",
+      "error_message",
+      "impact"
+    ],
+    "customer_reply": "There isn’t enough evidence yet to tell whether the API key is the problem. Please share a minimal sanitized error excerpt showing the HTTP status, error code, error or SDK exception type, and accompanying message. If these aren’t handy, an authorized person can collect them during a later check of the affected workflow. Remove API keys, authorization headers, and sensitive data; don’t send full logs or request bodies. Also, is the workflow blocked, degraded with a workaround, or nonblocking?",
+    "escalation_note": ""
+  },
+  "tool_use": [
+    {
+      "call_id": "call_JHz01LomUab57bitnigmXYlS",
+      "name": "list_runbooks",
+      "arguments": {},
+      "status": "completed",
+      "result": {
+        "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+        "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+        "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+        "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+      }
+    },
+    {
+      "call_id": "call_eoywpR7oWEHneqkf0Vzf2GWA",
+      "name": "get_runbook",
+      "arguments": {
+        "case": "invalid_credentials"
+      },
+      "status": "completed",
+      "result": "# Invalid credentials\n\nA request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.\n\nUse this runbook to investigate a customer's authentication symptoms, identify a supported correction, and confirm recovery of the affected workflow.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-21` (America/New_York; captures are dated `2026-10-22` UTC).\n- Observed evidence: [authentication rejection](../evidence/invalid_credentials/broken-20261022T032250Z.json) and [successful correction](../evidence/invalid_credentials/fixed-20261022T032341Z.json).\n- The lab observed HTTP 401, `AuthenticationError`, and `invalid_api_key`, followed by HTTP 200 with completed output. This does not establish key revocation or guarantee every authentication failure has these fields.\n\n## Evidence to request\n\n- A minimal sanitized error excerpt with available HTTP status, SDK exception type, error code/type/parameter, UTC attempt time, and request ID if received.\n- The model, SDK version, and execution environment in which the failure occurs.\n- How the application loads its credential and which project it is intended to use. Request configuration descriptions, never the credential or an environment dump.\n- Whether the workflow is blocked, degraded with a workaround, or nonblocking; impact determines severity independently of the error.\n\n## Diagnosis and alternative explanations\n\nAn explicit authentication rejection supports investigating credential loading and validity. HTTP status alone or a customer's assertion that a key was revoked does not identify the exact cause. A partial complaint such as “my key stopped working” needs distinguishing status/code/type evidence before a case-specific correction.\n\nA missing, malformed, outdated, or incorrectly loaded credential can be consistent with these symptoms. Check the application process and deployment actually making the request. Permission, model-access, billing, and connection failures may require different investigations; preserve their actual diagnostics and unfamiliar codes.\n\n## Corrective steps\n\n1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.\n2. Check for an absent value, a stale configuration reference, unintended whitespace, or selection of the wrong environment/project. Perform these checks locally without printing or sharing the credential.\n3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.\n4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.\n\n## Confirm recovery\n\nCheck the customer's affected request in the corrected execution environment. Confirm that authentication succeeds and the requested task completes with the expected usable result; HTTP success alone is insufficient. For Responses, inspect completion status and handle incomplete output or refusal separately.\n\nIf the request still fails, retain the new sanitized diagnostics and compare them with the original failure. A different error can mean authentication progressed while another issue remains. Describe recovery only to the extent actually observed.\n\n## Escalation checklist\n\n- Escalate persistent authentication rejection after loading/configuration checks to the project owner or appropriate API support channel.\n- Include minimal sanitized diagnostics, available request ID, UTC time, model/SDK, and affected environment.\n- Describe the loading checks, configuration change, and result of the customer's recovery check; identify uncertainties and unrelated errors.\n- Omit credentials, authorization headers, full logs, and environment dumps. Suggest routing without claiming a handoff occurred.\n\n## Illustrative draft reply\n\n“The supplied authentication error indicates that the request's credential was rejected; it does not establish that a key was revoked. Please confirm that the affected application loads the intended project's credential without printing or sharing it. After correcting any loading issue, check that the affected request completes successfully. If it still fails, could you provide the error code/type and request ID if available from a minimal sanitized excerpt?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.\n\n## Sources\n\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n- [API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n- [Authentication and credential handling](https://developers.openai.com/api/reference/overview)\n\nDocumentation supports the troubleshooting approach; the linked observations establish only what this lab verified.\n"
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1889,
+      "output_tokens": 15,
+      "total_tokens": 1904,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2053,
+      "output_tokens": 46,
+      "total_tokens": 2099,
+      "input_tokens_details": {
+        "cached_tokens": 1886
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 24
+      }
+    },
+    {
+      "input_tokens": 3057,
+      "output_tokens": 195,
+      "total_tokens": 3252,
+      "input_tokens_details": {
+        "cached_tokens": 2050
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 8790.439
+}

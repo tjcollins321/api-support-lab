@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-007",
+  "ticket_hash": "f2c2d83250837944c48e014c447bcb810fc1cd7f780a6a77b31077ae34e2c115",
+  "captured_at": "2026-10-23T00:27:40.643001+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "undetermined",
+    "candidate_runbooks": [],
+    "observed_evidence": [
+      "HTTP 400",
+      "error_code: lunar_teapot_alignment_77",
+      "We do not know what it means and have not collected the accompanying message or request settings."
+    ],
+    "basis": "none",
+    "severity": "unknown",
+    "action": "request_info",
+    "missing": [
+      "error_message",
+      "error_type",
+      "endpoint",
+      "model",
+      "sdk_version",
+      "impact"
+    ],
+    "customer_reply": "The supplied HTTP 400 and code `lunar_teapot_alignment_77` do not match our local diagnostic mappings, so we cannot identify the cause from the code alone. Please collect a minimal sanitized excerpt containing the accompanying error message and type, plus the endpoint, model, and SDK name/version used. Also describe the workflow impact—for example, whether requests are blocked or a workaround exists. Omit credentials, full request bodies, and sensitive customer data.",
+    "escalation_note": ""
+  },
+  "tool_use": [
+    {
+      "call_id": "call_tYeCpxquSMbFTJNcEXJBD0GS",
+      "name": "diagnose",
+      "arguments": {
+        "status": 400,
+        "error_code": "lunar_teapot_alignment_77"
+      },
+      "status": "completed",
+      "result": []
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1908,
+      "output_tokens": 30,
+      "total_tokens": 1938,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 1951,
+      "output_tokens": 234,
+      "total_tokens": 2185,
+      "input_tokens_details": {
+        "cached_tokens": 1905
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 7147.574
+}

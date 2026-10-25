@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-001",
+  "ticket_hash": "86305bad18b6ff5d1f50b6f108250aff49cc8a4700e6cc97f85b5ff1488ba717",
+  "captured_at": "2026-10-23T00:26:42.225445+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "invalid_credentials",
+    "candidate_runbooks": [
+      "invalid_credentials"
+    ],
+    "observed_evidence": [
+      "HTTP 401",
+      "exception_type: AuthenticationError",
+      "error_code: invalid_api_key",
+      "request_id: req_c610e4e44403409bbe5eecc22366c2d8",
+      "We have not described the business impact yet."
+    ],
+    "basis": "stated",
+    "severity": "unknown",
+    "action": "recommend_fix",
+    "missing": [
+      "impact"
+    ],
+    "customer_reply": "The HTTP 401 and `invalid_api_key` indicate an authentication rejection, but do not establish that the key was revoked. In the running Harbor Demo application, check locally that the intended project's credential is loaded and that there is no missing value, stale configuration reference, unintended whitespace, or wrong environment/project selection. Do not print or share the credential. Correct any identified issue through your established secret-management process; if validity remains uncertain, involve the project's credential owner.\n\nAfter a correction, have an authorized person retry the affected workflow and confirm both successful authentication and usable output—not just HTTP success.\n\nIs the affected workflow blocked, degraded with a workaround, or nonblocking?",
+    "escalation_note": ""
+  },
+  "tool_use": [
+    {
+      "call_id": "call_Gqk62f1bXbZhu9YN6i6GxWfB",
+      "name": "diagnose",
+      "arguments": {
+        "status": 401,
+        "error_code": "invalid_api_key"
+      },
+      "status": "completed",
+      "result": [
+        "invalid_credentials"
+      ]
+    },
+    {
+      "call_id": "call_Kjteg6XbXanOy7ao4HTpHn4Z",
+      "name": "get_runbook",
+      "arguments": {
+        "case": "invalid_credentials"
+      },
+      "status": "completed",
+      "result": "# Invalid credentials\n\nA request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.\n\nUse this runbook to investigate a customer's authentication symptoms, identify a supported correction, and confirm recovery of the affected workflow.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-21` (America/New_York; captures are dated `2026-10-22` UTC).\n- Observed evidence: [authentication rejection](../evidence/invalid_credentials/broken-20261022T032250Z.json) and [successful correction](../evidence/invalid_credentials/fixed-20261022T032341Z.json).\n- The lab observed HTTP 401, `AuthenticationError`, and `invalid_api_key`, followed by HTTP 200 with completed output. This does not establish key revocation or guarantee every authentication failure has these fields.\n\n## Evidence to request\n\n- A minimal sanitized error excerpt with available HTTP status, SDK exception type, error code/type/parameter, UTC attempt time, and request ID if received.\n- The model, SDK version, and execution environment in which the failure occurs.\n- How the application loads its credential and which project it is intended to use. Request configuration descriptions, never the credential or an environment dump.\n- Whether the workflow is blocked, degraded with a workaround, or nonblocking; impact determines severity independently of the error.\n\n## Diagnosis and alternative explanations\n\nAn explicit authentication rejection supports investigating credential loading and validity. HTTP status alone or a customer's assertion that a key was revoked does not identify the exact cause. A partial complaint such as “my key stopped working” needs distinguishing status/code/type evidence before a case-specific correction.\n\nA missing, malformed, outdated, or incorrectly loaded credential can be consistent with these symptoms. Check the application process and deployment actually making the request. Permission, model-access, billing, and connection failures may require different investigations; preserve their actual diagnostics and unfamiliar codes.\n\n## Corrective steps\n\n1. Confirm that the affected application loads the intended API credential through its configured credential mechanism. Check the running process or deployment, rather than assuming its configuration matches a developer's shell.\n2. Check for an absent value, a stale configuration reference, unintended whitespace, or selection of the wrong environment/project. Perform these checks locally without printing or sharing the credential.\n3. Correct the identified loading or configuration problem using the application's established secret-management process. If credential validity remains uncertain, involve the project's credential owner through that process; do not claim revocation from the rejection alone.\n4. Arrange a controlled check of the affected request after the change, with the customer's approval and appropriate handling of its data.\n\n## Confirm recovery\n\nCheck the customer's affected request in the corrected execution environment. Confirm that authentication succeeds and the requested task completes with the expected usable result; HTTP success alone is insufficient. For Responses, inspect completion status and handle incomplete output or refusal separately.\n\nIf the request still fails, retain the new sanitized diagnostics and compare them with the original failure. A different error can mean authentication progressed while another issue remains. Describe recovery only to the extent actually observed.\n\n## Escalation checklist\n\n- Escalate persistent authentication rejection after loading/configuration checks to the project owner or appropriate API support channel.\n- Include minimal sanitized diagnostics, available request ID, UTC time, model/SDK, and affected environment.\n- Describe the loading checks, configuration change, and result of the customer's recovery check; identify uncertainties and unrelated errors.\n- Omit credentials, authorization headers, full logs, and environment dumps. Suggest routing without claiming a handoff occurred.\n\n## Illustrative draft reply\n\n“The supplied authentication error indicates that the request's credential was rejected; it does not establish that a key was revoked. Please confirm that the affected application loads the intended project's credential without printing or sharing it. After correcting any loading issue, check that the affected request completes successfully. If it still fails, could you provide the error code/type and request ID if available from a minimal sanitized excerpt?”\n\nThis is an illustrative draft for human review, not an executed agent result. Use it with supplied authentication evidence; otherwise ask for distinguishing details first.\n\n## Sources\n\n- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)\n- [API error guidance](https://developers.openai.com/api/docs/guides/error-codes)\n- [Authentication and credential handling](https://developers.openai.com/api/reference/overview)\n\nDocumentation supports the troubleshooting approach; the linked observations establish only what this lab verified.\n"
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1936,
+      "output_tokens": 26,
+      "total_tokens": 1962,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 1978,
+      "output_tokens": 20,
+      "total_tokens": 1998,
+      "input_tokens_details": {
+        "cached_tokens": 1933
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2956,
+      "output_tokens": 277,
+      "total_tokens": 3233,
+      "input_tokens_details": {
+        "cached_tokens": 1975
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 9872.526
+}

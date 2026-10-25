@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-006",
+  "ticket_hash": "c2b567a4a698033cd3093c6706a96612ddcb661b82c3b078c9130d23d325a332",
+  "captured_at": "2026-10-23T00:27:30.276045+00:00",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "incomplete_output",
+    "candidate_runbooks": [
+      "incomplete_output"
+    ],
+    "observed_evidence": [
+      "The invented Willow Demo team's nightly report is blocked.",
+      "The API returned HTTP 200, but our JSON parser failed.",
+      "We have not saved completion details or a failing output excerpt yet.",
+      "JSONDecodeError: Expecting ',' delimiter"
+    ],
+    "basis": "inferred",
+    "severity": "high",
+    "action": "request_info",
+    "missing": [
+      "response_status",
+      "incomplete_reason",
+      "response_error",
+      "refusal",
+      "request_id",
+      "max_output_tokens",
+      "reasoning_setting",
+      "model",
+      "sdk_version",
+      "attempt_time",
+      "parser_error",
+      "output_excerpt"
+    ],
+    "customer_reply": "HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.\n\nDuring the next authorized check of the affected nightly report, please collect:\n- Response completion status, incomplete reason/details, and any response error or refusal (or note their absence); the request ID if received.\n- Configured max_output_tokens, reasoning setting, model, SDK version, and UTC attempt time.\n- Minimal sanitized parser/extraction context: which response field is parsed, the relevant parsing step, and the expected JSON structure/schema. The error line is already supplied.\n- A minimal sanitized failing output excerpt, stating whether it contains all returned text or is truncated.\n\nPlease exclude credentials, sensitive records, full prompts, and full logs. Inspect completion details before treating the output as successful; do not increase the output budget solely on the basis of this parser error.",
+    "escalation_note": ""
+  },
+  "tool_use": [
+    {
+      "call_id": "call_kHJtXLhfUVaOvsJbQgNxYx18",
+      "name": "list_runbooks",
+      "arguments": {},
+      "status": "completed",
+      "result": {
+        "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+        "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+        "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+        "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+      }
+    },
+    {
+      "call_id": "call_elhJkAb96iyQJmcGHTMtseJA",
+      "name": "get_runbook",
+      "arguments": {
+        "case": "incomplete_output"
+      },
+      "status": "completed",
+      "result": "# Incomplete structured output\n\nAn HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.\n\nUse this runbook to distinguish incomplete generation from parsing or application-validation problems, and confirm that the customer's output is complete and usable after a correction.\n\n## Evidence and confidence\n\n- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.\n- Verified on: `2026-10-22` (America/New_York and UTC).\n- Observed evidence: [budget-exhausted response](../evidence/incomplete_output/broken-20261022T232333Z.json) and [successful correction](../evidence/incomplete_output/fixed-20261022T232346Z.json).\n- The lab observed HTTP 200 with status `incomplete` and reason `max_output_tokens`, followed by a completed response whose full output passed schema/content validation. This does not establish that an arbitrary parser failure has the same cause.\n\n## Evidence to request\n\n- Response completion status, incomplete reason/details, any refusal or response error, and request ID if received.\n- The configured output-token limit, reasoning setting, model, SDK version, and UTC attempt time.\n- The parser/validation error, expected schema, and a minimal sanitized failing output excerpt. An excerpt may itself be truncated; ask whether it represents all returned text.\n- The affected workflow and its impact, including whether a report or other task is blocked. Request no sensitive records, full prompts, credentials, or full logs.\n\n## Diagnosis and alternative explanations\n\nAn explicit `incomplete` status with reason `max_output_tokens` supports output-budget exhaustion. Reasoning may consume the budget before visible JSON appears. HTTP success plus a parser failure alone does not establish that cause.\n\nOther explanations include content-filter termination, refusal, extraction of the wrong response field, a schema mismatch, or an application parser bug. A completed response that fails schema/content validation needs investigation even if it parses as JSON. Treat transport failure separately from a response that arrived incomplete.\n\n## Corrective steps\n\n1. Inspect completion status, incomplete details, refusal, and errors before parsing or consuming the output as a successful result.\n2. When the supplied reason establishes output-budget exhaustion, choose a larger bounded output allowance appropriate to the model and workload, or reduce the requested payload. Account for reasoning as well as visible output; there is no universal token limit that fixes every workload.\n3. If output is completed but parsing or validation fails, investigate response extraction, parser behavior, and the expected schema/content instead of assuming that increasing the budget will fix it.\n4. Have the application maintainer apply the supported change and arrange a controlled check of the affected workflow.\n\n## Confirm recovery\n\nInspect the customer's full returned output, not just a shortened log excerpt. Confirm completed status without an incomplete reason, refusal, or response error. Parse the intended output field and validate both its schema and the task's required content.\n\nConfirm that the previously affected workflow now uses the result successfully. HTTP 200 or parseable JSON alone is insufficient, and a partially emitted payload must not be accepted as a completed task. If the correction fails, retain the actual completion and validation details.\n\n## Escalation checklist\n\n- Escalate persistent incomplete output within appropriate workload limits, or completed output that still fails the expected schema/content checks.\n- Include status, incomplete reason, output/reasoning settings, model/SDK, UTC time, and request ID if available.\n- Supply minimal sanitized schema/output and parser-error excerpts, stating any excerpt truncation.\n- Describe the change attempted and its effect on the customer's task. Route to the application maintainer or appropriate API support channel without claiming a handoff.\n\n## Illustrative draft reply\n\n“Could you share the response status, incomplete reason, output-token limit, and a small sanitized excerpt that fails parsing? If the response confirms output-budget exhaustion, a larger bounded allowance or smaller payload may help. Then check completion, schema, and required content before using the result.”\n\nThis is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.\n\n## Sources\n\n- [Official structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs)\n- [Official reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)\n- [OpenAI Python SDK and Responses interfaces](https://developers.openai.com/api/reference/python)\n\nThese references describe expected behavior; they are not observed evidence for this lab's case.\n"
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 1916,
+      "output_tokens": 15,
+      "total_tokens": 1931,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2080,
+      "output_tokens": 21,
+      "total_tokens": 2101,
+      "input_tokens_details": {
+        "cached_tokens": 1913
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 3047,
+      "output_tokens": 394,
+      "total_tokens": 3441,
+      "input_tokens_details": {
+        "cached_tokens": 2077
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    }
+  ],
+  "elapsed_ms": 10367.735
+}

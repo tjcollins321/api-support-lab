@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes the implemented CLI, capture pipeline, runbook tools, triage agent, and evaluator. Start with the [README](../README.md) for usage or the [walkthrough](walkthrough.md) for saved examples. [Requirements](requirements.md) define the capability boundaries; the [evaluation record](evaluation-follow-up.md) records observed results.
+This document describes the implemented CLI, capture pipeline, runbook tools, triage agent, and evaluator. Start with the [README](../README.md) for usage or the [walkthrough](walkthrough.md) for saved examples.
 
 ## Overview
 
@@ -27,7 +27,7 @@ Runbook authoring and review are separate from the capture pipeline; captures do
 
 ## Components and storage
 
-All listed components now exist. The checkout includes four case modules and verified runbooks, eight reviewed reproduction evidence files, ten synthetic tickets, separate expectations, selected live evaluation reports, and offline tests:
+The checkout includes four case modules and verified runbooks, eight reviewed reproduction evidence files, ten synthetic tickets, separate expectations, ten saved agent runs with owner review, and offline tests:
 
 ```text
 src/api_support_lab/
@@ -109,7 +109,7 @@ Do not assert exact error-message wording. Confirm error codes, parameters, mini
 
 Start corrected requests with a 2,048-token output cap and a 60-second client timeout. For the incomplete variant, begin with a 128-token cap or the documented minimum if higher; for the timeout variant, begin at 0.5 seconds. Adjust only within the reproduction timebox and record effective settings. An unrelated failure does not verify the intended case. A corrected timeout request can still fail for another reason; report that result honestly.
 
-The case modules implement these starting limits. CLI `--max-output-tokens` and `--timeout-seconds` overrides are validated before client construction and recorded as effective settings. The broken schema substitutes an invalid property type; its conservative predicate requires HTTP 400, SDK `BadRequestError`, and a tools-related parameter without requiring an exact code/message. Both tool variants disable tool selection; no local execution occurs. The incomplete case uses the same strict schema/task for a 32-item sequence at both budgets. Capture optionally validates full completed output before redaction/truncation, storing only `output_valid`; invalid JSON/schema/task content fails the correction. Incomplete/refused/error responses skip validation. The timeout case changes only client timeout, catches SDK timeouts through capture, and never fabricates transport fields. Authored in-memory SDK tests remain distinct from the six later live captures: targeted schema rejection followed by completion, explicit budget exhaustion followed by valid completion, and a client timeout without transport metadata followed by completion. No trigger adjustment or rerun was needed; see the [reviewed observations](reproduction-guide.md#reviewed-slice-4-observations).
+The case modules implement these starting limits. CLI `--max-output-tokens` and `--timeout-seconds` overrides are validated before client construction and recorded as effective settings. The broken schema substitutes an invalid property type; its conservative predicate requires HTTP 400, SDK `BadRequestError`, and a tools-related parameter without requiring an exact code/message. Both tool variants disable tool selection; no local execution occurs. The incomplete case uses the same strict schema/task for a 32-item sequence at both budgets. Capture optionally validates full completed output before redaction/truncation, storing only `output_valid`; invalid JSON/schema/task content fails the correction. Incomplete/refused/error responses skip validation. The timeout case changes only client timeout, catches SDK timeouts through capture, and never fabricates transport fields. Reviewed broken/corrected observations are linked from each [support runbook](../runbooks/).
 
 ## Runbooks and deterministic tools
 
@@ -169,7 +169,7 @@ On model/API failure, refusal, turn exhaustion, or invalid/ungrounded output, sa
 
 ## CLI, execution boundaries, and budget
 
-The following is the implemented command contract. Recorded reproduction pairs are linked from the [reproduction guide](reproduction-guide.md); live evaluation results are in the [evaluation record](evaluation-follow-up.md). The single-ticket triage CLI form has offline SDK checks:
+The following is the implemented command contract. Recorded reproduction pairs are linked from each [runbook](../runbooks/); saved agent outputs are in [`evidence/triage/runs/`](../evidence/triage/runs/). The single-ticket triage CLI form has offline SDK checks:
 
 ```text
 uv run python -m api_support_lab reproduce CASE --variant broken|fixed --live
@@ -181,7 +181,7 @@ uv run pytest                         # offline only
 uv run pytest --run-live              # opt-in for marked tests; no live API tests currently
 ```
 
-The current suite contains no live reproduction tests; `--run-live` currently exercises only the harmless generated opt-in probe through its policy test. Live verification used one explicit CLI invocation per variant for all four cases. Exit 0 means an attempt matched the [maintainer guide's predicate](reproduction-guide.md#per-attempt-checks-and-exit-codes); other recorded outcomes return 1, while configuration/argument errors return 2. Each runbook was marked verified only after pair and sanitization review. Future reruns require new live authorization. Use `--no-env-file` with offline uv commands to avoid loading credentials through uv's environment-file setting.
+The current suite contains no live reproduction tests; `--run-live` currently exercises only the harmless generated opt-in probe through its policy test. Exit 0 means an attempt matched the [maintainer guide's predicate](reproduction-guide.md#per-attempt-checks-and-exit-codes); other recorded outcomes return 1, while configuration/argument errors return 2. Each runbook was marked verified only after pair and sanitization review. Future reruns require new live authorization. Use `--no-env-file` with offline uv commands to avoid loading credentials through uv's environment-file setting.
 
 Require `--live` for every CLI operation that calls the API, including authentication experiments, triage, and evaluation. Refuse without that flag before client construction. Check required environment values without displaying them. A pytest marker alone must not enable live tests: register a `--run-live` opt-in and skip them by default. Score saved artifacts offline without rerunning the agent; expose that through `evaluate --results PATH` without `--live`.
 
@@ -201,7 +201,7 @@ Check schema validity, allowed category, action and severity agreement, required
 
 Report per-ticket outcomes and aggregate numerators/denominators over all ten tickets, including failed runs. Report operational failures separately from semantic mismatches; never drop failures to inflate scores. Save the ticket set version or content hash, model, SDK versions, settings, and timestamp. Label the report a small demonstration, with no general reliability claims.
 
-The implemented evaluation uses T-001 through T-010 and a denominator of ten, retaining the original T-001/T-005/T-009 fixtures unchanged. T-001/T-002/T-003/T-004/T-008 paste selected reviewed observed fields; provenance stays outside ticket input. T-007 is an authored unknown code and T-010 contains no actual sensitive content. Expectations were defined before updating instructions and authoring the expanded SDK/scorer fixtures. T-004 forbids requesting known-unavailable response fields. See the [maintainer evaluation guide](evaluation-guide.md) for the later live checkpoint and review rubric. Expected outcomes are loaded only after all model runs. Offline `--results` accepts a single run, a report containing `runs`, or a directory of individual run JSON files. Missing/duplicate runs, corrupt directory entries, invalid output/logs, grounding failures, ticket-hash drift, and expectation mismatches remain visible. Reports retain original sanitized runs, settings/versions/usage, and separate operational-failure and semantic-mismatch counts. Manual review entries default to pending; reviewers record pass/fail and notes in `manual_reviews`. Rescoring preserves those entries; malformed review records remain visible as input issues. The earlier pilot is now a partial 3/10 set when rescored, without changing its historical report. Scorer 2 records its version and a canonical expectations hash. T-010 evidence uses mandatory groups with alternative verbatim extracts; grounding still rejects invented evidence. The frozen initial ten-ticket report stays 6/10, even though rescoring unchanged outputs under version 2 gives 7/10. A passing automated report does not mean manual review passed. Offline scoring needs no credential, client, or valid live model setting.
+The evaluation runs all ten tickets once, sequentially, with no retries, and loads `triage/expected.yaml` only after the model runs finish. Expectations give the acceptable categories, the expected basis, action and severity, the fields that must be requested (and, for the timeout, fields that must not be), the runbooks that must have been retrieved, and verbatim ticket extracts that must appear in `observed_evidence` — for T-010 as groups of alternatives, since several extracts are equally valid. Each saved run carries a hash of its ticket, so a result cannot quietly describe a ticket that has since changed. Offline `--results` accepts a single run, a report containing `runs`, or a directory of run files; missing or duplicate runs, corrupt files, invalid output, grounding failures, hash drift and expectation mismatches all stay visible, and the report keeps operational failures and semantic mismatches as separate counts. A passing automated report does not mean the replies are good; that is what [owner-review.md](../evidence/triage/owner-review.md) is for. Offline scoring needs no credential, client, or valid live model setting.
 
 ## Tradeoffs and remaining verification
 
@@ -213,4 +213,4 @@ The implemented evaluation uses T-001 through T-010 and a denominator of ten, re
 | Four cases before expanding coverage | Leaves time for evaluation; many real errors remain outside the registry |
 | Python 3.14 and one model default | A single documented environment; dependency and account compatibility must be checked |
 
-Offline tests cover strict tool schemas, asynchronous in-memory SDK execution, request settings, failure handling, and saved scoring. Authored fixtures verify software behavior. Reviewed [reproduction observations](reproduction-guide.md#current-verification-status) and [live evaluation results](evaluation-follow-up.md) document actual API and model behavior, with historical outcomes preserved. The written [walkthrough](walkthrough.md) connects four selected runs to their supporting evidence and code. Broader reliability and the correctness of any future customer draft remain unverified.
+Offline tests cover strict tool schemas, asynchronous in-memory SDK execution, request settings, failure handling, and saved scoring. Authored fixtures verify software behavior. Reviewed reproduction observations linked from the [runbooks](../runbooks/) and [saved agent outputs](../evidence/triage/runs/) document actual API and model behavior. Earlier outcomes remain in Git history. The written [walkthrough](walkthrough.md) connects four selected runs to their supporting evidence and code. Broader reliability and the correctness of any future customer draft remain unverified.
