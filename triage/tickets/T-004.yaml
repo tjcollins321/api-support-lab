@@ -1,9 +1,9 @@
 id: T-004
 subject: Client stops waiting for output
 body: >-
-  Our invented Elm Demo application uses a 0.5-second client timeout and zero
-  SDK retries. No HTTP response or request ID arrived. How should we investigate
-  this before arranging another attempt?
+  Elm Demo's batch job raises this with a 0.5-second client timeout and SDK retries set
+  to zero. No HTTP response or request ID arrived. Is it safe to just retry, or should
+  we look at something first?
 pasted_error: |-
   exception_type: APITimeoutError
   message: Request timed out.

@@ -1,9 +1,9 @@
 id: T-007
 subject: Unrecognized error in our API integration
 body: >-
-  The invented Linden Demo application returned this code. We do not know what
-  it means and have not collected the accompanying message or request settings.
-  What evidence would help?
+  Linden Demo's integration is returning this error code and we can't find it in the
+  docs. I grabbed the code but not the rest of the message or the request details. What
+  do you need to look into it?
 pasted_error: |-
   HTTP 400
   error_code: lunar_teapot_alignment_77

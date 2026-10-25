@@ -1,8 +1,8 @@
 id: T-001
 subject: API request rejected in our test application
 body: >-
-  Our invented Harbor Demo application fails before it receives output.
-  Can you suggest what to check? We have not described the business impact yet.
+  Our Harbor Demo app is getting this error back from the API. We haven't dug into it
+  yet. What should we check first?
 pasted_error: |-
   HTTP 401
   exception_type: AuthenticationError

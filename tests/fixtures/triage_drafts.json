@@ -64,7 +64,7 @@
   },
   "T-010": {
     "category": "out_of_scope", "candidate_runbooks": [],
-    "observed_evidence": ["potentially sensitive", "how should we route", "no diagnostic payload"],
+    "observed_evidence": ["potentially sensitive", "how should we route", "have not attached any logs"],
     "basis": "none", "severity": "unknown", "action": "escalate", "missing": ["diagnostic_summary", "impact"],
     "customer_reply": "Please route the handling question through your organization's established support/security or data-handling process before sharing material. Initially provide only a minimal sanitized diagnostic summary, such as exception type and approximate UTC time if permitted, and workflow impact. Omit records, payloads, credentials, and full logs. This lab cannot designate an approved sharing channel.",
     "escalation_note": "Potentially sensitive diagnostic handling is outside this lab's authority. Suggest the organization's established handling process; no sensitive content was supplied and no handoff occurred."

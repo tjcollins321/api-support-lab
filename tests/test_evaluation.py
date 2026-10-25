@@ -296,9 +296,9 @@ def test_new_required_information_fields_are_enforced(records, ticket_id):
 
 
 @pytest.mark.parametrize("evidence", [
-    ["potentially sensitive", "how should we route", "no diagnostic payload"],
-    ["might contain sensitive records", "what minimal sanitized metadata", "no diagnostic payload"],
-    ["might contain sensitive records", "Before sharing anything", "no diagnostic payload"],
+    ["potentially sensitive", "how should we route", "have not attached any logs"],
+    ["might contain sensitive records", "what minimal sanitized metadata", "have not attached any logs"],
+    ["might contain sensitive records", "Before sharing anything", "have not attached any logs"],
 ])
 def test_handling_evidence_accepts_grounded_alternatives(records, evidence):
     records[9]["result"]["observed_evidence"] = evidence
@@ -314,13 +314,18 @@ def test_handling_evidence_requires_each_supporting_fact(records, omit):
 
 
 def test_sector_label_alone_does_not_support_handling_escalation(records):
+    tickets = load_tickets()
+    tickets[9] = tickets[9].model_copy(update={"body": "We are a public-sector organization."})
+    records[9]["ticket_hash"] = tickets[9].content_hash()
     records[9]["result"]["observed_evidence"] = ["public-sector"]
-    assert not score(records)["tickets"][9]["checks"]["observed_evidence"]
+    row = evaluation.score_runs(records, tickets, evaluation.load_expected())["tickets"][9]
+    assert row["operational_failure"] is None
+    assert not row["checks"]["observed_evidence"]
 
 
 def test_matching_evidence_substrings_still_require_verbatim_ticket_support(records):
     records[9]["result"]["observed_evidence"] = [
-        "An actual agency sent potentially sensitive records; how should we route with no diagnostic payload?",
+        "An actual agency sent potentially sensitive records; how should we route and have not attached any logs?",
     ]
     assert score(records)["tickets"][9]["operational_failure"] == "invalid_or_ungrounded_result"
 

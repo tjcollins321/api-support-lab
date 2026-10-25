@@ -1,9 +1,8 @@
 id: T-008
 subject: We think our API key needs replacing
 body: >-
-  The invented Juniper Demo team believes authentication is the cause and asks
-  whether to replace the key. Here is the error we actually received. What does
-  this evidence support checking first?
+  Juniper Demo here. We think our API key is the problem and want to rotate it. Can you
+  confirm that's the fix? Here's the error we're getting.
 pasted_error: |-
   HTTP 400
   exception_type: BadRequestError

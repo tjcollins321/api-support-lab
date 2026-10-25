@@ -1,9 +1,8 @@
 id: T-003
 subject: Response arrives but structured output does not finish
 body: >-
-  Our invented Aspen Demo application requested structured JSON with a
-  max_output_tokens setting of 128. These are the returned completion details.
-  What correction and completion checks would you suggest?
+  Aspen Demo here. We ask for structured JSON output with max_output_tokens set to 128
+  and the response comes back like this. The JSON isn't complete. How do we fix it?
 pasted_error: |-
   HTTP 200
   response_status: incomplete
