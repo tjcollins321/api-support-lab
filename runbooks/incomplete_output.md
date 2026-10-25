@@ -2,86 +2,114 @@
 
 An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.
 
-Use this runbook to distinguish incomplete generation from parsing or application-validation problems, and confirm that the customer's output is complete and usable after a correction.
+## What the customer sees
 
-## The error as the customer sees it
-
-The request returned HTTP 200 with no response error. Selected fields from
-[the capture](../evidence/incomplete_output/broken-20261022T232333Z.json) show the
-incomplete response and its actual partial JSON:
+An HTTP-success response can still have incomplete output. Illustrative SDK
+fields, with the output excerpt abbreviated for readability:
 
 ```text
-http_status:        200
-response_status:    incomplete
-incomplete_reason:  max_output_tokens
-usage.output_tokens: 128
-output_excerpt: {"status":"READY","items":[{"index":1,"label":"item_1"},{"index":2,"label":"item_2"},{"index":3,"label":"item_3"},{"index":4,"label":"item_4"},{"index":5,"label":"item_5"},{"index":6,"label":"item_6"},{"index":7,"label":"item_7"},{"index":8,"label":"item_8"},{"index":9,"label":"item_9"},{"index":10,"label":"item_10"},{"index":11,"label":"item_11"},{"index":12
+HTTP 200
+response.status                     "incomplete"
+response.incomplete_details.reason  "max_output_tokens"
+response.usage.output_tokens        128
+response.output_text                {"status":"READY","items":[{"index":1,"label":"item_1"}, … {"index":12
 ```
 
-The capture normalizes `response.status` and `response.incomplete_details.reason`
-into `response_status` and `incomplete_reason`. The 128 output tokens match the
-request's recorded `max_output_tokens`. The text stops mid-object; parsing it
-before checking completion status can surface a `JSONDecodeError` while hiding
-the completion reason.
+A customer who parses the output without checking completion details may report
+only a `JSONDecodeError`.
 
-## Evidence and confidence
+## What it means
 
-- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
-- Verified on: `2026-10-22` (America/New_York and UTC).
-- Observed evidence: [budget-exhausted response](../evidence/incomplete_output/broken-20261022T232333Z.json) and [successful correction](../evidence/incomplete_output/fixed-20261022T232346Z.json).
-- The lab observed HTTP 200 with status `incomplete` and reason `max_output_tokens`, followed by a completed response whose full output passed schema/content validation. This does not establish that an arbitrary parser failure has the same cause.
+An explicit `incomplete` status with `incomplete_details.reason: max_output_tokens`
+supports output-budget exhaustion. On reasoning models, the output allowance
+also covers reasoning tokens, so visible output can be shorter than expected.
 
-The saved excerpts are cut at 1,000 characters, so the corrected capture's `output_excerpt` also ends mid-array; `output_valid: true` was computed on the full text before the cut.
+A parser error by itself does not establish exhaustion. With completed output,
+check field extraction, the expected schema, and parser behavior; also inspect
+any refusal or response error. A content-filter termination needs its own
+investigation. If no response arrived, investigate the SDK or transport failure
+first, using the timeout runbook when the exception or symptoms support it.
 
-## Evidence to request
+## What to ask for
 
-- Response completion status, incomplete reason/details, any refusal or response error, and request ID if received.
-- The configured output-token limit, reasoning setting, model, SDK version, and UTC attempt time.
-- The parser/validation error, expected schema, and a minimal sanitized failing output excerpt. An excerpt may itself be truncated; ask whether it represents all returned text.
-- The affected workflow and its impact, including whether a report or other task is blocked. Request no sensitive records, full prompts, credentials, or full logs.
+Request only information missing from the ticket:
 
-- A timestamp from a failing run and from the last successful run, and whether the input size or dataset changed between them; any completion-status logging that already exists.
+- The response's `status`, `incomplete_details`, any refusal or response error,
+  and request ID if received.
+- The configured `max_output_tokens`, reasoning setting, model, and SDK version.
+- The parser/validation error, expected schema, and a minimal sanitized snippet
+  showing which response field is selected and how it is extracted and parsed.
+  Include a short failing output excerpt and whether it contains all returned
+  text or was cut by logging; the error line alone does not show the parsing path.
+- Context: when it started, UTC times for a failing and last successful run,
+  input-size or dataset changes, whether every request fails or only some, and
+  workflow impact.
 
-## Diagnosis and alternative explanations
+Do not request sensitive records, credentials, full prompts, full request bodies,
+or full logs.
 
-An explicit `incomplete` status with reason `max_output_tokens` supports output-budget exhaustion. Reasoning may consume the budget before visible JSON appears. HTTP success plus a parser failure alone does not establish that cause.
+## Fix
 
-Other explanations include content-filter termination, refusal, extraction of the wrong response field, a schema mismatch, or an application parser bug. A completed response that fails schema/content validation needs investigation even if it parses as JSON. Treat transport failure separately from a response that arrived incomplete.
+1. Ask the customer to check completion status, incomplete details, refusal, and
+   response errors before parsing or using the result. If those details are
+   missing, collect them before choosing a correction; do not treat partial
+   output as a completed task.
+2. When the reason establishes output-budget exhaustion, have the customer
+   increase the bounded allowance to suit the workload or request less output.
+   Account for reasoning tokens; there is no universal suitable limit.
+3. When completed output fails parsing or validation, investigate the selected
+   response field, extraction/parsing steps, and expected schema and content.
+   Do not assume a larger output allowance will fix that failure.
 
-## Corrective steps
+## Confirm it's fixed
 
-1. Inspect completion status, incomplete details, refusal, and errors before parsing or consuming the output as a successful result.
-2. When the supplied reason establishes output-budget exhaustion, choose a larger bounded output allowance appropriate to the model and workload, or reduce the requested payload. Account for reasoning as well as visible output; there is no universal token limit that fixes every workload.
-3. If output is completed but parsing or validation fails, investigate response extraction, parser behavior, and the expected schema/content instead of assuming that increasing the budget will fix it.
-4. Apply the change, rerun the job, and check completion status before parsing.
+Ask the customer to confirm completed status without an incomplete reason,
+refusal, or response error, then parse and validate the full output against the
+expected schema and required content. Confirm the affected application uses the
+result successfully; HTTP 200 or parseable JSON alone does not establish that.
 
-## Confirm recovery
+## Escalate when
 
-Inspect the customer's full returned output, not just a shortened log excerpt. Confirm completed status without an incomplete reason, refusal, or response error. Parse the intended output field and validate both its schema and the task's required content.
+Suggest the application owner for unresolved extraction, parsing, or schema
+mismatches, or API support for repeated incomplete output within suitable
+workload limits. Include status and reason, output/reasoning settings, model and
+SDK version, request ID if received, UTC time, and minimal sanitized schema,
+parsing, and output excerpts with any truncation noted.
 
-Confirm that the previously affected workflow now uses the result successfully. HTTP 200 or parseable JSON alone is insufficient, and a partially emitted payload must not be accepted as a completed task. If the correction fails, retain the actual completion and validation details.
+## Reply template
 
-## Escalation checklist
+Keep only questions for missing information, and condition the correction on
+the completion details the customer actually supplied.
 
-- Escalate persistent incomplete output within appropriate workload limits, or completed output that still fails the expected schema/content checks.
-- Include status, incomplete reason, output/reasoning settings, model/SDK, UTC time, and request ID if available.
-- Supply minimal sanitized schema/output and parser-error excerpts, stating any excerpt truncation.
-- Describe the change attempted and its effect on the customer's task. Name the team the ticket should go to.
+> Thanks for the details. HTTP 200 confirms that a response arrived, but a parser
+> error alone does not show whether generation finished or what caused the failure.
+>
+> Could you share:
+>
+> 1. the completion status and `incomplete_details`, including any refusal or
+>    response error;
+> 2. the configured `max_output_tokens`;
+> 3. a minimal sanitized failing output excerpt and the parsing/extraction step,
+>    including the response field selected and expected JSON structure;
+> 4. UTC times for a failing and last successful run, and any input-size changes?
+>
+> Please say whether the excerpt contains all returned text or was shortened by
+> logging. If the response reports `incomplete` because of `max_output_tokens`,
+> raise the allowance to fit the workload or request less output, then check
+> completion before parsing. These details will help distinguish incomplete
+> generation from an extraction or parser issue.
 
-## Illustrative draft reply
+## Notes
 
-Thanks for the details. HTTP 200 means the response arrived, but `status: incomplete` with `incomplete_reason: max_output_tokens` means the model hit the output limit (128 tokens here) before it finished the JSON — so the parser is receiving partial JSON.
-
-The fix is to raise `max_output_tokens` to a value that fits the full output, or ask for less per request. The limit covers reasoning tokens too, if you're using a reasoning model. Then check `response.status` before parsing, so an incomplete response is caught rather than parsed.
-
-Two things would help us confirm: a timestamp from a failing run and from your last successful one, and whether the input size changed between them. Once you've adjusted the limit, rerun and send the completion status and token usage from that response.
-
-This is an illustrative draft for human review, not an executed agent result. A blocked workflow establishes impact without establishing the cause.
-
-## Sources
-
-- [Official structured-output guide](https://developers.openai.com/api/docs/guides/structured-outputs)
-- [Official reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)
-- [OpenAI Python SDK and Responses interfaces](https://developers.openai.com/api/reference/python)
-
-These references describe expected behavior; they are not observed evidence for this lab's case.
+- Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
+  `openai` 3.36.0, `gpt-6.1-sol`, and retries disabled. One reproduced
+  broken/corrected pair supports the example:
+  [incomplete at 128 tokens](../evidence/incomplete_output/broken-20261022T232333Z.json)
+  and [completed at 2,048](../evidence/incomplete_output/fixed-20261022T232346Z.json).
+  The SDK-shaped display maps the selected capture fields to their API names;
+  `…` marks omitted excerpt text. Saved excerpts are limited to 1,000 characters,
+  so the corrected capture also ends mid-array; its `output_valid: true` was
+  computed on the full text before truncation.
+- Sources: [Structured outputs](https://developers.openai.com/api/docs/guides/structured-outputs),
+  [Reasoning](https://developers.openai.com/api/docs/guides/reasoning),
+  [Python SDK and Responses interfaces](https://developers.openai.com/api/reference/python).

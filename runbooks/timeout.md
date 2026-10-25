@@ -2,88 +2,111 @@
 
 A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable.
 
-Use this runbook to distinguish a client timeout from other connection or API failures, investigate the customer's client settings, and check recovery without assuming earlier processing stopped.
+## What the customer sees
 
-## The error as the customer sees it
-
-Selected fields from [the capture](../evidence/timeout/broken-20261022T232402Z.json):
+Illustrative SDK exception:
 
 ```text
 openai.APITimeoutError: Request timed out.
-elapsed_ms: 619.908
-timeout_seconds: 0.5
-max_retries: 0
 ```
 
-The client stopped waiting after about 620 ms with no HTTP status, request ID,
-or usage received. The locked SDK defaults to two retries, so other client
-settings can result in extra attempts and a longer wait; a later attempt might
-also succeed. Inspect the effective retry settings rather than predicting the
-final exception from this single capture.
+Record the exception, observed elapsed time, and effective timeout and retry
+settings. Retain any actual response metadata; do not invent a status or request
+ID when no response arrived.
 
-## Evidence and confidence
+## What it means
 
-- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
-- Verified on: `2026-10-22` (America/New_York and UTC).
-- Observed evidence: [client timeout](../evidence/timeout/broken-20261022T232402Z.json) and [successful correction](../evidence/timeout/fixed-20261022T232415Z.json).
-- The lab observed `APITimeoutError` without an HTTP status, request ID, or usage, followed by HTTP 200 with completed output under a suitable client timeout. This does not show whether the earlier request stopped processing or incurred usage.
+The client reached a timeout while making the request. That does not establish
+whether server-side processing stopped or whether the request incurred usage;
+a later attempt can duplicate work. The SDK timeout is not a whole-workflow
+wall-clock deadline.
 
-## Evidence to request
+SDK and application retries can add attempts and lengthen the wait. Inspect
+effective settings rather than assuming defaults. Investigate other connection
+exceptions using the actual DNS, TLS, proxy, or network diagnostics; an
+`APIConnectionError` does not prove that the server never received the request.
+An HTTP 408 or 504 is a received response and should be investigated using its
+actual status and any available metadata.
 
-- The exception type, configured client timeout and retries, elapsed time, and UTC attempt time.
-- The model, SDK version, output allowance, and a brief description of workload size and network/proxy conditions.
-- Whether any HTTP response or request ID arrived. Keep unavailable fields absent or null; a request ID is optional when no response was received.
-- Attempts already made, any application-side retry behavior, and reported workflow impact. Request only minimal sanitized metadata, never credentials, full logs, or sensitive payloads.
+## What to ask for
 
-- When it started, whether the request size grew, whether every request times out or only some, and a timestamp from a failing attempt.
+Request only information missing from the ticket:
 
-## Diagnosis and alternative explanations
+- The exception type and message, observed elapsed time, and effective client
+  timeout and retry settings.
+- The model, SDK version, output allowance, approximate workload size, and
+  relevant proxy, VPN, or network-path details.
+- Earlier attempts, application-side retries, and duplicate-work handling. Ask
+  whether a response arrived only if the ticket does not already say; when none
+  arrived, do not request unavailable HTTP status, error code/type, request ID,
+  or response completion fields. Keep unavailable fields absent or null.
+- Context: when it started, request-size changes, whether every request times
+  out or only some, a failing attempt's UTC time, and workflow impact.
 
-An SDK `APITimeoutError` supports a client-timeout diagnosis. A vague “timed out” complaint needs exception and timing details first. DNS/TLS failures, general connection problems, upstream HTTP timeout responses, and slow processing can present similar symptoms.
+Do not request credentials, full logs, or request payloads.
 
-Preserve any actual response fields. An absent HTTP response does not imply HTTP 408 or 504, and a generic connection error does not establish a client timeout. The SDK timeout setting is not a guarantee of the whole workflow's end-to-end duration.
+## Fix
 
-A client timeout means the client stopped waiting; it does not prove provider-side processing stopped. Usage and cost may be unknown. Consider earlier attempts before arranging another request.
+1. Compare the supplied exception, timing, and settings. If the evidence instead
+   shows a different connection failure or an HTTP response, route investigation
+   to that network path or status rather than assuming this client-timeout cause.
+2. Review earlier attempts and duplicate-work handling with the application
+   owner before another attempt. Coordinate SDK and application retry behavior;
+   do not enable retries unconditionally or stack repeated attempts blindly.
+3. If the client limit is too short for the workload, ask the customer to choose
+   a suitable bounded timeout or reduce the workload. Rerun only after the
+   earlier-processing and duplicate-work review; keep retry settings consistent
+   with the application's handling of repeated requests.
 
-## Corrective steps
+## Confirm it's fixed
 
-1. Compare the configured timeout, observed timing, workload, and retry behavior. Check whether a client/proxy deadline or a general connection failure is actually supported by the evidence.
-2. If the client limit is impractically short for the workload, choose a suitable bounded timeout or reduce the workload according to the application's operating requirements. Do not assume one timeout value suits every customer.
-3. If the evidence instead points to connectivity or an upstream response, route investigation to the relevant application/network component and preserve the actual diagnostics.
-4. Before retrying, check whether the earlier attempt may have completed server-side and whether a retry would duplicate work. Then rerun with the new timeout when safe under the application's duplicate-work handling.
+Ask the customer to confirm that a response arrives within the intended
+operating bounds and that the task completes with usable output. If it times
+out again, retain the new exception, elapsed time, settings, and any actual
+response metadata; server-side processing and usage for earlier attempts remain
+unknown.
 
-## Confirm recovery
+## Escalate when
 
-After reviewing earlier attempts and duplicate-work handling, confirm that the client receives a response within its intended operating bounds and that the requested task completes with a usable result. HTTP success alone is insufficient. Inspect available timing and retry information to understand what actually completed.
+Suggest the application or network owner for unexplained timing, retry behavior,
+or duplicate-work concerns, and API support for persistent unexplained timeouts
+after those checks. Include effective settings, observed timing, workload,
+model and SDK version, UTC times, and whether any response metadata arrived.
+Keep unknown processing and usage explicit.
 
-If the request times out again, preserve the exception, elapsed time, effective settings, and any actual response metadata. Keep uncertainty about earlier server-side processing and unknown usage explicit; do not describe either as resolved without evidence.
+## Reply template
 
-## Escalation checklist
+Use only timings and settings the customer supplied. Keep only questions for
+missing information.
 
-- Escalate persistent timeouts after supported client-setting checks, unexplained timing, or unresolved concern about repeated processing.
-- Include minimal sanitized exception/timing details, effective timeout/retries, workload description, model/SDK, and UTC times.
-- Include HTTP fields and request ID only if received; state when no response arrived.
-- Describe the change and recovery-check outcome, retaining uncertainty about processing/cost. Name the team the ticket should go to.
+> Thanks for sending the timeout details. `APITimeoutError` means your client
+> stopped waiting; it does not tell us whether the earlier request finished on
+> the server, so repeating it could duplicate work.
+>
+> Before retrying, check earlier attempts and how your application handles
+> duplicate work. If the configured timeout is too short for the workload, use
+> a suitable bounded timeout or reduce the workload, with retry settings that
+> match that duplicate-work handling.
+>
+> Could you share:
+>
+> 1. your effective timeout and retry settings, SDK version, and workload size;
+> 2. when this started, whether request size changed, whether every request times
+>    out or only some, and a failing attempt's UTC time;
+> 3. earlier attempts or application-side retries and the workflow impact?
+>
+> With those details and the outcome of a safe rerun, we can narrow down whether
+> the client settings or another part of the request path needs attention.
 
-## Illustrative draft reply
+## Notes
 
-Thanks for flagging this and sending the timeout details. `APITimeoutError` means the client stopped waiting — here after about 0.6 seconds, with a 0.5-second timeout. No response arrived in this example, so there is no HTTP status or request ID to look up. The earlier request may still have completed on the server; repeating it could duplicate work.
-
-Before retrying, check earlier attempts and how your application prevents duplicate work. Then raise the timeout to a bounded value sized for your workload, or reduce the workload, and rerun when it is safe to do so. Keep retry settings consistent with that duplicate-work handling.
-
-Could you share:
-
-1. your SDK version and approximate workload size;
-2. when this started and whether the request size changed;
-3. whether every request times out or only some, with a timestamp from a failing attempt?
-
-With those details and the rerun's outcome, we can narrow down whether the timeout setting or another part of the request path needs attention.
-
-This is an illustrative draft for human review, not an executed agent result. Ask for the exception type when the complaint is ambiguous.
-
-## Sources
-
-- [OpenAI Python SDK timeouts, retries, and error handling](https://developers.openai.com/api/reference/python)
-- [Official API error guidance](https://developers.openai.com/api/docs/guides/error-codes)
-
-These references describe expected behavior; they are not observed evidence for this lab's case.
+- Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
+  `openai` 3.36.0 and retries disabled. One reproduced broken/corrected pair
+  supports the example:
+  [client timeout at 0.5 seconds](../evidence/timeout/broken-20261022T232402Z.json)
+  and [completed correction at 60 seconds](../evidence/timeout/fixed-20261022T232415Z.json).
+  Recorded elapsed times were about 620 ms and 1.81 seconds. The timeout capture
+  has no HTTP status, request ID, or usage; its earlier server-side processing
+  and cost remain unknown.
+- Sources: [Python SDK timeouts, retries, and error handling](https://developers.openai.com/api/reference/python),
+  [API error guidance](https://developers.openai.com/api/docs/guides/error-codes).

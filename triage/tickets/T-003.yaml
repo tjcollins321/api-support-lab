@@ -1,8 +1,9 @@
 id: T-003
 subject: Response arrives but structured output does not finish
 body: >-
-  Aspen Demo here. We ask for structured JSON output with max_output_tokens set to 128
-  and the response comes back like this. The JSON isn't complete. How do we fix it?
+  Aspen Demo here. We ask for structured JSON output and the JSON in the
+  response is invalid/seems to be cut off. How do we fix it? Max_output_tokens
+  for the request is set currently to 128.
 pasted_error: |-
   HTTP 200
   response_status: incomplete
@@ -10,5 +11,6 @@ pasted_error: |-
 organization: Aspen Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: selected sanitized observed fields and effective output limit; surrounding ticket is synthetic
+  source: selected sanitized observed fields and effective output limit;
+    surrounding ticket is synthetic
   evidence: evidence/incomplete_output/broken-20261022T232333Z.json

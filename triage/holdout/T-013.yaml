@@ -1,10 +1,8 @@
 id: T-013
 subject: Still getting a 401 after rotating the key twice
 body: >-
-  Spruce Demo's customer-facing app has been down 40 minutes. We already
-  rotated the API key twice and are still getting this error from the deployed
-  app. Please don't just tell us to rotate it again. What exactly should we
-  check next?
+  Our customer-facing app has been down 40 minutes. We already rotated the API
+  key twice and are still getting this error. What exactly should we check next?
 pasted_error: |-
   HTTP 401
   error_code: invalid_api_key
@@ -13,4 +11,5 @@ pasted_error: |-
 organization: Spruce Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: authored held-out impact and tone scenario with synthetic diagnostics; frozen before the live re-run; not used for tuning
+  source: authored held-out impact and tone scenario with synthetic diagnostics;
+    frozen before the live re-run; not used for tuning

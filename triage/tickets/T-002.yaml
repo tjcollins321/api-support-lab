@@ -1,7 +1,7 @@
 id: T-002
 subject: Function definition rejected before output
 body: >-
-  Our Birch Demo app gets this error whenever we include our function definition in the
+  Our app gets this error whenever we include our function definition in the
   request. The same request works if we remove the tool. What's wrong with it?
 pasted_error: |-
   HTTP 400

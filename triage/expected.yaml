@@ -79,10 +79,9 @@ T-010:
   severity: unknown
   required_missing: [diagnostic_summary, impact]
   required_runbooks: []
-  # Evidence must establish the handling question, risk, and absence of payload.
+  # Evidence must establish the handling question and possible sensitivity.
   # The organization's sector label is context, not the reason for escalation.
   required_evidence: []
   required_evidence_any:
-    - ['potentially sensitive', 'might contain sensitive records']
-    - ['how should we route', 'what minimal sanitized metadata', 'Before sharing anything']
-    - ['have not attached any logs', 'not attached any logs or records']
+    - ['potentially sensitive']
+    - ['how should we route', 'what minimal/sanitized metadata', 'Before sharing anything']

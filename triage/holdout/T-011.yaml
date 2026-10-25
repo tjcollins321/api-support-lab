@@ -1,13 +1,13 @@
 id: T-011
 subject: Can you raise the limit for our API calls?
 body: >-
-  Hi, Alder Demo here. Some of our API calls are getting this error. Can you
-  just raise the limit for us, or point us to the team that can? I copied the
-  status and code below but didn't keep the response headers.
+  Hi, Alder Demo here. Some of our API calls are getting the below error. Can
+  you raise the limit for us, or point us to the team that can?
 pasted_error: |-
   HTTP 429
   error_code: rate_limit_exceeded
 organization: Alder Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: authored held-out ticket with synthetic diagnostics; frozen before the live re-run; not used for tuning
+  source: authored held-out ticket with synthetic diagnostics; frozen before the
+    live re-run; not used for tuning

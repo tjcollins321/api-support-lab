@@ -1,9 +1,9 @@
 id: T-004
 subject: Client stops waiting for output
 body: >-
-  Elm Demo's batch job raises this with a 0.5-second client timeout and SDK retries set
-  to zero. No HTTP response or request ID arrived. Is it safe to just retry, or should
-  we look at something first?
+  Our batch job is failing with the pasted error. It has a 0.5-second client
+  timeout and SDK retries set to zero. No HTTP response or request ID arrived.
+  Is it safe to just retry, or should we look at something first?
 pasted_error: |-
   exception_type: APITimeoutError
   message: Request timed out.
@@ -11,5 +11,6 @@ pasted_error: |-
 organization: Elm Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: selected sanitized observed exception, timing, effective settings and absent response; surrounding ticket is synthetic
+  source: selected sanitized observed exception, timing, effective settings and
+    absent response; surrounding ticket is synthetic
   evidence: evidence/timeout/broken-20261022T232402Z.json

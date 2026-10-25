@@ -2,83 +2,116 @@
 
 A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.
 
-Use this runbook when supplied validation details identify a function-tool schema. With an unspecified bad-request error, first request the details needed to locate the failing field.
+## What the customer sees
 
-## The error as the customer sees it
-
-Captured on 2026-10-22 with `openai` 3.36.0 and retries disabled.
-Selected fields from [the capture](../evidence/tool_schema/broken-20261022T232240Z.json):
+Illustrative SDK-shaped example, formatted for readability:
 
 ```text
-HTTP 400 — openai.BadRequestError
-error_type:  invalid_request_error
-error_code:  invalid_function_parameters
-param:       tools[0].parameters
-message:     Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas.
-request_id:  req_ed8455b8b9d34759b15ecfaed73816f7
+openai.BadRequestError: Error code: 400 - {
+  'error': {
+    'message': "Invalid schema for function 'support_label': 'not_a_json_schema_type' is not valid under any of the given schemas.",
+    'type': 'invalid_request_error',
+    'param': 'tools[0].parameters',
+    'code': 'invalid_function_parameters'
+  }
+}
 ```
 
-`param` identifies the tool index and field; the message names the function and
-invalid value. The [request implementation](../src/api_support_lab/cases/tool_schema.py)
-sets `tool_choice="none"` in both variants, so this rejection occurred even with
-tool selection disabled.
+`param` locates the tool and schema field. This message names the function and
+invalid value; the serialized definition is needed to locate the affected
+property precisely.
 
-## Evidence and confidence
+## What it means
 
-- Status: `verified` — one reviewed live lab pair supports this guidance; it does not diagnose the customer's request.
-- Verified on: `2026-10-22` (America/New_York and UTC).
-- Observed evidence: [schema rejection](../evidence/tool_schema/broken-20261022T232240Z.json) and [successful correction](../evidence/tool_schema/fixed-20261022T232318Z.json).
-- The lab observed HTTP 400, `BadRequestError`, code `invalid_function_parameters`, and parameter `tools[0].parameters`, followed by HTTP 200 with completed output. This is one schema defect, not a universal mapping for every HTTP 400 or schema failure.
+The supplied validation details identify a function-tool parameter schema that
+is invalid or outside the API's supported subset. Investigate that evidence
+before acting on a customer's authentication or quota hypothesis; HTTP 400 alone
+does not identify a tool-schema problem.
 
-## Evidence to request
+Check for an invalid `type`, strict-mode object requirements, unsupported nested
+definitions, and transformations between source definitions and the serialized
+request. Distinguish a local validation exception from an API rejection using
+the actual exception and available response diagnostics. Preserve unfamiliar
+codes and parameters rather than forcing them into this example.
 
-- A minimal sanitized validation error with available HTTP status, exception type, code/type/parameter, UTC time, and request ID if received.
-- The smallest serialized function-tool definition containing the affected property and its enclosing schema, with sensitive descriptions or examples removed.
-- The endpoint, model, SDK version, strict-mode setting, and any transformation between the application's schema and the transmitted request.
-- The affected workflow and its reported impact. Do not request credentials, full prompts, or full logs.
+## What to ask for
 
-- Whether this schema ever worked and what changed since; whether every request that includes the tool fails or only some (if some, the smallest sanitized serialized `tools` excerpts from one failing and one passing request).
+Request only information missing from the ticket:
 
-## Diagnosis and alternative explanations
+- A minimal sanitized validation error: HTTP status, exception type, code, type,
+  parameter, message, and request ID if received.
+- The smallest serialized tool-definition excerpt containing the affected
+  property and its enclosing schema, with sensitive descriptions and examples
+  removed. Request it even when the error already names the invalid value.
+- The endpoint, model, SDK version, strict-mode setting, and any transformations
+  between the application's definition and the transmitted request.
+- Context: whether the schema ever worked, what changed, whether all requests
+  using it fail or only some, a failing attempt's UTC time, and workflow impact.
+  For intermittent failures, compare minimal failing and passing schema excerpts.
 
-Validation evidence identifying a tool schema supports investigating that definition. HTTP 400 can also concern input, model settings, or another unsupported feature. A customer's authentication explanation does not override explicit schema diagnostics.
+Do not request credentials, full request bodies, full prompts, or full logs.
 
-Distinguish a client-side schema error before transmission from an API rejection. Inspect the actual supplied parameter and schema rather than assuming a particular error code or wording. Connection failures, refusals, and incomplete responses are different outcomes.
+## Fix
 
-## Corrective steps
+1. Use the supplied `param` and message to locate the invalid value in the
+   serialized definition. Ask the customer to compare it with the application
+   definition if a transformation or serialization step is involved.
+2. Have the customer replace an invalid JSON Schema type with the supported type
+   for the intended value, preserving the intended constraint.
+3. If strict mode is enabled, check that every property appears in `required`
+   and every object, including nested ones, has `additionalProperties: false`.
+   Do not recommend disabling strictness just to suppress the error.
+4. Check the supported schema subset for the endpoint and model, then ask the
+   customer to apply the smallest supported correction and rerun the request.
 
-1. Locate the tool and schema property identified by the customer's validation evidence. Compare the serialized request with the application definition to find transformations or configuration differences.
-2. Correct invalid JSON Schema types and object/property definitions. For strict function parameters, include every property in `required` and disable additional properties on object definitions.
-3. Check the supported schema subset for the endpoint and model in use, including nested objects. Preserve the intended validation constraints; do not disable strictness blindly to suppress the symptom.
-4. Apply the smallest correction that fixes the named property, then rerun the failing request.
+## Confirm it's fixed
 
-## Confirm recovery
+Confirm the corrected definition is accepted and the affected workflow completes
+with the expected result. If a function call occurs, ask the customer to verify
+function execution and result handling too. If validation still fails, inspect
+the new diagnostics and serialized definition before choosing another change.
 
-Confirm that the customer's corrected tool definition is accepted and the affected workflow completes as intended. If the model requests a function call, acceptance alone does not verify the application's function execution and result handling; check those parts of the customer's workflow too.
+## Escalate when
 
-If validation still fails, inspect the new parameter/message and the serialized definition. A different validation failure may identify another property; an unrelated API error needs its own investigation. A verified lab example does not establish the customer's exact cause or recovery.
+Suggest the application owner when a transformation or transmitted definition
+cannot be explained, or API support when a schema believed to fit the supported
+subset still fails. Include the minimal sanitized schema and error, endpoint,
+model and SDK version, strict setting, request ID if received, UTC time, and the
+attempted correction and outcome.
 
-## Escalation checklist
+## Reply template
 
-- Escalate when a schema believed to fit the supported subset still fails, or when the request transformation cannot be explained.
-- Supply the smallest sanitized schema/error excerpt, endpoint/model/SDK, strict setting, UTC time, and request ID if available.
-- Describe the correction attempted and the customer's resulting acceptance/completion behavior; retain unfamiliar codes and uncertainty.
-- Name the team the ticket should go to. Omit credentials and full request/log dumps.
+Adapt the named field and invalid value to the supplied error. Keep only
+questions for missing information.
 
-## Illustrative draft reply
+> Thanks for sending the validation error. It points to your function tool's
+> parameter schema; the next step is to check the serialized definition around
+> the field and invalid value named in the error.
+>
+> Could you:
+>
+> 1. send the smallest sanitized excerpt containing the affected property and
+>    its enclosing schema, even if the error already names the invalid value;
+> 2. confirm the endpoint, model, SDK version, and whether strict mode is enabled;
+> 3. say whether this schema worked before and what changed?
+>
+> If the error identifies an invalid type, replace it with the supported type
+> you intend. If strict mode is enabled, check `required` and
+> `additionalProperties: false` on each object too. Rerun after the correction
+> and share the outcome so we can confirm acceptance and completion of the
+> affected workflow.
 
-Thanks — the error tells us a lot already. `invalid_function_parameters` at `tools[0].parameters` means the API rejected the schema of your first tool, and the message names the property and the offending value, so this isn't an authentication or quota problem.
+## Notes
 
-To fix it, replace the invalid `type` in that property with the JSON Schema type you intend (for example `string`). If you're using `strict: true`, also make sure every property is listed in `required` and each object has `additionalProperties: false`.
-
-Could you send the smallest excerpt of the tool definition that includes that property, with any sensitive descriptions removed? It also helps to know whether this schema ever worked and what changed since. Once you've made the change, rerun the request and let us know what comes back.
-
-This is an illustrative draft for human review, not an executed agent result. Use it with supplied validation evidence; otherwise request distinguishing details.
-
-## Sources
-
-- [Official function-calling guide](https://developers.openai.com/api/docs/guides/function-calling)
-- [Official structured-output guide and supported schema subset](https://developers.openai.com/api/docs/guides/structured-outputs)
-- [OpenAI Python SDK error handling](https://developers.openai.com/api/reference/python)
-
-These references describe expected behavior; they are not observed evidence for this lab's case.
+- Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
+  `openai` 3.36.0 and retries disabled. One reproduced broken/corrected pair
+  supports the example:
+  [schema rejection](../evidence/tool_schema/broken-20261022T232240Z.json)
+  and [completed correction](../evidence/tool_schema/fixed-20261022T232318Z.json).
+  The SDK-shaped layout is reconstructed from selected recorded diagnostics;
+  rejected-request usage was not reported. The
+  [case implementation](../src/api_support_lab/cases/tool_schema.py) sets
+  `tool_choice="none"` in both variants; the broken schema was still rejected.
+- Sources: [Function calling](https://developers.openai.com/api/docs/guides/function-calling),
+  [Structured outputs and supported subset](https://developers.openai.com/api/docs/guides/structured-outputs),
+  [Python SDK error handling](https://developers.openai.com/api/reference/python).

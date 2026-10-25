@@ -1,10 +1,12 @@
 id: T-009
 subject: Configure SSO for our employee portal
 body: >-
-  Can you enable SSO and set up identity-provider groups for the Cedar Demo employee
-  portal? Not sure this is the right queue. Please point us to whoever handles this.
+  Can you enable SSO and set up identity-provider groups for our employee
+  portal? I'm not sure if this is the right queue, please point us to whoever
+  can help with this.
 pasted_error: null
 organization: Cedar Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: hand-authored synthetic request outside this lab's API failure coverage
+  source: hand-authored synthetic request outside this lab's API failure
+    coverage

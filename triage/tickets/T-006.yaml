@@ -1,13 +1,14 @@
 id: T-006
 subject: JSON parser failure blocks the nightly report
 body: >-
-  Willow Demo's nightly report is blocked. The API returned HTTP 200 but our JSON parser
-  failed on the response. We don't log the completion details or keep the failing
-  output, so I don't have those yet. What should we collect to figure out what's going
-  on?
+  Our nightly report is blocked. The API returned HTTP 200 but our JSON parser
+  failed on the response. We don't log the completion details or keep the
+  failing output, so I don't have those yet. What should we collect to figure
+  out what's going on?
 pasted_error: |-
   JSONDecodeError: Expecting ',' delimiter
 organization: Willow Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: hand-authored synthetic ambiguity and business impact; no observed API response
+  source: hand-authored synthetic ambiguity and business impact; no observed API
+    response
