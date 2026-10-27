@@ -106,8 +106,8 @@ questions for missing information.
 - Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
   `openai` 3.36.0 and retries disabled. One reproduced broken/corrected pair
   supports the example:
-  [schema rejection](../evidence/tool_schema/broken-20261022T232240Z.json)
-  and [completed correction](../evidence/tool_schema/fixed-20261022T232318Z.json).
+  [schema rejection](../evidence/tool_schema/broken-2026-10-22.json)
+  and [completed correction](../evidence/tool_schema/fixed-2026-10-22.json).
   The SDK-shaped layout is reconstructed from selected recorded diagnostics;
   rejected-request usage was not reported. The
   [case implementation](../src/api_support_lab/cases/tool_schema.py) sets

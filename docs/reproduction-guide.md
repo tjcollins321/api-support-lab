@@ -1,13 +1,13 @@
 # Reproduction guide for lab maintainers
 
-Use this guide to operate API Support Lab's synthetic experiments, inspect captures, and establish the evidence supporting its runbooks. It is maintainer documentation. The [support runbooks](../runbooks/) help support staff and the triage agent investigate a customer's symptoms and confirm that customer's recovery. Customers do not need to run these experiments to troubleshoot their applications.
+I use this guide to operate API Support Lab’s synthetic experiments, inspect captures, and establish the evidence supporting its runbooks. It is maintainer documentation. The [support runbooks](../runbooks/) help support staff and the triage agent investigate customer symptoms and confirm recovery. Customers troubleshoot their applications; they do not need to run these lab experiments.
 
 The runbook registry exposes only the four support documents. This guide is not registered or retrieved by the agent's tools, and the agent cannot execute reproductions. Live experiments require explicit `--live` opt-in. Runbook recovery checks concern the customer's affected workflow; lab verification requires reviewed broken/corrected observations.
 
 ## Execution boundaries and preparation
 
 - Use Python 3.14 and `uv` installed on PATH with the locked dependencies; follow the [README setup](../README.md#quick-start).
-- Live requests require explicit `--live` opt-in. Check configured-model access and review account spending before a live milestone.
+- Live requests require explicit `--live` opt-in. Confirm the effective model and credential source locally and review account spending before a live milestone. An authorization for one evaluation batch does not authorize an extra authentication or model-access smoke request.
 - Settings default to `gpt-6.1-sol`, low reasoning, 2,048 output tokens, a 60-second client timeout, zero retries, and `store=False`. The two broken-limit exceptions are listed below.
 - Only broken authentication uses the deliberately invalid credential without loading `OPENAI_API_KEY`. Its fixed variant and both variants of the other cases require a process-provided `OPENAI_API_KEY`, loaded only after live opt-in. Never print or share it.
 - The application does not automatically load `.env`. An operator can explicitly use `uv run --locked --env-file .env ...`. Command examples below use `--no-env-file`; they assume any required credential is already supplied through the process environment.
@@ -95,10 +95,64 @@ To review a new pair:
 5. Update status/date/count only after pair review. Use `partially_verified` or `not_reproduced` when appropriate and leave the verification date null until verification succeeds. Retain unsuccessful observations and limitations. Customer recovery checks and passing tests do not automatically change this status.
 6. Add diagnostic registry mappings only from reviewed error observations. Do not register HTTP success as a diagnosis, invent a timeout status, or add a schema mapping from an authored fixture.
 
+## Publishing a reviewed triage batch
+
+I evaluated and reviewed the [published batch](../evidence/triage/) on 2026-10-27. The automated scorer reported 13/13 agreement, zero operational failures, and zero semantic mismatches. I separately recorded 10 Send as-is and 3 Send with edits, finding all 51 manual review criteria satisfied. I used these development samples without a separate holdout; they do not establish general reliability.
+
+For a new evaluation, I use the following workflow:
+
+1. I record the exact source state, including uncommitted and untracked inputs,
+   source/input hashes, effective non-secret settings, and offline preflight.
+   Keep credentials and ignored secret files out of the snapshot. The current
+   triage bounds are eight turns per ticket, 4,096 tokens per model response,
+   low reasoning, a 60-second client timeout, zero client/runner retries,
+   `store=False`, and disabled tracing. They do not enforce a whole-batch
+   deadline or spending ceiling.
+2. I run the authorized batch once, retaining every ticket record and any failures.
+   Preserve the original report and individual records. Scan artifacts for
+   credentials locally without displaying matches, hash the originals, and
+   rescore the saved results offline. Do not automatically retry, tune, or begin
+   another live cycle.
+3. I review every original draft using both sets of criteria in
+   the [manual review guide](manual-review.md). Record three-way send verdicts,
+   criterion assessments, reasons, supporting excerpts, and assistant observations
+   separately. Obtain explicit overall approval of the exact batch and revised
+   wording before replacing the published examples.
+4. I keep untouched originals in ignored artifacts and publish date-only copies
+   in `evidence/triage/runs/`, including failures. Shorten capture dates and
+   evidence filenames, and update references in saved runbook text and ticket
+   provenance. Refresh full-ticket hashes when provenance paths change;
+   preserve the customer-visible input and all generated reply wording.
+   Keep approved wording revisions in separate Markdown files; do not change
+   generated replies in the JSON to implement them. Refresh the triage README,
+   manual review, batch provenance, project README, walkthrough, and affected
+   guidance from those exact records. Apply the same date-only policy to the
+   eight reproduction publication copies while preserving their diagnostic
+   fields and measured durations.
+5. I run the offline tests and rescore the published run directory. I compare the
+   summaries, per-ticket checks, and result content with the original report.
+   Account explicitly for date redactions and refreshed provenance hashes;
+   publication copies are not byte-identical originals.
+   Directory rescoring initializes pending manual-review fields; consult the
+   Markdown for my actual judgments. Check local links, quotations, artifact
+   hashes, sanitization, and whitespace. Report automated findings honestly even
+   after I approve the batch.
+
+The [batch manifest](../evidence/triage/batch.json) makes the published records
+traceable without depending on ignored local artifacts. It distinguishes
+original and publication hashes and identifies the source commit and
+execution-input hashes because a commit alone does not capture uncommitted
+preparation. I retain full capture timestamps locally and publish UTC dates;
+measured elapsed durations remain intact. This publication step does not rewrite
+Git history or dependency upload metadata in `uv.lock`. I keep historical
+artifacts locally and select the exact reviewed batch rather than combining
+outputs from different attempts.
+
 ## Offline checks and references
 
 ```sh
 env -u OPENAI_API_KEY uv run --offline --locked --no-env-file pytest
+env -u OPENAI_API_KEY uv run --offline --locked --no-env-file python -m api_support_lab evaluate --results evidence/triage/runs
 ```
 
 `uv --offline` prevents dependency downloads; it does not block an application's own network requests. The pytest DNS/socket tripwire supplies the offline test boundary. Do not add `--run-live` to ordinary offline validation; the suite currently contains no live API tests.

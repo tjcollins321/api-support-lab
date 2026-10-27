@@ -16,4 +16,4 @@ channel: synthetic ticket
 provenance:
   source: selected sanitized observed schema fields with a hand-authored
     misleading customer assertion
-  evidence: evidence/tool_schema/broken-20261022T232240Z.json
+  evidence: evidence/tool_schema/broken-2026-10-22.json

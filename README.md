@@ -1,14 +1,14 @@
 # API Support Lab
 
-A Python project that reproduces four OpenAI API failures against the live API, documents each in a support runbook, and runs a triage agent that uses those runbooks to draft replies to synthetic support tickets. Every reply is a draft for human review.
+I designed this Python lab to reproduce four OpenAI API failures, document each in a support runbook, and evaluate a triage agent that uses those runbooks to draft replies to synthetic support tickets. I manually review the replies before treating them as examples I would send.
 
-Built on the OpenAI Responses API and the Agents SDK (`openai-agents`), with Codex as the pair-programming assistant.
+I use the OpenAI Responses API and the Agents SDK (`openai-agents`), with Codex providing code generation and prose drafting under my direction.
 
-The saved reproductions and agent runs used `gpt-6.1-sol` (`openai` 3.36.0; the agent also used `openai-agents` 0.24.0). The reproduction captures are dated 2026-10-22 UTC; the agent runs are dated 2026-10-22 America/New_York.
+The saved reproductions and agent runs used `gpt-6.1-sol` (`openai` 3.36.0; the agent also used `openai-agents` 0.24.0). The reproduction captures are dated 2026-10-22 UTC; the reviewed agent batch is dated 2026-10-27 (UTC and America/New_York).
 
 ## A saved example
 
-A synthetic ticket reports: “The API returned HTTP 200, but our JSON parser failed.” The nightly report is blocked, and completion details have not been saved.
+A synthetic ticket reports: “The API returned HTTP 200 but our JSON parser failed on the response.” The nightly report is blocked, and completion details and failing output were not retained.
 
 The agent retrieved the incomplete-output runbook and returned these fields:
 
@@ -23,11 +23,11 @@ The agent retrieved the incomplete-output runbook and returned these fields:
 
 Its saved reply begins:
 
-> HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.
+> Thanks for sharing the parser error and explaining that your nightly report is blocked. HTTP 200 shows that a response arrived, but the parser error alone cannot distinguish incomplete generation from an extraction or JSON-format issue; it does not establish that the output limit was reached.
 
 The category is a hypothesis; the severity comes from the blocked report; the next step is to collect completion details and a sanitized failing excerpt.
 
-This excerpt comes from an earlier version of [T-006](triage/tickets/T-006.yaml) in its [saved run](evidence/triage/runs/T-006.json). The current ticket, instructions, and runbooks have been rewritten; replacement outputs are pending a live run and review. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
+This excerpt comes from the [published T-006 run](evidence/triage/runs/T-006.json) in the batch I reviewed on 2026-10-27. I found its manual review criteria satisfied and selected **Send with edits**, removing one redundant sentence later in the reply. I saved the [edited wording](evidence/triage/edited-replies/T-006.md) separately. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction, an escalation, and a misleading customer diagnosis.
 
 ## What is implemented
 
@@ -40,7 +40,7 @@ This excerpt comes from an earlier version of [T-006](triage/tickets/T-006.yaml)
 
 The table combines request setup from the [case implementations](src/api_support_lab/cases/) with observed fields from the captures linked in each runbook.
 
-For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply for each of the [13 sample tickets](triage/tickets/). The [saved outputs](evidence/triage/runs/) currently contain an earlier ten-ticket run awaiting replacement.
+For ticket triage, I use one agent with three read-only tools. It returns a structured decision and draft reply for each of the [13 sample tickets](triage/tickets/). I published date-only copies of all 13 [records](evidence/triage/runs/), my [manual review](evidence/triage/manual-review.md), and three separately recorded edited replies.
 
 The four cases cover two errors with a diagnostic code to look up (401 and 400), an HTTP-success response whose output is incomplete, and a client timeout without a received response. In two of the four, the status code alone does not tell you what went wrong.
 
@@ -59,7 +59,7 @@ uv run pytest -q
 uv run python -m api_support_lab evaluate --results evidence/triage/runs
 ```
 
-None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` scores the saved outputs against `triage/expected.yaml` without calling the model. The existing outputs predate the rewritten 13-ticket set, so this command currently reports 0/13 and exits 1; new outputs are pending a live run and review. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
+None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` scores the saved outputs against `triage/expected.yaml` without calling the model. For the approved batch and current expectations, this command reports **13/13** under the scorer and exits **0**. Manual review verdicts remain separate from that score. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
 
 For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
 
@@ -81,11 +81,11 @@ flowchart TD
     F <--> G[Diagnosis lookup and runbook tools]
     E --> G
     F --> H[Structured decision and draft reply]
-    H --> I[Human review]
+    H --> I[Manual review]
     H --> J[Evaluation against separate expectations]
 ```
 
-Capture keeps the diagnostic fields, effective settings, a bounded output excerpt, and available usage. Code checks the shape of the result, that any runbook the agent cites was actually retrieved, and that lookup arguments came from the ticket. Whether the prose is right is still a person's call.
+Capture keeps the diagnostic fields, effective settings, a bounded output excerpt, and available usage. Code checks the shape of the result, that any runbook the agent cites was actually retrieved, and that lookup arguments came from the ticket. Whether the prose is right is still a person's call. Evidence relevance and sufficiency, information-request coverage, and agreement with the readable `missing` summary are assessed through [manual review](docs/manual-review.md). Automated diagnostic-preservation checks cover selected literal diagnostics; they do not establish evidence quality.
 
 Three rules shape the agent:
 
@@ -97,15 +97,24 @@ Three rules shape the agent:
 
 Each case has one reviewed live broken/corrected pair — a reproduction, not a benchmark.
 
-The current demonstration has 13 synthetic sample tickets. The files in [`evidence/triage/runs/`](evidence/triage/runs/) and notes in [`owner-review.md`](evidence/triage/owner-review.md) describe an earlier ten-ticket run and await replacement. They are historical examples, not results for the current sample set. Tuning is discussed briefly in the [development notes](docs/development-notes.md#tuning-the-agent).
+I evaluated all 13 synthetic sample tickets sequentially on 2026-10-27, once each, with no client or runner retries. The agent used low reasoning, a 4,096-token cap per model response, at most eight turns per ticket, a 60-second client timeout, `store=False`, and disabled tracing. These bounds are not a whole-batch deadline or spending cap.
 
-The ticket wording, instructions, and runbooks have changed since those outputs were produced. The saved tool logs retain the earlier guidance; the agent has not been rerun with the current inputs.
+| Assessment | Recorded result |
+| --- | --- |
+| Automated agreement | **13/13**; 0 operational failures, 0 semantic mismatches; offline rescore matched |
+| My send verdicts | **10 Send as-is**, **3 Send with edits**, **0 Would not send** |
+| Manual review criteria | **51 Satisfied**: 26 information-request and 25 evidence criteria |
 
-The offline tests (289, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
+I kept the untouched originals in ignored local artifacts and published [date-only copies](evidence/triage/runs/). The generated replies, decisions, usage, and elapsed durations are unchanged; capture dates and evidence references were simplified for publication. My [manual review](evidence/triage/manual-review.md) records the judgments and supporting excerpts, and [edited replies](evidence/triage/edited-replies/) contain the wording I approved for T-006, T-010, and T-013. The [batch manifest](evidence/triage/batch.json) distinguishes original and published hashes. My approval does not change automated findings.
+
+I used these samples during development, with no separate holdout group. The results demonstrate this workflow on those inputs and do not establish unseen-ticket performance or general reliability. Available usage is recorded; missing usage remains unknown. The [development notes](docs/development-notes.md) explain my contributions and design decisions.
+
+The offline tests (279, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
 
 ## Explore further
 
 - [Walkthrough](docs/walkthrough.md): four saved decisions, actual replies, and a code-reading path.
+- [Manual review](docs/manual-review.md): assessing actual questions, with a model grader left as future work.
 - [Development notes](docs/development-notes.md): project attribution, the design calls, and how the agent was tuned.
 - [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
 - [Reproduction guide](docs/reproduction-guide.md): running the cases and publishing evidence.

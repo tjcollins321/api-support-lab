@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "ticket_id": "T-011",
+  "ticket_hash": "671c457902b552c5942244b3e584805d9a2868c0cce02d9fc2bf630f930b2116",
+  "captured_at": "2026-10-27",
+  "model": "gpt-6.1-sol",
+  "settings": {
+    "model": "gpt-6.1-sol",
+    "timeout_seconds": 60.0,
+    "max_output_tokens": 2048,
+    "agent_max_output_tokens": 4096,
+    "max_turns": 8,
+    "max_retries": 0,
+    "reasoning_effort": "low",
+    "api": "responses",
+    "store": false,
+    "tracing_disabled": true
+  },
+  "sdk_versions": {
+    "openai": "3.36.0",
+    "openai-agents": "0.24.0"
+  },
+  "status": "completed",
+  "failure": null,
+  "result": {
+    "category": "out_of_scope",
+    "candidate_runbooks": [],
+    "observed_evidence": [
+      "Some of our API calls are getting the below error.",
+      "Can you raise the limit for us, or point us to the team that can?",
+      "HTTP 429",
+      "error_code: rate_limit_exceeded"
+    ],
+    "basis": "none",
+    "severity": "unknown",
+    "action": "escalate",
+    "missing": [],
+    "customer_reply": "Thank you for sharing the error and explaining that some of your API calls are affected. The supplied HTTP 429 and rate_limit_exceeded indicate a rate-limit rejection, but do not establish which limit was reached or whether an increase is available. Your request to raise the limit needs review outside the available troubleshooting guidance; I recommend routing it through your account’s support channel for a rate-limit review. That review can identify the applicable limit and determine whether an increase is possible.",
+    "escalation_note": "Suggested routing: the support or account process responsible for API rate-limit reviews. The customer supplied HTTP 429 with error_code: rate_limit_exceeded and explicitly requested a limit increase or referral. Rate-limit adjustments are outside the available runbooks. Workflow impact beyond some affected calls is not established. No limit change or transfer has been performed."
+  },
+  "tool_use": [
+    {
+      "call_id": "call_a4DiCjAiYWuWyueASRTe78is",
+      "name": "diagnose",
+      "arguments": {
+        "status": 429,
+        "error_code": "rate_limit_exceeded"
+      },
+      "status": "completed",
+      "result": []
+    },
+    {
+      "call_id": "call_EYTM10V3zX5z09oyAcLL989K",
+      "name": "list_runbooks",
+      "arguments": {},
+      "status": "completed",
+      "result": {
+        "invalid_credentials": "A request is rejected during authentication, potentially reported as HTTP 401 or an SDK `AuthenticationError`; the exact diagnostic fields must be checked before choosing a cause.",
+        "tool_schema": "A request is rejected while validating a function tool's parameter schema; HTTP 400 alone does not distinguish this from other invalid requests.",
+        "incomplete_output": "An HTTP-success response is incomplete or a JSON parser fails; check response completion status and incomplete reason before treating output-budget exhaustion as the cause.",
+        "timeout": "A client raises `APITimeoutError` while awaiting a response; an absent HTTP response leaves status, error code, and request ID unavailable."
+      }
+    }
+  ],
+  "usage": [
+    {
+      "input_tokens": 2070,
+      "output_tokens": 27,
+      "total_tokens": 2097,
+      "input_tokens_details": {
+        "cached_tokens": 0
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2110,
+      "output_tokens": 15,
+      "total_tokens": 2125,
+      "input_tokens_details": {
+        "cached_tokens": 2067
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    {
+      "input_tokens": 2274,
+      "output_tokens": 361,
+      "total_tokens": 2635,
+      "input_tokens_details": {
+        "cached_tokens": 2107
+      },
+      "output_tokens_details": {
+        "reasoning_tokens": 73
+      }
+    }
+  ],
+  "elapsed_ms": 13231.492
+}

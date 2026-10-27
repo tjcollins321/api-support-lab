@@ -16,8 +16,8 @@ class Runbook:
 
 # Only reviewed captures establish mappings. The corrected HTTP 200 is not a
 # diagnostic entry. Unverified runbooks have no diagnostic mappings.
-# Source: evidence/invalid_credentials/broken-20261022T032250Z.json
-# Source: evidence/tool_schema/broken-20261022T232240Z.json
+# Source: evidence/invalid_credentials/broken-2026-10-22.json
+# Source: evidence/tool_schema/broken-2026-10-22.json
 REGISTRY: dict[CaseId, Runbook] = {
     "invalid_credentials": Runbook(
         PROJECT_ROOT / "runbooks" / "invalid_credentials.md",

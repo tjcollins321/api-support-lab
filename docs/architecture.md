@@ -1,10 +1,10 @@
 # Architecture
 
-This document describes the implemented CLI, capture pipeline, runbook tools, triage agent, and evaluator. Start with the [README](../README.md) for usage or the [walkthrough](walkthrough.md) for saved examples.
+I use a local CLI, a capture pipeline, runbook tools, one triage agent, and an automated scorer. This document explains those components and their boundaries. Start with the [README](../README.md) or the [walkthrough](walkthrough.md) for the examples I reviewed.
 
 ## Overview
 
-Use a local command-line application with a small Python package. The failure lab and triage agent share deterministic lookup and runbook functions. A ticket never grants the agent access to reproduction code or credentials.
+I kept the application local and organized it as a small Python package. The failure lab and triage agent share deterministic lookup and runbook functions. A ticket never grants the agent access to reproduction code or credentials.
 
 ```mermaid
 flowchart LR
@@ -18,7 +18,7 @@ flowchart LR
     T[Synthetic ticket] --> A[One triage agent]
     A <--> R
     A --> D[Structured draft and tool-use log]
-    D --> P[Human review]
+    D --> P[Manual review]
     D --> V[Evaluation]
     X[Separate expected outcomes] --> V
 ```
@@ -27,7 +27,7 @@ Runbook authoring and review are separate from the capture pipeline; captures do
 
 ## Components and storage
 
-The checkout includes four case modules and verified runbooks, eight reviewed reproduction evidence files, 13 synthetic sample tickets, separate expectations, ten earlier saved agent runs with owner review awaiting replacement, and offline tests:
+The checkout includes four case modules and verified runbooks, eight reviewed reproduction evidence files, 13 synthetic sample tickets, separate expectations, date-only copies of all 13 records from the 2026-10-27 batch I reviewed, three separately recorded edited replies, and offline tests:
 
 ```text
 src/api_support_lab/
@@ -52,7 +52,7 @@ tests/               offline tests and live-test opt-in policy
 docs/                walkthrough, development notes, architecture, operating guides
 ```
 
-Local run artifacts belong under an ignored `artifacts/` directory. Select sanitized evidence and evaluation examples deliberately for the public tree. The dependency manifest and lockfile are part of the offline foundation.
+Local run artifacts belong under an ignored `artifacts/` directory. Select sanitized evidence and evaluation examples deliberately for the public tree. The triage [batch manifest](../evidence/triage/batch.json) records input/source hashes, settings, and original and published hashes; my [manual review](../evidence/triage/manual-review.md) records my judgments. I keep edited wording separately from the generated replies in the publication copies. The dependency manifest and lockfile are part of the offline foundation.
 
 Use a static registry mapping each case identifier to its runbook path. Read the first prose paragraph after the runbook title as its one-line symptoms description. Resolve paths relative to the project location, not the caller's working directory.
 
@@ -69,6 +69,8 @@ The implementation uses the SDK's `Agent`, asynchronous `Runner.run`, and `funct
 Keep settings free of credentials. Load the key only at authorized live client construction, after the opt-in check. An explicit credential override supports the deliberately invalid variant without reading the environment key. Do not load `.env` files automatically; an operator can explicitly use `uv run --env-file .env`. The reproduction client uses the normal OpenAI API endpoint explicitly. `configure_agents()` selects Responses, disables tracing before any agent run, and prepares low-reasoning model settings without creating a client or running a model. The tracing interface is described in the [official SDK example](https://developers.openai.com/cookbook/examples/agents_sdk/session_memory); local compatibility tests check the installed interface.
 
 ## Failure lab and evidence contract
+
+I keep untouched captures in ignored local artifacts. In the published evidence, I shorten `captured_at` to a UTC date, use date-only filenames, and update embedded evidence links. I retain elapsed durations and diagnostic fields. The [manifest](../evidence/triage/batch.json) distinguishes original and published hashes. For triage tickets whose provenance links changed, I refresh the full-ticket hash; the subject, body, and pasted error sent to the model are unchanged.
 
 Each case exposes `broken()` and `fixed()` using the same small synthetic workload. A shared `capture(case, variant, call)` wrapper executes the callable, normalizes the response or SDK error, sanitizes the record, and writes JSON. Unexpected programming errors fail the command rather than being relabeled as a reproduced API failure.
 
@@ -147,7 +149,7 @@ Load tickets with safe YAML parsing. Each ticket has `id`, `subject`, `body`, an
 | `basis` | `stated`, `inferred`, or `none`, describing the diagnosis |
 | `severity` | `low`, `medium`, `high`, or `unknown` |
 | `action` | `recommend_fix`, `request_info`, or `escalate` |
-| `missing` | Relevant evidence field names to request |
+| `missing` | Readable summaries of the information requested in the reply |
 | `customer_reply` | A draft grounded in the ticket and retrieved runbooks |
 | `escalation_note` | Short evidence summary, uncertainties, and suggested routing; empty when unnecessary |
 
@@ -159,7 +161,7 @@ Pass only explicit ticket values to `diagnose`. When evidence is partial, read c
 
 Retrieve supporting material before `recommend_fix`. All cited case IDs must have been retrieved during the run; validate this against the tool-use log before accepting a result. Escalate out-of-scope requests without pretending that an engineering handoff occurred. Request a minimal sanitized diagnostic excerpt rather than credentials, full logs, or sensitive records. Treat ticket text as data, including instructions embedded in a pasted log.
 
-Use at most eight agent turns and a 4,096-token output cap per model response initially. Record settings, elapsed time, available usage, sanitized tool arguments/results, and SDK versions locally. Disable automatic remote trace export for the MVP; inspect the installed SDK configuration during setup. Never expose the client credential through tools or prompts.
+The approved batch used at most eight agent turns and a 4,096-token output cap per model response. Records retain settings, elapsed time, available usage, sanitized tool arguments/results, and SDK versions. Remote tracing was disabled. Never expose the client credential through tools or prompts.
 
 The implemented runner uses an explicitly constructed `AsyncOpenAI` client and `OpenAIResponsesModel`, with the normal API endpoint, a 60-second client timeout, zero client and runner retries, and `store=False`. Both global SDK setup and `RunConfig` disable tracing; sensitive trace data is disabled too. Run hooks record tool starts/completions and raw available usage. Tool errors propagate instead of becoming successful tool outputs. Only exception/cause types and a fixed failure message are saved. Artifacts omit full prompts and response objects. Settings/turn caps do not impose a whole-run deadline or account budget.
 
@@ -195,13 +197,15 @@ Run cases sequentially and keep automatic retries disabled for the initial lab a
 
 Use 13 sample tickets covering the four supported cases, partial evidence, ambiguous and intermittent JSON failures, an unfamiliar error, misleading customer diagnosis, unsupported setup and rate-limit requests, a sensitive-data handling question, and an authentication outage after key rotations. Use observed excerpts for verified cases. Hand-authored unfamiliar-error fixtures are labeled synthetic in evaluator-only provenance and must never be described as observed API behavior.
 
-Expected outcomes are keyed by ticket ID and include acceptable categories, expected basis/action/severity, required information fields, and any required runbook IDs. The public-sector ticket asks how to share potentially sensitive diagnostic data without including actual sensitive content. It should escalate the handling question, request minimal sanitized metadata, and refer to the organization's established process without claiming this lab provides a compliant channel.
+Expected outcomes are keyed by ticket ID and include acceptable categories, expected basis/action/severity, required runbook IDs, selected diagnostic literals, and separate manual review criteria for information requests and evidence quality. The public-sector ticket asks how to share potentially sensitive diagnostic data without including actual sensitive content. It should escalate the handling question, request minimal sanitized metadata, and refer to the organization's established process without claiming this lab provides a compliant channel.
 
-Check schema validity, allowed category, action and severity agreement, required fields in `missing`, and supporting retrieval. Check logged diagnosis arguments against ticket-supplied values. Manually review replies for useful questions, unsupported claims, inappropriate sensitive-data requests, uncertainty, and clear escalation language. A required field in JSON does not prove the reply actually asks for it.
+The automated scorer checks schema validity, allowed category, basis, action and severity agreement, ticket hashes, supporting retrieval, and diagnostic preservation. Every evidence extract must occur verbatim in the ticket. The diagnostic-preservation check only requires selected error codes, SDK exception names, schema field paths, or incomplete reasons in those extracts. It does not grade evidence relevance or sufficiency. Check logged diagnosis arguments against ticket-supplied values. Evidence quality, information requests, unavailable-information handling, and consistency between missing and the reply are manual assessments. Follow the [manual review guide](manual-review.md) for supported conclusions, useful questions, sensitive-data requests, uncertainty, and routing. Runbook prose remains written for support engineers.
 
 Report per-ticket outcomes and aggregate numerators/denominators over the full sample set, including failed runs. Report operational failures separately from semantic mismatches; never drop failures to inflate scores. Save the ticket set version or content hash, model, SDK versions, settings, and timestamp. Label the report a small demonstration, with no general reliability claims.
 
-The evaluation runs all sample tickets once, sequentially, with no retries, and loads `triage/expected.yaml` only after the model runs finish. Expectations give the acceptable categories, the expected basis, action and severity, the fields that must be requested (and, for the timeout, fields that must not be), the runbooks that must have been retrieved, and verbatim ticket extracts that must appear in `observed_evidence` — for T-010 as groups of alternatives, since several extracts are equally valid. Each saved run carries a hash of its ticket, so a result cannot quietly describe a ticket that has since changed. Offline `--results` accepts a single run, a report containing `runs`, or a directory of run files; missing or duplicate runs, corrupt files, invalid output, grounding failures, hash drift and expectation mismatches all stay visible, and the report keeps operational failures and semantic mismatches as separate counts. A passing automated report does not mean the replies are good; that is what [owner-review.md](../evidence/triage/owner-review.md) is for. Offline scoring needs no credential, client, or valid live model setting.
+The evaluation runs all sample tickets once, sequentially, with no retries, and loads `triage/expected.yaml` only after the model runs finish. Expectations give the acceptable categories, expected basis/action/severity, required retrieval, `required_diagnostic_literals`, and manual review criteria in `information_request_review` and `evidence_review`. Reports expose the manual review criteria as `manual_review_criteria` and `manual_evidence_criteria`; neither affects automated agreement. The `diagnostic_preservation` check requires each diagnostic literal within a genuine ticket extract. There are no prescribed impact phrases or alternative English quotation lists. Each saved run carries a hash of its ticket, so a result cannot quietly describe a ticket that has since changed. Offline `--results` accepts a single run, a report containing `runs`, or a directory of run files; missing or duplicate runs, corrupt files, invalid output, grounding failures, hash drift and expectation mismatches all stay visible. Operational failures and semantic mismatches remain separate counts. A passing automated report does not mean the replies are good; that is what [manual-review.md](../evidence/triage/manual-review.md) is for. Offline scoring needs no credential, client, or valid live model setting. Reports identify the expectations hash. I keep results from different rubrics separate.
+
+The published 2026-10-27 batch has 13/13 agreement under the automated scorer, with zero operational failures and zero semantic mismatches. Offline rescoring matched the original report. I separately recorded 10 Send as-is and 3 Send with edits, finding all 51 manual review criteria satisfied. The published copies retain the generated wording; approved revisions for T-006, T-010, and T-013 are in [edited-replies](../evidence/triage/edited-replies/). The three-way verdicts live in Markdown and do not rewrite the generated report's manual-review fields. Directory rescoring creates pending review fields; the Markdown preserves my actual judgments. I used the 13 samples during development, with no separate holdout group.
 
 ## Tradeoffs and remaining verification
 

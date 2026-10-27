@@ -1,111 +1,172 @@
-# Evaluator only. Never import this file in agent code or include it in prompts.
+# Evaluator and manual review criteria only. Never include this file in agent prompts.
+# information_request_review is assessed against customer_reply by a person, not scored automatically.
+# required_diagnostic_literals checks diagnostic preservation, not evidence quality.
+# evidence_review is assessed by a person against the selected extracts and decision.
 T-001:
   categories: [invalid_credentials]
   basis: [stated]
   action: recommend_fix
   severity: unknown
-  required_missing: []
+  information_request_review:
+    - "Request only missing context needed to check the running credential source and intended project; do not request secret values or repeat supplied diagnostics."
+    - "Ask for workflow impact if needed to establish severity, and ask for the outcome of the corrected request."
   required_runbooks: [invalid_credentials]
-  required_evidence: ['401', invalid_api_key]
+  required_diagnostic_literals: ["invalid_api_key"]
+  evidence_review:
+    - "The selected extracts establish a credential rejection without claiming that the key was revoked."
+    - "Do not infer workflow impact that the customer has not reported."
 T-002:
   categories: [tool_schema]
   basis: [stated]
   action: recommend_fix
   severity: unknown
-  required_missing: [tool_schema]
+  information_request_review:
+    - "Request the smallest sanitized serialized tool-definition excerpt containing the affected property and its enclosing schema, even though the error names an invalid value."
+    - "Request only missing endpoint, model, SDK, strict-mode or transformation context needed for the next schema check."
   required_runbooks: [tool_schema]
-  required_evidence: [invalid_function_parameters, 'tools[0].parameters']
+  required_diagnostic_literals: ["invalid_function_parameters", "tools[0].parameters"]
+  evidence_review:
+    - "The selected extracts support a function-tool parameter-schema rejection and identify the affected schema location."
+    - "Distinguish a successful request after removing the tool from a confirmed usable workflow workaround."
 T-003:
   categories: [incomplete_output]
   basis: [stated]
   action: recommend_fix
   severity: unknown
-  required_missing: []
+  information_request_review:
+    - "Use the supplied completion status, incomplete reason and output limit without asking for them again."
+    - "Ask for the outcome of a bounded correction, including completed usable output and successful parsing or validation."
   required_runbooks: [incomplete_output]
-  required_evidence: ['response_status: incomplete', max_output_tokens]
+  required_diagnostic_literals: ["max_output_tokens"]
+  evidence_review:
+    - "The selected extracts establish an incomplete response whose supplied reason identifies output-budget exhaustion."
+    - "Distinguish the output allowance and completion reason from HTTP success alone; do not infer complete or usable output."
 T-004:
   categories: [timeout]
   basis: [stated]
   action: recommend_fix
   severity: unknown
-  required_missing: [sdk_version, workload]
-  forbidden_missing: [http_status, error_code, error_type, request_id, response_status, incomplete_reason]
+  information_request_review:
+    - "Request the SDK version and approximate workload size."
+    - "Request relevant earlier-attempt, application-retry and duplicate-work context before recommending another attempt."
+    - "Do not request HTTP status, error code/type, request ID or response completion details for the attempt that received no response."
   required_runbooks: [timeout]
-  required_evidence: [APITimeoutError, 'No HTTP response or request ID arrived.']
+  required_diagnostic_literals: ["APITimeoutError"]
+  evidence_review:
+    - "The selected extracts establish a client timeout, the short configured timeout, and that no HTTP response or request ID arrived."
+    - "The evidence does not establish whether server-side processing stopped, whether usage occurred, or how severely the workflow is disrupted."
 T-005:
   categories: [undetermined, invalid_credentials]
   basis: [none, inferred]
   action: request_info
   severity: unknown
-  required_missing: [http_status, error_code]
+  information_request_review:
+    - "Request a minimal sanitized error excerpt including HTTP status and error code when received; not handy does not mean the information cannot be collected."
+    - "Collect distinguishing diagnostics before recommending a credential correction."
   required_runbooks: []
-  required_evidence: []
+  required_diagnostic_literals: []
+  evidence_review:
+    - "Treat the customer credential explanation as an unconfirmed hypothesis; no error diagnostics were supplied."
+    - "Distinguish information that is not handy from information known to be unavailable."
 T-006:
   categories: [incomplete_output, undetermined]
   basis: [inferred, none]
   action: request_info
   severity: high
-  required_missing: [response_status, incomplete_reason, max_output_tokens, parser_error, output_excerpt]
+  information_request_review:
+    - "Request completion status, incomplete details including the reason when present, and configured output-token allowance; collect unretained evidence on a future failing run."
+    - "Request extraction/parsing context and the expected structure without simply asking again for the supplied parser error."
+    - "Request a short sanitized failing output excerpt on a future failing run, with whether it contains all returned text or was shortened by logging."
   required_runbooks: [incomplete_output]
-  required_evidence: ['HTTP 200', 'nightly report is blocked', JSONDecodeError]
+  required_diagnostic_literals: ["JSONDecodeError"]
+  evidence_review:
+    - "The selected extracts establish that a response arrived, parsing failed, and the report workflow is blocked."
+    - "The evidence does not establish output-budget exhaustion; the diagnosis should retain that uncertainty."
 T-007:
   categories: [undetermined]
   basis: [none]
   action: request_info
   severity: unknown
-  required_missing: [error_message, endpoint, model, sdk_version, impact]
+  information_request_review:
+    - "Request the accompanying sanitized error message/type, endpoint, model and SDK version."
+    - "Request workflow impact, including whether the customer is blocked or has a usable workaround; preserve the supplied unfamiliar code."
   required_runbooks: []
-  required_evidence: [lunar_teapot_alignment_77]
+  required_diagnostic_literals: ["lunar_teapot_alignment_77"]
+  evidence_review:
+    - "The selected extracts support an unfamiliar-code investigation without assigning the code an invented meaning or a known failure category."
+    - "Do not infer workflow impact or a malformed-tool diagnosis from HTTP 400 alone."
 T-008:
   categories: [tool_schema]
   basis: [stated]
   action: recommend_fix
   severity: unknown
-  required_missing: [tool_schema]
+  information_request_review:
+    - "Request the smallest sanitized serialized tool-definition excerpt containing the affected property and enclosing schema."
+    - "Ask only for missing schema context needed to investigate the supplied validation error; do not seek credential values or assume rotation is needed."
   required_runbooks: [tool_schema]
-  required_evidence: [invalid_function_parameters, 'tools[0].parameters']
+  required_diagnostic_literals: ["invalid_function_parameters", "tools[0].parameters"]
+  evidence_review:
+    - "The selected extracts support the supplied tool-schema diagnostics rather than the customer credential hypothesis."
+    - "The evidence does not establish that key rotation would correct the supplied error."
 T-009:
   categories: [out_of_scope]
   basis: [none]
   action: escalate
   severity: unknown
-  required_missing: []
+  information_request_review:
+    - "Avoid unnecessary API diagnostic questions for an identified SSO and identity-provider setup request."
   required_runbooks: []
-  required_evidence: [SSO]
+  required_diagnostic_literals: []
+  evidence_review:
+    - "The selected extracts establish an SSO and identity-provider setup request outside the available troubleshooting guidance."
 T-010:
   categories: [out_of_scope]
   basis: [none]
   action: escalate
   severity: unknown
-  required_missing: [diagnostic_summary, impact]
+  information_request_review:
+    - "Request only a minimal sanitized problem summary and workflow impact initially, subject to the customer security or data-handling process."
+    - "Do not request keys, full logs, full request bodies or sensitive records, or imply that diagnostic material was already supplied."
   required_runbooks: []
-  # Evidence must establish the handling question and possible sensitivity.
-  # The organization's sector label is context, not the reason for escalation.
-  required_evidence: []
-  required_evidence_any:
-    - ['potentially sensitive']
-    - ['how should we route', 'what minimal/sanitized metadata', 'Before sharing anything']
+  required_diagnostic_literals: []
+  evidence_review:
+    - "The selected extracts establish possible sensitivity and a request for sharing or routing guidance; the organization sector alone is not the reason for routing."
+    - "The result accurately distinguishes potentially sensitive material from material actually supplied."
 T-011:
   categories: [out_of_scope]
   basis: [none]
   action: escalate
   severity: unknown
-  required_missing: []
+  information_request_review:
+    - "Any additional questions should support routing the limit-review request; avoid an unnecessary troubleshooting checklist for an unsupported case."
   required_runbooks: []
-  required_evidence: ['429', rate_limit_exceeded]
+  required_diagnostic_literals: ["rate_limit_exceeded"]
+  evidence_review:
+    - "The selected extracts establish a rate-limit response and a request for limit review or routing outside the available runbooks."
+    - "The evidence does not establish that an account change is possible or that a handoff has occurred."
 T-012:
   categories: [incomplete_output, undetermined]
   basis: [inferred, none]
   action: request_info
   severity: medium
-  required_missing: [response_status, incomplete_reason, max_output_tokens, parser_error, output_excerpt]
+  information_request_review:
+    - "Request completion status, incomplete details including the reason when present, and configured output-token allowance for a failing run."
+    - "Request parser/validation and extraction context, expected structure, and a short sanitized failing output excerpt with any logging truncation noted."
   required_runbooks: [incomplete_output]
-  required_evidence: ['missing the closing bracket', 'one in twenty']
+  required_diagnostic_literals: []
+  evidence_review:
+    - "The selected extracts establish an intermittent JSON symptom and a reported retry workaround that supports medium severity."
+    - "Missing punctuation alone does not establish incomplete generation or output-budget exhaustion."
 T-013:
   categories: [invalid_credentials]
   basis: [stated]
   action: recommend_fix
   severity: high
-  required_missing: []
+  information_request_review:
+    - "Ask for the actual running credential source and relevant deployment/project configuration descriptions without requesting secret values."
+    - "Avoid asking again for the supplied outage duration, error or rotation history; request only context needed for the next check and the rerun outcome."
   required_runbooks: [invalid_credentials]
-  required_evidence: ['401', invalid_api_key, 'down 40 minutes', 'rotated the API key twice']
+  required_diagnostic_literals: ["invalid_api_key"]
+  evidence_review:
+    - "The selected extracts establish an authentication rejection and an ongoing customer-facing outage after repeated key rotations."
+    - "The evidence does not establish which credential the running process loaded or that the configured key was revoked."

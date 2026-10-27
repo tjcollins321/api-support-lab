@@ -45,6 +45,12 @@ Request only information missing from the ticket:
   input-size or dataset changes, whether every request fails or only some, and
   workflow impact.
 
+If completion details or failing output were not retained, ask the customer to
+capture the completion fields above before parsing on the next failing run.
+Ask them to share those fields and a short sanitized failing output excerpt,
+alongside the extraction/parsing context, when available. Do not ask them to
+recover historical output they did not save.
+
 Do not request sensitive records, credentials, full prompts, full request bodies,
 or full logs.
 
@@ -79,7 +85,9 @@ parsing, and output excerpts with any truncation noted.
 ## Reply template
 
 Keep only questions for missing information, and condition the correction on
-the completion details the customer actually supplied.
+the completion details the customer actually supplied. When details or output
+were not retained, adapt the requests to capture and share evidence from the
+next failing run.
 
 > Thanks for the details. HTTP 200 confirms that a response arrived, but a parser
 > error alone does not show whether generation finished or what caused the failure.
@@ -104,8 +112,8 @@ the completion details the customer actually supplied.
 - Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
   `openai` 3.36.0, `gpt-6.1-sol`, and retries disabled. One reproduced
   broken/corrected pair supports the example:
-  [incomplete at 128 tokens](../evidence/incomplete_output/broken-20261022T232333Z.json)
-  and [completed at 2,048](../evidence/incomplete_output/fixed-20261022T232346Z.json).
+  [incomplete at 128 tokens](../evidence/incomplete_output/broken-2026-10-22.json)
+  and [completed at 2,048](../evidence/incomplete_output/fixed-2026-10-22.json).
   The SDK-shaped display maps the selected capture fields to their API names;
   `…` marks omitted excerpt text. Saved excerpts are limited to 1,000 characters,
   so the corrected capture also ends mid-array; its `output_valid: true` was

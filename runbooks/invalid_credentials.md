@@ -102,8 +102,8 @@ information.
 - Status: `verified`. Verified on: `2026-10-21` (America/New_York; captures are
   dated `2026-10-22` UTC), with `openai` 3.36.0 and retries disabled. One
   reproduced broken/corrected pair supports the example:
-  [authentication rejection](../evidence/invalid_credentials/broken-20261022T032250Z.json)
-  and [completed correction](../evidence/invalid_credentials/fixed-20261022T032341Z.json).
+  [authentication rejection](../evidence/invalid_credentials/broken-2026-10-22.json)
+  and [completed correction](../evidence/invalid_credentials/fixed-2026-10-22.json).
   The SDK-shaped layout is reconstructed from selected recorded diagnostics;
   the credential text retains the capture's `[REDACTED]` marker. Rejected-request
   usage was not reported.

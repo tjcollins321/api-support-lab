@@ -1,7 +1,7 @@
 {
   "case": "invalid_credentials",
   "variant": "fixed",
-  "captured_at": "2026-10-22T03:23:41.220586+00:00",
+  "captured_at": "2026-10-22",
   "model": "gpt-6.1-sol",
   "sdk_version": "3.36.0",
   "elapsed_ms": 2962.35,

@@ -1,7 +1,7 @@
 {
   "case": "incomplete_output",
   "variant": "fixed",
-  "captured_at": "2026-10-22T23:23:46.160497+00:00",
+  "captured_at": "2026-10-22",
   "model": "gpt-6.1-sol",
   "sdk_version": "3.36.0",
   "elapsed_ms": 6101.847,

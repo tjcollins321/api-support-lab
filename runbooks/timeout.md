@@ -103,8 +103,8 @@ missing information.
 - Status: `verified`. Verified on: `2026-10-22` (America/New_York and UTC), with
   `openai` 3.36.0 and retries disabled. One reproduced broken/corrected pair
   supports the example:
-  [client timeout at 0.5 seconds](../evidence/timeout/broken-20261022T232402Z.json)
-  and [completed correction at 60 seconds](../evidence/timeout/fixed-20261022T232415Z.json).
+  [client timeout at 0.5 seconds](../evidence/timeout/broken-2026-10-22.json)
+  and [completed correction at 60 seconds](../evidence/timeout/fixed-2026-10-22.json).
   Recorded elapsed times were about 620 ms and 1.81 seconds. The timeout capture
   has no HTTP status, request ID, or usage; its earlier server-side processing
   and cost remain unknown.

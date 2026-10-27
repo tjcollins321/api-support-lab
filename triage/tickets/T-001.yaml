@@ -13,4 +13,4 @@ organization: Harbor Demo (invented)
 channel: synthetic ticket
 provenance:
   source: selected sanitized observed fields; surrounding ticket is synthetic
-  evidence: evidence/invalid_credentials/broken-20261022T032250Z.json
+  evidence: evidence/invalid_credentials/broken-2026-10-22.json
