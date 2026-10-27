@@ -11,5 +11,5 @@ pasted_error: |-
 organization: Spruce Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: authored held-out impact and tone scenario with synthetic diagnostics;
-    frozen before the live re-run; not used for tuning
+  source: authored synthetic authentication outage scenario; not an observed API
+    response

@@ -1,4 +1,4 @@
-"""Ten-ticket execution and offline scoring, with failures in denominators."""
+"""Sample-ticket execution and offline scoring, with failures in denominators."""
 
 import hashlib
 import json
@@ -110,7 +110,7 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
             sort_keys=True,
         ).encode()).hexdigest(),
         "captured_at": timestamp(),
-        "scope": "Ten-ticket technical learning demonstration; no reliability claim.",
+        "scope": f"{len(tickets)} synthetic sample tickets; a demonstration, not a reliability claim.",
         "ticket_hashes": {ticket.id: ticket.content_hash() for ticket in tickets},
         "runs": runs,
         "tickets": rows,
@@ -167,7 +167,7 @@ async def evaluate_live(settings: Settings, *, live: bool,
     require_live(live)
     tickets = load_tickets()
     runs = []
-    # Sequential execution attempts each of the ten tickets once.
+    # Sequential execution attempts each sample ticket once.
     # Each failure remains saved; the next ticket is still attempted, without retry.
     for ticket in tickets:
         run = await triage_ticket(ticket, settings, live=live, output_dir=output_dir / "runs")

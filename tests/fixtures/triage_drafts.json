@@ -68,5 +68,64 @@
     "basis": "none", "severity": "unknown", "action": "escalate", "missing": ["diagnostic_summary", "impact"],
     "customer_reply": "Please route the handling question through your organization's established support/security or data-handling process before sharing material. Initially provide only a minimal sanitized diagnostic summary, such as exception type and approximate UTC time if permitted, and workflow impact. Omit records, payloads, credentials, and full logs. This lab cannot designate an approved sharing channel.",
     "escalation_note": "Potentially sensitive diagnostic handling is outside this lab's authority. Suggest the organization's established handling process; no sensitive content was supplied and no handoff occurred."
+  },
+  "T-011": {
+    "category": "out_of_scope",
+    "candidate_runbooks": [],
+    "observed_evidence": [
+      "HTTP 429",
+      "error_code: rate_limit_exceeded"
+    ],
+    "basis": "none",
+    "severity": "unknown",
+    "action": "escalate",
+    "missing": [
+      "rate_limit_headers",
+      "model",
+      "impact"
+    ],
+    "customer_reply": "Thanks for sending the error. The supplied 429 and rate_limit_exceeded identify a rate-limit issue outside the available runbooks. Please route a limit-increase request to your project owner or API support. Could you share the model, workflow impact, and minimal sanitized retry-after or x-ratelimit-* headers if available? Those details can help the appropriate team review the request.",
+    "escalation_note": "Suggest the project owner or API support for the rate-limit and limit-increase request. No account change or handoff has been performed."
+  },
+  "T-012": {
+    "category": "incomplete_output",
+    "candidate_runbooks": [
+      "incomplete_output"
+    ],
+    "observed_evidence": [
+      "missing the closing bracket",
+      "one in twenty",
+      "Running the job again usually works."
+    ],
+    "basis": "inferred",
+    "severity": "medium",
+    "action": "request_info",
+    "missing": [
+      "response_status",
+      "incomplete_reason",
+      "max_output_tokens",
+      "parser_error",
+      "output_excerpt"
+    ],
+    "customer_reply": "Thanks for describing the intermittent failure. Missing JSON punctuation could reflect incomplete generation or an extraction/parsing issue. Could you share the response completion status and incomplete reason, the configured max_output_tokens, and a minimal sanitized failing output excerpt with the extraction/parsing step and expected schema? Please say whether the excerpt contains all returned text. These details will help distinguish the cause before choosing a fix.",
+    "escalation_note": ""
+  },
+  "T-013": {
+    "category": "invalid_credentials",
+    "candidate_runbooks": [
+      "invalid_credentials"
+    ],
+    "observed_evidence": [
+      "HTTP 401",
+      "error_code: invalid_api_key",
+      "down 40 minutes",
+      "rotated the API key twice"
+    ],
+    "basis": "stated",
+    "severity": "high",
+    "action": "recommend_fix",
+    "missing": [],
+    "customer_reply": "Thanks for sharing the error and the outage details. The API rejected the key sent by the deployed app; two rotations do not establish which value the process loaded. Please check the running deployment secret reference and locally confirm it loads the intended project credential, without printing or sharing the value. Correct an identified loading issue through your secret-management process, then rerun and confirm usable output. If rejection persists after those checks, involve the project credential owner and API support.",
+    "escalation_note": ""
   }
 }

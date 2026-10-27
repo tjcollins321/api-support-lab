@@ -8,5 +8,4 @@ pasted_error: null
 organization: Rowan Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: authored held-out symptom report; frozen before the live re-run; not
-    used for tuning
+  source: authored synthetic intermittent JSON symptom report

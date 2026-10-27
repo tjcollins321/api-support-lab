@@ -1,6 +1,6 @@
 # Owner review
 
-Source: the saved runs in [`runs/`](runs/).
+Source: the earlier ten-ticket run in [`runs/`](runs/). These notes predate the current ticket, instruction, and runbook rewrites.
 
 **Reviewer:** TJ. **Result:** 10 passes, 0 failures.
 A draft passes when its general suggested next step is accurate; tone and prose

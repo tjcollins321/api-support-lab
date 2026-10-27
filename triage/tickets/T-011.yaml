@@ -9,5 +9,5 @@ pasted_error: |-
 organization: Alder Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: authored held-out ticket with synthetic diagnostics; frozen before the
-    live re-run; not used for tuning
+  source: authored synthetic rate-limit routing request; not an observed API
+    response

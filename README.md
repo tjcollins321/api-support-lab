@@ -27,7 +27,7 @@ Its saved reply begins:
 
 The category is a hypothesis; the severity comes from the blocked report; the next step is to collect completion details and a sanitized failing excerpt.
 
-This is an excerpt from [T-006](triage/tickets/T-006.yaml) in its [saved run](evidence/triage/runs/T-006.json), not a newly generated response. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
+This excerpt comes from an earlier version of [T-006](triage/tickets/T-006.yaml) in its [saved run](evidence/triage/runs/T-006.json). The current ticket, instructions, and runbooks have been rewritten; replacement outputs are pending a live run and review. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction and an escalation.
 
 ## What is implemented
 
@@ -40,7 +40,7 @@ This is an excerpt from [T-006](triage/tickets/T-006.yaml) in its [saved run](ev
 
 The table combines request setup from the [case implementations](src/api_support_lab/cases/) with observed fields from the captures linked in each runbook.
 
-For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply. Its [saved outputs](evidence/triage/runs/) for the ten tickets are in the repo, one file per ticket.
+For ticket triage, one agent uses three read-only tools and returns a structured decision plus a draft reply for each of the [13 sample tickets](triage/tickets/). The [saved outputs](evidence/triage/runs/) currently contain an earlier ten-ticket run awaiting replacement.
 
 The four cases cover two errors with a diagnostic code to look up (401 and 400), an HTTP-success response whose output is incomplete, and a client timeout without a received response. In two of the four, the status code alone does not tell you what went wrong.
 
@@ -59,7 +59,7 @@ uv run pytest -q
 uv run python -m api_support_lab evaluate --results evidence/triage/runs
 ```
 
-None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` scores the saved outputs against `triage/expected.yaml` without calling the model and prints 10/10. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
+None of these commands need an API key. `diagnose` prints `["invalid_credentials"]`, a candidate for investigation. Tests use dummy credentials and an in-memory transport; a pytest DNS/socket guard blocks unexpected network access during offline execution. `evaluate --results` scores the saved outputs against `triage/expected.yaml` without calling the model. The existing outputs predate the rewritten 13-ticket set, so this command currently reports 0/13 and exits 1; new outputs are pending a live run and review. It does not rerun the agent. Generated files go under ignored `artifacts/`. The fully locked-down command forms are in the [reproduction guide](docs/reproduction-guide.md#offline-checks-and-references).
 
 For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
 
@@ -97,11 +97,11 @@ Three rules shape the agent:
 
 Each case has one reviewed live broken/corrected pair — a reproduction, not a benchmark.
 
-The agent's saved outputs for the ten tickets are in [`evidence/triage/runs/`](evidence/triage/runs/), one file per ticket, with notes on each draft in [`owner-review.md`](evidence/triage/owner-review.md). They score 10/10 against the expected decisions. The instructions were tuned against these same hand-authored tickets — the [development notes](docs/development-notes.md#tuning-the-agent) say how — so this shows the loop works, not how reliable the agent is.
+The current demonstration has 13 synthetic sample tickets. The files in [`evidence/triage/runs/`](evidence/triage/runs/) and notes in [`owner-review.md`](evidence/triage/owner-review.md) describe an earlier ten-ticket run and await replacement. They are historical examples, not results for the current sample set. Tuning is discussed briefly in the [development notes](docs/development-notes.md#tuning-the-agent).
 
-The runbooks were edited after this run to add quoted errors and revise sample replies; the saved outputs used the earlier text, and the agent has not been rerun with the revised guidance.
+The ticket wording, instructions, and runbooks have changed since those outputs were produced. The saved tool logs retain the earlier guidance; the agent has not been rerun with the current inputs.
 
-The offline tests (279, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
+The offline tests (289, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
 
 ## Explore further
 

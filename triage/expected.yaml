@@ -85,3 +85,27 @@ T-010:
   required_evidence_any:
     - ['potentially sensitive']
     - ['how should we route', 'what minimal/sanitized metadata', 'Before sharing anything']
+T-011:
+  categories: [out_of_scope]
+  basis: [none]
+  action: escalate
+  severity: unknown
+  required_missing: []
+  required_runbooks: []
+  required_evidence: ['429', rate_limit_exceeded]
+T-012:
+  categories: [incomplete_output, undetermined]
+  basis: [inferred, none]
+  action: request_info
+  severity: medium
+  required_missing: [response_status, incomplete_reason, max_output_tokens, parser_error, output_excerpt]
+  required_runbooks: [incomplete_output]
+  required_evidence: ['missing the closing bracket', 'one in twenty']
+T-013:
+  categories: [invalid_credentials]
+  basis: [stated]
+  action: recommend_fix
+  severity: high
+  required_missing: []
+  required_runbooks: [invalid_credentials]
+  required_evidence: ['401', invalid_api_key, 'down 40 minutes', 'rotated the API key twice']

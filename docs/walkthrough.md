@@ -1,6 +1,6 @@
 # Walkthrough: four saved support decisions
 
-These examples come from the [saved runs](../evidence/triage/runs/) on 2026-10-22, America/New_York. Each ticket's complete record is its own file there. No installation or API access is needed to follow along.
+These examples come from the [saved runs](../evidence/triage/runs/) on 2026-10-22, America/New_York. Each ticket's complete record is its own file there. They predate the current 13-ticket set, instructions, and runbooks; quoted ticket bodies and drafts refer to those earlier versions. New examples are pending a live run and review. No installation or API access is needed to follow along.
 
 All tickets and organizations are invented. T-003's pasted diagnostics quote selected fields from a saved live API capture in `evidence/`; T-006 and T-009 are authored scenarios. Quoted drafts preserve recorded wording; Markdown list spacing is adjusted for readability. Commentary appears outside the quotes.
 
@@ -147,6 +147,6 @@ Inspect T-006's `result` and `tool_use`, then rescore the saved runs to inspect 
 
 ## What the results establish
 
-All four examples pass the automated checks against `triage/expected.yaml`; notes on each of the ten drafts are in [owner-review.md](../evidence/triage/owner-review.md). These are saved outputs on hand-authored tickets used for tuning — a demonstration of the workflow, not a reliability result or approval for customer use.
+These four examples passed the automated checks for the tickets and expectations used at the time; notes on the ten earlier drafts are in [owner-review.md](../evidence/triage/owner-review.md). They illustrate the earlier workflow and are not validation of the current 13-ticket set or approval for customer use.
 
-The runbooks were edited after this run; the saved tool logs retain the text the agent actually read. To rescore the saved outputs without an API key, run the [offline command](../README.md#quick-start).
+The tickets, instructions, and runbooks have changed since this run; the saved tool logs retain the text the agent actually read. To rescore the saved outputs without an API key, run the [offline command](../README.md#quick-start).
