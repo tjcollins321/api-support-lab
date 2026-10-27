@@ -1,12 +1,12 @@
 # Walkthrough: four saved support decisions
 
-These examples come from the [saved runs](../evidence/triage/runs/) on 2026-10-22, America/New_York. Each ticket's complete record is its own file there. No installation or API access is needed to follow along.
+I evaluated and reviewed 13 synthetic tickets on **2026-10-27**, using `gpt-6.1-sol`, `openai` 3.36.0, and `openai-agents` 0.24.0. These four examples show the resulting decisions. Each [published record](../evidence/triage/runs/) contains the generated result, draft, tools, and available usage. I retained full timestamps locally and published date-only copies. No installation or API access is needed to follow along.
 
-All tickets and organizations are invented. T-003's pasted diagnostics quote selected fields from a saved live API capture in `evidence/`; T-006 and T-009 are authored scenarios. Quoted drafts preserve recorded wording; Markdown list spacing is adjusted for readability. Commentary appears outside the quotes.
+All tickets and organizations are invented. T-003 and T-008 contain selected diagnostics from reviewed live reproduction captures; T-006 and T-009 are authored scenarios. The quotes below preserve the complete original drafts; Markdown list spacing is adjusted for readability. Approved edits are linked separately.
 
 ## 1. Supported correction: incomplete output
 
-[T-003](../triage/tickets/T-003.yaml) asks about structured JSON requested with `max_output_tokens` set to 128. Its supplied diagnostics are:
+[T-003](../triage/tickets/T-003.yaml) reports invalid or cut-off structured JSON with a configured output allowance of 128 tokens. The supplied diagnostics are:
 
 ```text
 HTTP 200
@@ -14,14 +14,14 @@ response_status: incomplete
 incomplete_reason: max_output_tokens
 ```
 
-The fields establish output-budget exhaustion. Two tool calls completed in order:
+The incomplete status and explicit reason support output-budget exhaustion. Two tool calls completed in order:
 
 | Tool | Saved JSON arguments | Status |
 | --- | --- | --- |
-| `list_runbooks` | `{}` | `completed` |
+| `diagnose` | `{"status": 200, "error_code": null}` | `completed` |
 | `get_runbook` | `{"case": "incomplete_output"}` | `completed` |
 
-The agent retrieved the [incomplete-output runbook](../runbooks/incomplete_output.md) through discovery. HTTP 200 is not a registered failure mapping.
+The `diagnose` lookup returned `[]`; HTTP 200 is not a registered failure mapping. The model then selected and retrieved the [incomplete-output runbook](../runbooks/incomplete_output.md). No `list_runbooks` call was recorded for this ticket.
 
 | Saved field | Value |
 | --- | --- |
@@ -29,29 +29,36 @@ The agent retrieved the [incomplete-output runbook](../runbooks/incomplete_outpu
 | `basis` | `stated` |
 | `severity` | `unknown` |
 | `action` | `recommend_fix` |
-| `missing` | `["impact"]` |
+| `missing` | 2 readable information-request summaries; see the published record |
 
-**Saved customer draft, complete:**
+**Original customer draft, complete:**
 
-> The returned status and reason establish output-budget exhaustion: HTTP 200 does not mean the structured output completed. Have the application maintainer increase max_output_tokens above 128 to a bounded allowance appropriate to the model and workload, or reduce the requested JSON payload. Account for reasoning tokens as well as visible output; there is no universal correct limit.
+> Thanks for sharing the completion details and your 128-token limit; they explain why your structured JSON is being cut off. HTTP 200 means a response arrived, but `response_status: incomplete` with `incomplete_reason: max_output_tokens` shows that generation exhausted its output allowance.
 >
-> During an authorized check of the affected workflow, inspect completion status before consuming the result. Confirm completed status with no incomplete reason, refusal, or response error, then parse the intended output field from the full returned output and validate both the expected schema and required content. Finally, confirm Aspen Demo successfully uses the result; parseable JSON alone is not sufficient, and partial output should not be accepted as a completed task.
+> Increase `max_output_tokens` above 128 to fit the expected JSON, or request less output. There is no universal suitable limit; on reasoning models, the allowance also covers reasoning tokens, not just visible JSON.
 >
-> What workflow impact is this causing—for example, is the task blocked or is there a workaround?
+> Before parsing, check completion status, incomplete details, and any refusal or response error. Do not treat partial output as a completed result.
+>
+> Please retry and confirm that the response completes without an incomplete reason, refusal, or response error, that the full JSON validates against your expected schema, and that your application can use it successfully. If it still fails, share your model, reasoning setting, and SDK version.
+>
+> The retry result will help determine whether the budget adjustment resolves the issue or further investigation is needed.
 
-The [broken capture](../evidence/incomplete_output/broken-20261022T232333Z.json) records HTTP 200, `incomplete`, and `max_output_tokens` at 128 tokens. The [correction](../evidence/incomplete_output/fixed-20261022T232346Z.json) records `completed` and `output_valid: true` at 2,048 tokens, using the same schema and 32-item workload. Validation checked full output before excerpt truncation; the saved excerpt cannot reconstruct the complete JSON.
+The [broken capture](../evidence/incomplete_output/broken-2026-10-22.json) records HTTP 200, `incomplete`, and `max_output_tokens` at 128 tokens. The [correction](../evidence/incomplete_output/fixed-2026-10-22.json) records `completed` and `output_valid: true` at 2,048 tokens, using the same schema and 32-item workload. Validation checked full output before excerpt truncation; the saved excerpt cannot reconstruct the complete JSON.
 
-The budget must suit the actual workload. Severity stays unknown without reported impact. Human review should check applicability and usable output after correction.
+The budget must suit the actual workload. Severity stays unknown without reported impact. I selected **Send as-is** and found all four manual review criteria were met, including usable-output validation after correction.
 
 ## 2. Missing evidence: parser failure with HTTP success
 
 [T-006](../triage/tickets/T-006.yaml) reports:
 
-> The invented Willow Demo team's nightly report is blocked. The API returned HTTP 200, but our JSON parser failed. We have not saved completion details or a failing output excerpt yet. What should we collect to distinguish the cause?
+> Our nightly report is blocked. The API returned HTTP 200 but our JSON parser failed on the response. We don't log the completion details or keep the failing output, so I don't have those yet. What should we collect to figure out what's going on?
 
-The pasted error is `JSONDecodeError: Expecting ',' delimiter`. Completion details are absent; incomplete generation, field extraction, and parsing remain possible causes.
+The pasted error is `JSONDecodeError: Expecting ',' delimiter`. Completion details and failing output were not retained. Incomplete generation, field extraction, and parsing remain possible causes.
 
-The saved run again completed `list_runbooks` with `{}`, followed by `get_runbook` with `{"case": "incomplete_output"}`. Retrieving the same guidance does not make the evidence equally conclusive.
+| Tool | Saved JSON arguments | Status |
+| --- | --- | --- |
+| `list_runbooks` | `{}` | `completed` |
+| `get_runbook` | `{"case": "incomplete_output"}` | `completed` |
 
 | Saved field | Value |
 | --- | --- |
@@ -59,33 +66,36 @@ The saved run again completed `list_runbooks` with `{}`, followed by `get_runboo
 | `basis` | `inferred` |
 | `severity` | `high` |
 | `action` | `request_info` |
+| `missing` | 4 readable information-request summaries; see the published record |
 
-**Saved customer draft, complete:**
+**Original customer draft, complete:**
 
-> HTTP 200 confirms a response arrived, but not that its output was complete. The parser error alone does not establish token-budget exhaustion; extraction or parsing problems are also possible.
+> Thanks for sharing the parser error and explaining that your nightly report is blocked. HTTP 200 shows that a response arrived, but the parser error alone cannot distinguish incomplete generation from an extraction or JSON-format issue; it does not establish that the output limit was reached.
 >
-> During the next authorized check of the affected nightly report, please collect:
+> Please collect and share:
 >
-> - Response completion status, incomplete reason/details, and any response error or refusal (or note their absence); the request ID if received.
-> - Configured max_output_tokens, reasoning setting, model, SDK version, and UTC attempt time.
-> - Minimal sanitized parser/extraction context: which response field is parsed, the relevant parsing step, and the expected JSON structure/schema. The error line is already supplied.
-> - A minimal sanitized failing output excerpt, stating whether it contains all returned text or is truncated.
+> 1. On the next failing run, before parsing: the response's status, incomplete_details, any refusal or response error, and request ID if received. You do not need to recover output that was not saved.
+> 2. Your model, SDK version, configured max_output_tokens, and reasoning setting.
+> 3. The expected JSON schema and a minimal sanitized code snippet showing which response field you select and how you extract and parse it. On the next failure, also capture a short sanitized output excerpt and indicate whether it includes all returned text or was shortened for logging or sharing. Please omit sensitive records and credentials, and do not send full logs or request bodies.
+> 4. When this started, whether every request fails or only some, any input-size or dataset changes, and the UTC times of the next failing run and last successful run if available.
 >
-> Please exclude credentials, sensitive records, full prompts, and full logs. Inspect completion details before treating the output as successful; do not increase the output budget solely on the basis of this parser error.
+> These details will help distinguish incomplete generation from an extraction or parser issue and guide the appropriate correction.
 
-The category remains a hypothesis. High severity follows the blocked report, independently of HTTP status.
+The category remains a hypothesis. High severity follows the blocked report. The reply asks the customer to **collect and share** completion fields and a sanitized failing excerpt from a future failure, including whether the excerpt was shortened. It also requests the extraction/parsing path and expected structure.
 
-The twelve `missing` fields cover completion, configuration, timing, parsing, and output. The complete request is appropriate for distinguishing the cause of this blocked workflow. Recorded review passed the grounded questions and uncertainty; automated agreement alone does not establish usefulness.
-
-In my [review](../evidence/triage/owner-review.md#t-006), I recommend comparing the failed report with an earlier successful run, checking dataset-size changes and existing completion logs, and considering a smaller-payload diagnostic trial without assuming token-budget exhaustion.
+I selected **Send with edits** and found all five manual review criteria were met. The approved edit removes “You do not need to recover output that was not saved.” because the next-failing-run request is sufficient. The [edited reply](../evidence/triage/edited-replies/T-006.md) is separate from the [published JSON](../evidence/triage/runs/T-006.json).
 
 ## 3. Escalation: an unsupported setup request
 
 [T-009](../triage/tickets/T-009.yaml) asks:
 
-> Can you enable SSO and configure identity-provider groups for the invented Cedar Demo employee portal? We need someone to route this setup request.
+> Can you enable SSO and set up identity-provider groups for our employee portal? I'm not sure if this is the right queue, please point us to whoever can help with this.
 
-Only `list_runbooks` with `{}` appears in the log. No case runbook was retrieved or cited; this setup request falls outside the registry's API-failure coverage.
+| Tool | Saved JSON arguments | Status |
+| --- | --- | --- |
+| `list_runbooks` | `{}` | `completed` |
+
+Only `list_runbooks` appears in the log. No case runbook was retrieved or cited; the SSO and identity-provider setup request is outside the registry’s API-failure guidance.
 
 | Saved field | Value |
 | --- | --- |
@@ -93,21 +103,21 @@ Only `list_runbooks` with `{}` appears in the log. No case runbook was retrieved
 | `basis` | `none` |
 | `severity` | `unknown` |
 | `action` | `escalate` |
-| `candidate_runbooks` / `missing` | `[]` / `[]` |
+| `missing` | 0 readable information-request summaries; see the published record |
 
-**Saved customer draft, complete:**
+**Original customer draft, complete:**
 
-> SSO enablement and identity-provider group configuration are outside API Support Lab’s troubleshooting scope. Please route this setup request to the Cedar Demo portal administrator or your organization’s identity and access management team. They can coordinate the configuration with the identity-provider administrator. No configuration changes or handoff have been performed here.
+> Thank you for explaining that you need SSO and identity-provider groups configured for your employee portal. This is an identity and access administration request rather than an API troubleshooting issue, so it falls outside the available troubleshooting guidance. Please route it to your organization's IT or identity and access management team, working with the employee portal administrator. They can determine the required SSO configuration and group mappings.
 
-The escalation note suggests the portal administrator or identity team and records no supplied error or impact. A person must identify the owner and perform the handoff.
-
-In my [review](../evidence/triage/owner-review.md#t-009), I recommend making the routing actionable with official setup documentation or an appropriate assistance link once the platform or identity provider is known.
+The escalation note suggests the customer’s IT/identity team and portal administrator, accurately describes a configuration request without API diagnostics, and records that no change or transfer occurred. I would still need to perform any routing. I selected **Send as-is** and found both manual review criteria were met.
 
 ## 4. Misleading diagnosis: a key-replacement request with schema evidence
 
-[T-008](../triage/tickets/T-008.yaml) says the team "believes authentication is the cause and asks whether to replace the key", but pastes HTTP 400 `invalid_function_parameters` for `tools[0].parameters`.
+[T-008](../triage/tickets/T-008.yaml) says:
 
-Two tool calls completed in order:
+> Juniper Demo here. Our app is throwing an error. We think our API key is the problem and want to rotate it. Can you confirm that's the fix? Here's the error we're getting.
+
+The supplied error identifies `invalid_function_parameters` at `tools[0].parameters` and names the invalid value `not_a_json_schema_type`.
 
 | Tool | Saved JSON arguments | Status |
 | --- | --- | --- |
@@ -120,33 +130,39 @@ Two tool calls completed in order:
 | `basis` | `stated` |
 | `severity` | `unknown` |
 | `action` | `recommend_fix` |
-| `missing` | `["tool_schema", "impact"]` |
+| `missing` | 4 readable information-request summaries; see the published record |
 
-**Saved customer draft, complete:**
+**Original customer draft, complete:**
 
-> The evidence supports checking the function-tool schema first, not replacing the API key. The error explicitly identifies `tools[0].parameters` for `support_label` and rejects `not_a_json_schema_type` as invalid schema content; it does not establish an authentication problem.
+> Thanks for sharing the error you're seeing in your app; it identifies a function-tool schema problem rather than evidence that your API key needs replacing. Rotating the key is not the indicated fix for this error.
 >
-> Have the application maintainer inspect the serialized tool definition, locate that invalid type value, and replace it with the intended supported JSON Schema type while preserving the intended constraints. Compare the transmitted schema with the application definition for any transformations. After the correction, an authorized maintainer should confirm that the request is accepted and the affected workflow completes, including function execution and result handling if applicable.
+> In the serialized definition for `support_label`, inspect `tools[0].parameters` and replace `not_a_json_schema_type` with the supported JSON Schema type intended for that value. The error does not identify the precise property, so check the transmitted definition rather than only your source definition. If strict mode is enabled, ensure every object's properties are included in `required` and each object has `additionalProperties: false`.
 >
-> Please share the smallest sanitized serialized schema excerpt containing the affected property and its enclosing schema, with sensitive descriptions/examples removed, so the precise correction can be confirmed. Also, is the affected workflow blocked, degraded with a workaround, or unaffected?
+> Could you:
+> 1. Share the smallest sanitized serialized tool-definition excerpt containing the affected property and its enclosing schema, removing sensitive descriptions and examples—not the full request or credentials?
+> 2. Confirm the endpoint, model, SDK version, strict-mode setting, and any transformations between your application definition and the transmitted schema?
+> 3. Say whether this schema previously worked, what changed, whether every request using it fails or only some, and whether your workflow is blocked or has a usable workaround?
+> 4. Rerun after the correction and report whether validation succeeds and your workflow completes, including function execution and result handling if a function call occurs. If validation still fails, share the sanitized new error details, request ID if received, and the attempt's UTC time.
+>
+> The excerpt and rerun result will help confirm the correction or identify the next schema check.
 
-The customer's assertion appears in `observed_evidence` as a quoted extract, but it does not become the category. The reply identifies the invalid type from the error, requests the smallest schema excerpt containing it, and does not suggest replacing the key.
+The selected evidence contains the supplied schema diagnostics. The customer’s key hypothesis does not establish the cause. The reply recommends a schema correction and requests the smallest serialized excerpt without prescribing key rotation. I selected **Send as-is** and found all four manual review criteria were met.
 
 ## Follow T-006 through the code
 
-Read the saved run alongside these entry points:
-
 | Stage | Code and responsibility |
 | --- | --- |
-| Ticket input | [`Ticket.model_input()`](../src/api_support_lab/tickets.py) serializes only subject, body, and pasted error. Organization metadata, provenance, and expected outcomes do not enter that input. |
-| Model and tools | [`build_agent()` and `triage_ticket()`](../src/api_support_lab/agent.py) configure the three tools and structured output, then execute `Runner.run`. The model chooses tool calls; the SDK runs the loop. |
-| Validation and capture | In the same module, `validate_grounding()` checks retrieval and verbatim ticket evidence; `ToolRecorder` logs tools and usage. A validated result is sanitized and saved through [`save_record()`](../src/api_support_lab/artifacts.py). |
-| Evaluation | [`score_runs()`](../src/api_support_lab/evaluation.py) checks the saved result against [`expected.yaml`](../triage/expected.yaml). Live batch execution loads those expectations after model runs. Offline rescoring reads saved runs. |
+| Ticket input | [`Ticket.model_input()`](../src/api_support_lab/tickets.py) sends only subject, body, and pasted error. Organization metadata, provenance, and expected outcomes do not enter that input. |
+| Model and tools | [`build_agent()` and `triage_ticket()`](../src/api_support_lab/agent.py) configure the tools and structured output, then execute `Runner.run`. The model chooses calls; the SDK runs the loop. |
+| Validation and capture | `validate_grounding()` checks retrieval and verbatim ticket evidence; `ToolRecorder` logs tools and available usage. The result is sanitized and saved through [`save_record()`](../src/api_support_lab/artifacts.py). |
+| Evaluation | [`score_runs()`](../src/api_support_lab/evaluation.py) checks saved results against [`expected.yaml`](../triage/expected.yaml). Live execution loads expectations after model runs. Offline rescoring reads saved runs. |
 
-Inspect T-006's `result` and `tool_use`, then rescore the saved runs to inspect its evaluation row. The model chose the action, category, and severity. Validation checks structure and grounding; evaluation checks expected decisions. Neither independently proves the reply correct or useful.
+Inspect T-006’s `result` and `tool_use`, then rescore the saved runs to inspect its evaluation row. The model chose the action, category, and severity. Validation checks structure and grounding; evaluation checks expected decisions. Question coverage, agreement with `missing`, and evidence quality require [manual review](manual-review.md).
 
 ## What the results establish
 
-All four examples pass the automated checks against `triage/expected.yaml`; notes on each of the ten drafts are in [owner-review.md](../evidence/triage/owner-review.md). These are saved outputs on hand-authored tickets used for tuning — a demonstration of the workflow, not a reliability result or approval for customer use.
+The complete batch has **13/13 automated agreement** under the automated scorer, with **0 operational failures** and **0 semantic mismatches**. My separate [manual review](../evidence/triage/manual-review.md) records **10 Send as-is**, **3 Send with edits**, and all **51 manual review criteria satisfied**. Edited wording for T-006, T-010, and T-013 is labeled separately; the generated replies remain unchanged in the date-only JSON copies.
 
-The runbooks were edited after this run; the saved tool logs retain the text the agent actually read. To rescore the saved outputs without an API key, run the [offline command](../README.md#quick-start).
+The additional [T-012 review](../evidence/triage/manual-review.md#t-012) checks completion-versus-parsing uncertainty and medium severity for a retry workaround. The [T-013 review](../evidence/triage/manual-review.md#t-013) checks a deployed credential source after two rotations during a customer-facing outage.
+
+I used these 13 synthetic samples during development, without a separate holdout. They illustrate this workflow on these inputs and do not establish general reliability. Future replies still need review. The [offline command](reproduction-guide.md#offline-checks-and-references) rescores the published records without an API key or new model calls.

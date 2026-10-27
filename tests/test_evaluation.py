@@ -30,15 +30,23 @@ def score(records):
     return evaluation.score_runs(records, load_tickets(), evaluation.load_expected())
 
 
-def test_ten_final_ids_and_model_input_allowlist():
+def test_sample_ids_and_model_input_allowlist():
     tickets = load_tickets()
-    assert [ticket.id for ticket in tickets] == [f"T-{i:03}" for i in range(1, 11)]
+    assert [ticket.id for ticket in tickets] == [f"T-{i:03}" for i in range(1, 14)]
     for ticket in tickets:
         assert set(json.loads(ticket.model_input())) == {"subject", "body", "pasted_error"}
         assert ticket.id not in ticket.model_input()
         assert ticket.provenance["source"] not in ticket.model_input()
     assert diagnostic_values(tickets[0]) == ({401}, {"invalid_api_key"})
     assert diagnostic_values(tickets[4]) == (set(), set())
+
+
+def test_required_diagnostic_literals_are_present_in_tickets():
+    expectations = evaluation.load_expected()
+    for ticket in load_tickets():
+        text = "\n".join((ticket.subject, ticket.body, ticket.pasted_error or ""))
+        for literal in expectations[ticket.id].required_diagnostic_literals:
+            assert literal and literal in text, (ticket.id, literal)
 
 
 def test_safe_yaml_and_ticket_shape(tmp_path):
@@ -54,7 +62,7 @@ def test_safe_yaml_and_ticket_shape(tmp_path):
 def test_scoring_synthetic_successes_requires_manual_review(records):
     report = score(records)
     assert evaluation.report_passed(report)
-    assert report["summary"] == {"total": 10, "automated_pass": 10, "operational_failures": 0,
+    assert report["summary"] == {"total": len(records), "automated_pass": len(records), "operational_failures": 0,
                                  "semantic_mismatches": 0}
     assert all(review["status"] == "pending" for review in report["manual_reviews"].values())
     assert report["runs"] == records
@@ -63,8 +71,8 @@ def test_scoring_synthetic_successes_requires_manual_review(records):
 def test_operational_failure_is_not_dropped(records):
     records[0].update(status="failed", result=None, failure={"type": "APITimeoutError"})
     report = score(records)
-    assert report["summary"]["total"] == 10
-    assert report["summary"]["automated_pass"] == 9
+    assert report["summary"]["total"] == len(records)
+    assert report["summary"]["automated_pass"] == len(records) - 1
     assert report["summary"]["operational_failures"] == 1
     assert report["tickets"][0]["operational_failure"] == "APITimeoutError"
     assert not evaluation.report_passed(report)
@@ -80,20 +88,39 @@ def test_semantic_mismatches_visible(records, field, value):
         records[0]["result"]["action"] = "request_info"
     records[0]["result"][field] = value
     report = score(records)
-    assert report["summary"]["automated_pass"] == 9
+    assert report["summary"]["automated_pass"] == len(records) - 1
     assert report["summary"]["semantic_mismatches"] == 1
 
 
-def test_required_followup_fields_are_checked(records):
-    records[4]["result"]["missing"] = []
+@pytest.mark.parametrize("missing,reply", [
+    ([], "What SDK version and approximate workload size are involved?"),
+    (["SDK version used", "Approximate workload size"],
+     "What SDK version and approximate workload size are involved?"),
+    (["sdk_version", "workload_size"],
+     "What SDK version and approximate workload size are involved?"),
+    (["http_status", "request_id"],
+     "Please send the HTTP status and request ID from the attempt that received no response."),
+    (["sdk_version", "workload"], "Thanks for reporting the timeout."),
+])
+def test_information_requests_are_left_for_manual_review(records, missing, reply):
+    # Good prose, naming differences, omissions, and inappropriate questions all
+    # need review. An automated pass must never imply that questions were graded.
+    records[3]["result"].update(missing=missing, customer_reply=reply)
     report = score(records)
-    assert report["tickets"][4]["checks"]["missing"] is False
+    assert evaluation.report_passed(report)
+    assert "missing" not in report["tickets"][3]["checks"]
+    assert "unavailable_information" not in report["tickets"][3]["checks"]
+    assert report["manual_review_criteria"]["T-004"]
+    assert report["manual_reviews"]["T-004"]["status"] == "pending"
+    assert report["runs"] == records
 
 
-@pytest.mark.parametrize("change", ["schema", "retrieval", "tool_failure", "invented_lookup", "invented_evidence", "malformed_log", "nontext_retrieval"])
+@pytest.mark.parametrize("change", ["schema", "missing_shape", "retrieval", "tool_failure", "invented_lookup", "invented_evidence", "malformed_log", "nontext_retrieval"])
 def test_invalid_and_ungrounded_results_are_failures(records, change):
     if change == "schema":
         records[0]["result"].pop("action")
+    elif change == "missing_shape":
+        records[0]["result"]["missing"] = [{"question": "SDK version?"}]
     elif change == "retrieval":
         records[0]["tool_use"] = []
     elif change == "tool_failure":
@@ -113,7 +140,7 @@ def test_invalid_and_ungrounded_results_are_failures(records, change):
 
 def test_missing_duplicate_and_unknown_runs_stay_visible(records):
     report = score([records[0], records[0], {"ticket_id": "T-999", "status": "failed"}])
-    assert report["summary"]["operational_failures"] == 10
+    assert report["summary"]["operational_failures"] == len(records)
     assert report["tickets"][0]["operational_failure"] == "duplicate_runs"
     assert report["tickets"][1]["operational_failure"] == "missing_run"
     assert len(report["runs"]) == 3
@@ -137,12 +164,19 @@ def test_saved_scoring_and_cli_use_no_clients(records, tmp_path, monkeypatch, ca
         "T-001": {"status": "pass", "notes": "Authored fixture review only."},
     }}))
     assert main(["evaluate", "--results", str(source), "--output-dir", str(tmp_path / "reports")]) == 0
-    assert "10/10" in capsys.readouterr().out
+    assert f"{len(records)}/{len(records)}" in capsys.readouterr().out
     saved = json.loads(next((tmp_path / "reports").glob("*.json")).read_text())
     assert saved["manual_reviews"]["T-001"]["status"] == "pass"
+    assert saved["manual_review_criteria"]["T-004"]
+    assert saved["manual_evidence_criteria"]["T-004"]
+    assert saved["manual_reviews"]["T-004"]["status"] == "pending"
+    rescored, _ = evaluation.score_saved(next((tmp_path / "reports").glob("*.json")),
+                                        output_dir=tmp_path / "rescored")
+    assert rescored["manual_review_criteria"] == saved["manual_review_criteria"]
+    assert rescored["manual_evidence_criteria"] == saved["manual_evidence_criteria"]
     source.write_text(json.dumps(records[0]))
     assert main(["evaluate", "--results", str(source), "--output-dir", str(tmp_path / "reports")]) == 1
-    assert "1/10" in capsys.readouterr().out
+    assert f"1/{len(records)}" in capsys.readouterr().out
 
 
 def test_directory_scoring_includes_corrupt_artifacts(records, tmp_path):
@@ -152,7 +186,7 @@ def test_directory_scoring_includes_corrupt_artifacts(records, tmp_path):
         (source / f"{index}.json").write_text(json.dumps(record))
     (source / "corrupt.json").write_text("{broken")
     report, path = evaluation.score_saved(source, output_dir=tmp_path / "reports")
-    assert report["summary"]["automated_pass"] == 10
+    assert report["summary"]["automated_pass"] == len(records)
     assert report["input_issues"]
     assert not evaluation.report_passed(report)
 
@@ -162,20 +196,20 @@ def test_batch_is_sequential_and_expected_only_loaded_after_execution(records, t
     original_expected = evaluation.load_expected
     async def fake_triage(ticket, settings, *, live, output_dir):
         assert live
-        assert len(seen) < 10
+        assert len(seen) < len(records)
         seen.append(ticket.id)
         record = deepcopy(next(r for r in records if r["ticket_id"] == ticket.id))
         if ticket.id == "T-005":
             record.update(status="failed", result=None, failure={"type": "SyntheticFailure"})
         return TriageRun(record, tmp_path / "synthetic.json")
     def expected_after_runs():
-        assert seen == [f"T-{i:03}" for i in range(1, 11)]
+        assert seen == [record["ticket_id"] for record in records]
         return original_expected()
     monkeypatch.setattr(evaluation, "triage_ticket", fake_triage)
     monkeypatch.setattr(evaluation, "load_expected", expected_after_runs)
     report, path = asyncio.run(evaluation.evaluate_live(Settings(), live=True, output_dir=tmp_path))
     assert report["summary"]["operational_failures"] == 1
-    assert report["summary"]["automated_pass"] == 9
+    assert report["summary"]["automated_pass"] == len(records) - 1
     assert path.exists()
 
 
@@ -187,34 +221,62 @@ def test_evaluation_requires_live_before_loading_tickets(monkeypatch, tmp_path):
         asyncio.run(evaluation.evaluate_live(Settings(), live=False, output_dir=tmp_path))
 
 
-@pytest.mark.parametrize("ticket_id", ["T-002", "T-003", "T-004", "T-006", "T-007", "T-008", "T-010"])
-@pytest.mark.parametrize("field", ["action", "severity", "observed_evidence"])
-def test_new_scenarios_reject_wrong_action_severity_and_evidence(records, ticket_id, field):
+@pytest.mark.parametrize("ticket_id", ["T-002", "T-003", "T-004", "T-006", "T-007", "T-008", "T-010", "T-011", "T-012", "T-013"])
+@pytest.mark.parametrize("field", ["action", "severity"])
+def test_new_scenarios_reject_wrong_action_and_severity(records, ticket_id, field):
     index = next(i for i, record in enumerate(records) if record["ticket_id"] == ticket_id)
     result = records[index]["result"]
     if field == "action":
         result["action"] = "request_info" if result["action"] != "request_info" else "escalate"
         result["escalation_note"] = "Suggest application support; no handoff occurred."
     elif field == "severity":
-        result["severity"] = "low"  # No new ticket reports a limited nonblocking issue.
-    else:
-        result["observed_evidence"] = []
+        result["severity"] = "low"  # These samples report high, medium, or unspecified impact.
     report = score(records)
     row = report["tickets"][index]
-    if ticket_id == "T-010" and field == "action":
+    if ticket_id in ("T-010", "T-011") and field == "action":
         assert row["operational_failure"] == "invalid_or_ungrounded_result"
     else:
         assert row["operational_failure"] is None
         assert not row["checks"][field]
-    assert report["summary"]["automated_pass"] == 9
+    assert report["summary"]["automated_pass"] == len(records) - 1
 
 
-@pytest.mark.parametrize("field", ["http_status", "error_code", "error_type", "request_id", "response_status", "incomplete_reason"])
-def test_timeout_does_not_require_known_unavailable_response_fields(records, field):
-    records[3]["result"]["missing"].append(field)
+@pytest.mark.parametrize("ticket_id", [
+    "T-001", "T-002", "T-003", "T-004", "T-006", "T-007", "T-008", "T-011", "T-013",
+])
+def test_missing_diagnostic_literals_fail_preservation(records, ticket_id):
+    record = next(record for record in records if record["ticket_id"] == ticket_id)
+    record["result"]["observed_evidence"] = []
     report = score(records)
-    assert not report["tickets"][3]["checks"]["unavailable_information"]
-    assert not evaluation.report_passed(report)
+    row = next(row for row in report["tickets"] if row["ticket_id"] == ticket_id)
+    assert row["operational_failure"] is None
+    assert not row["checks"]["diagnostic_preservation"]
+    assert report["summary"]["automated_pass"] == len(records) - 1
+
+
+@pytest.mark.parametrize("evidence", [["invalid_function_parameters"], ["tools[0].parameters"]])
+def test_each_required_diagnostic_literal_is_preserved(records, evidence):
+    records[1]["result"]["observed_evidence"] = evidence
+    row = score(records)["tickets"][1]
+    assert row["operational_failure"] is None
+    assert not row["checks"]["diagnostic_preservation"]
+
+
+@pytest.mark.parametrize("evidence", [
+    ["HTTP 200", "JSONDecodeError", "report is blocked"],
+    ["JSONDecodeError"],
+])
+def test_evidence_selection_and_sufficiency_are_reviewed_manually(records, evidence):
+    # A different valid impact extract and an incomplete evidence selection both
+    # pass the narrow literal check. The latter still needs a manual finding.
+    records[5]["result"]["observed_evidence"] = evidence
+    report = score(records)
+    assert evaluation.report_passed(report)
+    assert report["tickets"][5]["checks"]["diagnostic_preservation"]
+    assert "observed_evidence" not in report["tickets"][5]["checks"]
+    assert report["manual_evidence_criteria"]["T-006"]
+    assert report["manual_reviews"]["T-006"]["status"] == "pending"
+    assert report["runs"] == records
 
 
 def test_ambiguous_parser_failure_allows_no_diagnosis_with_supporting_retrieval(records):
@@ -288,68 +350,51 @@ def test_observed_ticket_fields_match_reviewed_captures():
     assert "0.5-second" in timeout.body
 
 
-@pytest.mark.parametrize("ticket_id", ["T-002", "T-004", "T-006", "T-007", "T-008", "T-010"])
-def test_new_required_information_fields_are_enforced(records, ticket_id):
-    index = next(i for i, record in enumerate(records) if record["ticket_id"] == ticket_id)
-    records[index]["result"]["missing"] = []
-    assert not score(records)["tickets"][index]["checks"]["missing"]
-
-
 @pytest.mark.parametrize("evidence", [
-    ["potentially sensitive", "how should we route", "no diagnostic payload"],
-    ["might contain sensitive records", "what minimal sanitized metadata", "no diagnostic payload"],
-    ["might contain sensitive records", "Before sharing anything", "no diagnostic payload"],
+    ["potentially sensitive", "how should we route"],
+    ["Before sharing anything"],
+    ["potentially sensitive"],
+    [],
 ])
-def test_handling_evidence_accepts_grounded_alternatives(records, evidence):
+def test_handling_evidence_quality_requires_manual_review(records, evidence):
     records[9]["result"]["observed_evidence"] = evidence
-    assert evaluation.report_passed(score(records))
-
-
-@pytest.mark.parametrize("omit", [0, 1, 2])
-def test_handling_evidence_requires_each_supporting_fact(records, omit):
-    records[9]["result"]["observed_evidence"].pop(omit)
     report = score(records)
-    assert report["tickets"][9]["operational_failure"] is None
-    assert not report["tickets"][9]["checks"]["observed_evidence"]
+    assert evaluation.report_passed(report)
+    assert report["tickets"][9]["checks"]["diagnostic_preservation"]
+    assert report["manual_evidence_criteria"]["T-010"]
+    assert report["manual_reviews"]["T-010"]["status"] == "pending"
 
 
-def test_sector_label_alone_does_not_support_handling_escalation(records):
+def test_sector_label_alone_needs_manual_evidence_review(records):
+    tickets = load_tickets()
+    tickets[9] = tickets[9].model_copy(update={"body": "We are a public-sector organization."})
+    records[9]["ticket_hash"] = tickets[9].content_hash()
     records[9]["result"]["observed_evidence"] = ["public-sector"]
-    assert not score(records)["tickets"][9]["checks"]["observed_evidence"]
+    row = evaluation.score_runs(records, tickets, evaluation.load_expected())["tickets"][9]
+    assert row["operational_failure"] is None
+    assert row["checks"]["diagnostic_preservation"]
 
 
-def test_matching_evidence_substrings_still_require_verbatim_ticket_support(records):
-    records[9]["result"]["observed_evidence"] = [
-        "An actual agency sent potentially sensitive records; how should we route with no diagnostic payload?",
+def test_preserved_diagnostic_does_not_allow_fabricated_evidence(records):
+    records[0]["result"]["observed_evidence"] = [
+        "invalid_api_key", "The deployed key was revoked.",
     ]
-    assert score(records)["tickets"][9]["operational_failure"] == "invalid_or_ungrounded_result"
+    assert score(records)["tickets"][0]["operational_failure"] == "invalid_or_ungrounded_result"
 
 
 def test_report_identifies_scorer_and_expectations_without_changing_runs(records):
     expectations = evaluation.load_expected()
     first = evaluation.score_runs(records, load_tickets(), expectations)
     reordered = evaluation.score_runs(records, load_tickets(), dict(reversed(list(expectations.items()))))
-    assert first["scorer_version"] == 2
+    assert first["scorer_version"] == 4
     assert first["expectations_hash"] == reordered["expectations_hash"]
     assert first["runs"] == records
-    expectations["T-007"].required_missing.append("attempt_time_utc")
+    expectations["T-007"].information_request_review.append("Request a failing attempt's UTC time.")
+    expectations["T-007"].evidence_review.append("Assess whether the extracts support uncertainty.")
     changed = evaluation.score_runs(records, load_tickets(), expectations)
     assert changed["expectations_hash"] != first["expectations_hash"]
-    assert changed["summary"]["automated_pass"] == 9
-
-
-def test_generic_summary_does_not_replace_distinguishing_diagnostic_fields(records):
-    records[4]["result"].update(
-        missing=["diagnostic_summary", "impact"],
-        customer_reply="Please share a sanitized symptom summary and impact, including any exception or code you can access.",
-    )
-    row = score(records)["tickets"][4]
-    assert row["operational_failure"] is None
-    assert row["checks"]["category"] and row["checks"]["basis"]
-    assert not row["checks"]["missing"]
-
-
-@pytest.mark.parametrize("index,field", [(4, "http_status"), (4, "error_code"), (6, "sdk_version")])
-def test_each_distinguishing_field_is_independently_required(records, index, field):
-    records[index]["result"]["missing"].remove(field)
-    assert not score(records)["tickets"][index]["checks"]["missing"]
+    assert changed["summary"] == first["summary"]
+    assert changed["tickets"] == first["tickets"]
+    assert changed["manual_review_criteria"]["T-007"] != first["manual_review_criteria"]["T-007"]
+    assert changed["manual_evidence_criteria"]["T-007"] != first["manual_evidence_criteria"]["T-007"]
+    assert changed["runs"] == records

@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "ticket_id": "T-010",
-  "ticket_hash": "e5d3542ebd3d2ed60f10fc4cf0a1d179b6da86d15a22ba94ae94519998d0b516",
-  "captured_at": "2026-10-23T00:28:04.913194+00:00",
+  "ticket_hash": "53d948598fd496966e4863abc8eb2a3e23ddc98e0d11586f985f8ea33807ed94",
+  "captured_at": "2026-10-27",
   "model": "gpt-6.1-sol",
   "settings": {
     "model": "gpt-6.1-sol",
@@ -26,23 +26,22 @@
     "category": "out_of_scope",
     "candidate_runbooks": [],
     "observed_evidence": [
-      "Our diagnostic material might contain sensitive records.",
-      "Before sharing anything, how should we route the handling question and what minimal sanitized metadata could help?",
-      "This ticket contains no diagnostic payload, personal information, credentials, or actual sensitive content."
+      "Our logs and error output are potentially sensitive.",
+      "Before sharing anything, how should we route this, and what minimal/sanitized metadata could help you start investigating?"
     ],
     "basis": "none",
     "severity": "unknown",
     "action": "escalate",
     "missing": [
-      "diagnostic_summary",
-      "impact"
+      "A sanitized summary of the affected operation, environment, and error symptoms, limited to information approved for sharing",
+      "Workflow impact, including whether work is blocked or a usable workaround exists"
     ],
-    "customer_reply": "Before sharing diagnostic material, route the handling question through your organization’s established support/security or data-handling process to determine what may be shared and through which approved channel. This lab cannot approve a sensitive-data sharing channel. Initially, please provide only a brief sanitized diagnostic summary describing the technical symptom and the affected workflow’s impact, such as whether it is blocked or has a workaround. Exclude sensitive records, credentials, full logs, and request bodies; no underlying diagnostic payload is needed at this stage.",
-    "escalation_note": "Suggested routing: the organization’s established support/security or data-handling process for guidance before diagnostic material is shared. The ticket raises possible sensitive-record exposure but explicitly contains no diagnostic payload or actual sensitive content. No technical failure or workflow impact has been supplied, so no API cause can be assessed. This is a routing recommendation only; no handoff has occurred."
+    "customer_reply": "Thank you for flagging that your diagnostic material may be sensitive and asking how to share it safely. You have not supplied logs or error output, so there is not yet evidence to identify a technical cause; the immediate next step is a sharing decision through your own security or data-handling process.\n\nPlease ask your security or data-handling owner to determine what may be shared and through which approved channel. Do not send raw logs, full request bodies, API keys, credential-bearing headers, or sensitive records.\n\nOnce approved, could you provide a sanitized summary of the affected operation, environment (such as SDK and version), and error symptoms? Include a status or error code only if available and approved, without sensitive message content. Please also describe whether the workflow is blocked, degraded with a usable workaround, or only minimally affected.\n\nThat approved summary and impact will help determine the appropriate troubleshooting path without requiring sensitive diagnostic material.",
+    "escalation_note": "This is a sensitive-material sharing and routing question, not an established API failure covered by the available troubleshooting runbooks. No logs or error output were supplied. Recommend routing the sharing decision through the customer's security or data-handling owner to establish permissible content and an approved channel before collecting diagnostics. No transfer or routing action has been performed."
   },
   "tool_use": [
     {
-      "call_id": "call_xgQ79I7zp8dr6N5r9Tkmexlc",
+      "call_id": "call_BdTIQokOhh8dpUc2oTUrDiGc",
       "name": "list_runbooks",
       "arguments": {},
       "status": "completed",
@@ -56,27 +55,27 @@
   ],
   "usage": [
     {
-      "input_tokens": 1924,
-      "output_tokens": 32,
-      "total_tokens": 1956,
+      "input_tokens": 2064,
+      "output_tokens": 33,
+      "total_tokens": 2097,
       "input_tokens_details": {
         "cached_tokens": 0
       },
       "output_tokens_details": {
-        "reasoning_tokens": 15
+        "reasoning_tokens": 16
       }
     },
     {
-      "input_tokens": 2105,
-      "output_tokens": 310,
-      "total_tokens": 2415,
+      "input_tokens": 2246,
+      "output_tokens": 409,
+      "total_tokens": 2655,
       "input_tokens_details": {
-        "cached_tokens": 1921
+        "cached_tokens": 2061
       },
       "output_tokens_details": {
         "reasoning_tokens": 0
       }
     }
   ],
-  "elapsed_ms": 8918.326
+  "elapsed_ms": 11257.114
 }

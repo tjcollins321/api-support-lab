@@ -1,8 +1,8 @@
 id: T-001
 subject: API request rejected in our test application
 body: >-
-  Our invented Harbor Demo application fails before it receives output.
-  Can you suggest what to check? We have not described the business impact yet.
+  Our app is getting this error back from the API. We haven't dug into it yet.
+  What should we check first?
 pasted_error: |-
   HTTP 401
   exception_type: AuthenticationError
@@ -13,4 +13,4 @@ organization: Harbor Demo (invented)
 channel: synthetic ticket
 provenance:
   source: selected sanitized observed fields; surrounding ticket is synthetic
-  evidence: evidence/invalid_credentials/broken-20261022T032250Z.json
+  evidence: evidence/invalid_credentials/broken-2026-10-22.json

@@ -1,13 +1,13 @@
 id: T-010
 subject: How should we share potentially sensitive diagnostic material?
 body: >-
-  We are the invented Northbridge Civic Services Office, a fictional public-sector
-  organization. Our diagnostic material might contain sensitive records. Before
-  sharing anything, how should we route the handling question and what minimal
-  sanitized metadata could help? This ticket contains no diagnostic payload,
-  personal information, credentials, or actual sensitive content.
+  We're the Northbridge Civic Services Office. Our logs and error output are
+  potentially sensitive. Before sharing anything, how should we route this, and
+  what minimal/sanitized metadata could help you start investigating?
 pasted_error: null
 organization: Northbridge Civic Services Office (invented)
 channel: synthetic ticket
 provenance:
-  source: hand-authored synthetic public-sector handling question; no actual sensitive content
+  source: hand-authored synthetic public-sector handling question; the ticket
+    contains no diagnostic payload, personal information, credentials, or actual
+    sensitive content

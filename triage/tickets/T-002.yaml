@@ -1,8 +1,8 @@
 id: T-002
 subject: Function definition rejected before output
 body: >-
-  Our invented Birch Demo application gets this validation error when sending a
-  function definition. What should the application maintainer check?
+  Our app gets this error whenever we include our function definition in the
+  request. The same request works if we remove the tool. What's wrong with it?
 pasted_error: |-
   HTTP 400
   exception_type: BadRequestError
@@ -14,4 +14,4 @@ organization: Birch Demo (invented)
 channel: synthetic ticket
 provenance:
   source: selected sanitized observed fields; surrounding ticket is synthetic
-  evidence: evidence/tool_schema/broken-20261022T232240Z.json
+  evidence: evidence/tool_schema/broken-2026-10-22.json

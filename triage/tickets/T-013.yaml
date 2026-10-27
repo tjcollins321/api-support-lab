@@ -1,0 +1,15 @@
+id: T-013
+subject: Still getting a 401 after rotating the key twice
+body: >-
+  Our customer-facing app has been down 40 minutes. We already rotated the API
+  key twice and are still getting this error. What exactly should we check next?
+pasted_error: |-
+  HTTP 401
+  error_code: invalid_api_key
+  error_type: invalid_request_error
+  error_message: Incorrect API key provided.
+organization: Spruce Demo (invented)
+channel: synthetic ticket
+provenance:
+  source: authored synthetic authentication outage scenario; not an observed API
+    response

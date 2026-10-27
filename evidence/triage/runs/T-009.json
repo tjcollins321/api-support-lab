@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
   "ticket_id": "T-009",
-  "ticket_hash": "db77508f717aaae1357b0b135cd61148f0a8721bc11fc0066ba4112e429d6c4a",
-  "captured_at": "2026-10-23T00:27:58.212415+00:00",
+  "ticket_hash": "0126f56a358b98cefdb92643a2624f919d12e586ca3aa3e17bf66282144ff7c0",
+  "captured_at": "2026-10-27",
   "model": "gpt-6.1-sol",
   "settings": {
     "model": "gpt-6.1-sol",
@@ -26,19 +26,19 @@
     "category": "out_of_scope",
     "candidate_runbooks": [],
     "observed_evidence": [
-      "Can you enable SSO and configure identity-provider groups for the invented Cedar Demo employee portal?",
-      "We need someone to route this setup request."
+      "Can you enable SSO and set up identity-provider groups for our employee portal?",
+      "I'm not sure if this is the right queue, please point us to whoever can help with this."
     ],
     "basis": "none",
     "severity": "unknown",
     "action": "escalate",
     "missing": [],
-    "customer_reply": "SSO enablement and identity-provider group configuration are outside API Support Lab’s troubleshooting scope. Please route this setup request to the Cedar Demo portal administrator or your organization’s identity and access management team. They can coordinate the configuration with the identity-provider administrator. No configuration changes or handoff have been performed here.",
-    "escalation_note": "Suggested routing: employee portal administrator or identity and access management team. The customer requests SSO enablement and identity-provider group configuration for the invented Cedar Demo employee portal, specifically asking for routing. No diagnostic error or workflow impact was supplied. This is a setup request outside the available troubleshooting runbooks; no handoff has occurred."
+    "customer_reply": "Thank you for explaining that you need SSO and identity-provider groups configured for your employee portal. This is an identity and access administration request rather than an API troubleshooting issue, so it falls outside the available troubleshooting guidance. Please route it to your organization's IT or identity and access management team, working with the employee portal administrator. They can determine the required SSO configuration and group mappings.",
+    "escalation_note": "Suggest routing to the customer's IT/identity and access management team and employee portal administrator for SSO configuration and identity-provider group setup. The ticket contains a configuration request, not API error diagnostics. No configuration changes or ticket transfer have been performed."
   },
   "tool_use": [
     {
-      "call_id": "call_uGwrJpMn0nX8KuJWZMd8t9IK",
+      "call_id": "call_AVEQg8d0u6Nl38vTm1BaF5H9",
       "name": "list_runbooks",
       "arguments": {},
       "status": "completed",
@@ -52,27 +52,27 @@
   ],
   "usage": [
     {
-      "input_tokens": 1890,
-      "output_tokens": 29,
-      "total_tokens": 1919,
+      "input_tokens": 2059,
+      "output_tokens": 15,
+      "total_tokens": 2074,
       "input_tokens_details": {
         "cached_tokens": 0
       },
       "output_tokens_details": {
-        "reasoning_tokens": 12
+        "reasoning_tokens": 0
       }
     },
     {
-      "input_tokens": 2068,
-      "output_tokens": 206,
-      "total_tokens": 2274,
+      "input_tokens": 2223,
+      "output_tokens": 242,
+      "total_tokens": 2465,
       "input_tokens_details": {
-        "cached_tokens": 1887
+        "cached_tokens": 2056
       },
       "output_tokens_details": {
         "reasoning_tokens": 0
       }
     }
   ],
-  "elapsed_ms": 6701.315
+  "elapsed_ms": 6059.905
 }

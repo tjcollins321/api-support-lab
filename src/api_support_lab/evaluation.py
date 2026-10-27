@@ -1,11 +1,11 @@
-"""Ten-ticket execution and offline scoring, with failures in denominators."""
+"""Sample-ticket execution and offline scoring, with failures in denominators."""
 
 import hashlib
 import json
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict
 
 from api_support_lab.agent import TriageResult, triage_ticket, validate_grounding
 from api_support_lab.artifacts import DEFAULT_EVALUATION_DIR, sanitize, save_record, timestamp
@@ -13,7 +13,7 @@ from api_support_lab.config import Settings, require_live
 from api_support_lab.runbooks import PROJECT_ROOT
 from api_support_lab.tickets import Ticket, load_tickets
 
-SCORER_VERSION = 2
+SCORER_VERSION = 4
 
 
 class Expected(BaseModel):
@@ -22,11 +22,10 @@ class Expected(BaseModel):
     basis: list[str]
     action: str
     severity: str
-    required_missing: list[str]
+    information_request_review: list[str]
     required_runbooks: list[str]
-    required_evidence: list[str]
-    forbidden_missing: list[str] = Field(default_factory=list)
-    required_evidence_any: list[list[str]] = Field(default_factory=list)
+    required_diagnostic_literals: list[str]
+    evidence_review: list[str]
 
 
 def load_expected() -> dict[str, Expected]:
@@ -79,20 +78,16 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
                 except (ValueError, TypeError, KeyError):
                     row["operational_failure"] = "invalid_or_ungrounded_result"
                 else:
-                    evidence = "\n".join(result.observed_evidence)
                     row["checks"] = {
                         "ticket_hash": run.get("ticket_hash") == ticket.content_hash(),
                         "category": result.category in expected.categories,
                         "basis": result.basis in expected.basis,
                         "action": result.action == expected.action,
                         "severity": result.severity == expected.severity,
-                        "missing": set(expected.required_missing) <= set(result.missing),
-                        "unavailable_information": not set(expected.forbidden_missing) & set(result.missing),
                         "retrieval": set(expected.required_runbooks) <= retrieved,
-                        "observed_evidence": (
-                            all(fact in evidence for fact in expected.required_evidence)
-                            and all(any(fact in evidence for fact in alternatives)
-                                    for alternatives in expected.required_evidence_any)
+                        "diagnostic_preservation": all(
+                            any(literal in extract for extract in result.observed_evidence)
+                            for literal in expected.required_diagnostic_literals
                         ),
                     }
                     row["automated_pass"] = all(row["checks"].values())
@@ -110,7 +105,7 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
             sort_keys=True,
         ).encode()).hexdigest(),
         "captured_at": timestamp(),
-        "scope": "Ten-ticket technical learning demonstration; no reliability claim.",
+        "scope": f"{len(tickets)} synthetic sample tickets; a demonstration, not a reliability claim.",
         "ticket_hashes": {ticket.id: ticket.content_hash() for ticket in tickets},
         "runs": runs,
         "tickets": rows,
@@ -122,8 +117,18 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
             "semantic_mismatches": sum(row["operational_failure"] is None and not row["automated_pass"] for row in rows),
         },
         "manual_reviews": reviews,
+        "manual_review_criteria": {
+            ticket.id: expectations[ticket.id].information_request_review
+            for ticket in tickets
+        },
+        "manual_evidence_criteria": {
+            ticket.id: expectations[ticket.id].evidence_review
+            for ticket in tickets
+        },
         "limitations": [
             "Automated checks do not establish reply usefulness or factual correctness.",
+            "Diagnostic preservation checks required literal strings in verbatim ticket extracts; evidence relevance and sufficiency require manual review.",
+            "Information requests and their consistency with missing are reviewed manually against customer_reply; no exact-name or semantic question grading is automated.",
             "Review every reply for supported fixes, meaningful questions, uncertainty, revocation claims, data handling, and routing language.",
             "Usage may be absent or partial after failures; unknown cost is not zero.",
             "Live verification requires actual model runs and manual review; authored fixtures verify offline behavior only and do not establish agent performance.",
@@ -167,7 +172,7 @@ async def evaluate_live(settings: Settings, *, live: bool,
     require_live(live)
     tickets = load_tickets()
     runs = []
-    # Sequential execution attempts each of the ten tickets once.
+    # Sequential execution attempts each sample ticket once.
     # Each failure remains saved; the next ticket is still attempted, without retry.
     for ticket in tickets:
         run = await triage_ticket(ticket, settings, live=live, output_dir=output_dir / "runs")

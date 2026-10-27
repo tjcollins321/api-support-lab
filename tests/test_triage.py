@@ -236,7 +236,7 @@ def test_run_configuration_and_turn_cap(monkeypatch, transport, ticket, draft, t
     assert run(ticket, tmp_path, max_turns=2).record["failure"]["type"] == "MaxTurnsExceeded"
 
 
-def test_ten_ticket_evaluation_through_sdk_and_cli(transport, authored_drafts, tmp_path, capsys):
+def test_sample_evaluation_through_sdk_and_cli(transport, authored_drafts, tmp_path, capsys):
     script = []
     for ticket_id, result in authored_drafts.items():
         # Unknown code is passed unchanged; it must not find a schema mapping.
@@ -247,14 +247,15 @@ def test_ten_ticket_evaluation_through_sdk_and_cli(transport, authored_drafts, t
         for case in result["candidate_runbooks"]:
             script.append(response([tool("get_runbook", {"case": case}, ticket_id)]))
         script.append(response([message(result)]))
+    expected_calls = len(script)
     calls, _ = transport(script)
     assert main(["evaluate", "--live", "--output-dir", str(tmp_path)]) == 0
-    assert "10/10" in capsys.readouterr().out
+    assert f"{len(authored_drafts)}/{len(authored_drafts)}" in capsys.readouterr().out
     report = json.loads(next(tmp_path.glob("evaluation-*.json")).read_text())
-    assert len(report["runs"]) == 10
-    assert len(list((tmp_path / "runs").glob("triage-*.json"))) == 10
-    assert len(calls) == 17
-    unknown = report["runs"][6]
+    assert len(report["runs"]) == len(authored_drafts)
+    assert len(list((tmp_path / "runs").glob("triage-*.json"))) == len(authored_drafts)
+    assert len(calls) == expected_calls
+    unknown = next(run for run in report["runs"] if run["ticket_id"] == "T-007")
     assert unknown["tool_use"][0]["arguments"]["error_code"] == "lunar_teapot_alignment_77"
     assert unknown["tool_use"][0]["result"] == []
     assert all(review["status"] == "pending" for review in report["manual_reviews"].values())
@@ -278,7 +279,7 @@ def test_single_ticket_cli_draft_or_visible_failure(transport, draft, tmp_path, 
     output = capsys.readouterr()
     assert "Saved triage run" in output.out
     if success:
-        assert "Draft for human review" in output.out
+        assert "Draft for manual review" in output.out
     else:
         assert "no draft accepted" in output.err
         assert len(calls) == 1

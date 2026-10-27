@@ -1,9 +1,9 @@
 id: T-008
 subject: We think our API key needs replacing
 body: >-
-  The invented Juniper Demo team believes authentication is the cause and asks
-  whether to replace the key. Here is the error we actually received. What does
-  this evidence support checking first?
+  Juniper Demo here. Our app is throwing an error. We think our API key is the
+  problem and want to rotate it. Can you confirm that's the fix? Here's the
+  error we're getting.
 pasted_error: |-
   HTTP 400
   exception_type: BadRequestError
@@ -14,5 +14,6 @@ pasted_error: |-
 organization: Juniper Demo (invented)
 channel: synthetic ticket
 provenance:
-  source: selected sanitized observed schema fields with a hand-authored misleading customer assertion
-  evidence: evidence/tool_schema/broken-20261022T232240Z.json
+  source: selected sanitized observed schema fields with a hand-authored
+    misleading customer assertion
+  evidence: evidence/tool_schema/broken-2026-10-22.json
