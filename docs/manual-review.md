@@ -100,7 +100,4 @@ information, and keywords mentioned without a request.
 
 I would keep those findings separate from the triage output and my verdicts.
 Such a grader would require separate live authorization and is not implemented.
-A small Python evaluation step could handle it; [LangGraph](https://docs.langchain.com/oss/python/langgraph/overview)
-and [LangSmith](https://docs.langchain.com/langsmith/evaluation-types) are optional
-tools if a more complex review workflow becomes useful. I do not need either
-for the current manual review process.
+A small Python evaluation step could handle it.

@@ -3,10 +3,9 @@
   "batch_id": "live-review-2026-10-27",
   "evaluated_on": "2026-10-27",
   "owner_approved_on": "2026-10-27",
-  "source_commit": "38c61123bf5a843e787cfd5b8120633c70daf0a5",
-  "source_branch": "rerun",
+  "publication_commit": "2ee5cc46417596bf8c69b51f82a26277ba7d7154",
   "source_included_uncommitted_preparation": true,
-  "source_note": "I retained the execution-source hashes separately from the publication-source hashes. The execution source included uncommitted preparation; publication later shortened dates, renamed evidence references, and updated review terminology. The commit alone does not identify the execution state.",
+  "source_note": "The batch ran on a local branch squashed into the publication commit; the hashes below identify the inputs.",
   "model": "gpt-6.1-sol",
   "python_version": "3.14.4",
   "sdk_versions": {

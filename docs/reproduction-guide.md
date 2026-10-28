@@ -140,7 +140,7 @@ For a new evaluation, I use the following workflow:
 
 The [batch manifest](../evidence/triage/batch.json) makes the published records
 traceable without depending on ignored local artifacts. It distinguishes
-original and publication hashes and identifies the source commit and
+original and publication hashes and identifies the publication commit and
 execution-input hashes because a commit alone does not capture uncommitted
 preparation. I retain full capture timestamps locally and publish UTC dates;
 measured elapsed durations remain intact. This publication step does not rewrite

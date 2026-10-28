@@ -2,7 +2,7 @@
 
 I evaluated and reviewed 13 synthetic tickets on **2026-10-27**, using `gpt-6.1-sol`, `openai` 3.36.0, and `openai-agents` 0.24.0. These four examples show the resulting decisions. Each [published record](../evidence/triage/runs/) contains the generated result, draft, tools, and available usage. I retained full timestamps locally and published date-only copies. No installation or API access is needed to follow along.
 
-All tickets and organizations are invented. T-003 and T-008 contain selected diagnostics from reviewed live reproduction captures; T-006 and T-009 are authored scenarios. The quotes below preserve the complete original drafts; Markdown list spacing is adjusted for readability. Approved edits are linked separately.
+All tickets and organizations are invented. T-003 and T-008 paste diagnostics from the live reproduction captures; T-006 and T-009 are scenarios without one. The quotes below preserve the complete original drafts; Markdown list spacing is adjusted for readability. Approved edits are linked separately.
 
 ## 1. Supported correction: incomplete output
 
@@ -21,7 +21,7 @@ The incomplete status and explicit reason support output-budget exhaustion. Two 
 | `diagnose` | `{"status": 200, "error_code": null}` | `completed` |
 | `get_runbook` | `{"case": "incomplete_output"}` | `completed` |
 
-The `diagnose` lookup returned `[]`; HTTP 200 is not a registered failure mapping. The model then selected and retrieved the [incomplete-output runbook](../runbooks/incomplete_output.md). No `list_runbooks` call was recorded for this ticket.
+The `diagnose` lookup returned `[]`; HTTP 200 is not a registered mapping. The case IDs are visible in the `get_runbook` and result schemas, and `incomplete_output` matches the ticket's `response_status: incomplete`, so the model went straight to that [runbook](../runbooks/incomplete_output.md); it still had to retrieve it before citing it. Tickets with no matching name (T-006, below) list the runbooks first.
 
 | Saved field | Value |
 | --- | --- |

@@ -727,7 +727,7 @@ Remove the no-diagnostics explanation and repeated approval wording for clarity,
 
 **My verdict:** Send as-is
 
-**My reasoning:** I found all manual review criteria satisfied and would send the reply as-is.
+**My reasoning:** T-011 tests whether the agent avoids inventing rate-limit guidance when it has no runbook for the request; it escalated instead, which satisfies that boundary. A useful reply to a limit-increase request needs account-review material this lab deliberately does not include, so I accept the redirect here as the agent standing in for a handoff it cannot perform.
 
 **Supporting observations prepared with Codex:** The selected status, rate_limit_exceeded code, affected-calls report, and explicit limit-increase/routing request support a rate-limit review outside the available runbooks. The reply recommends the account support channel without promising an increase or claiming a transfer. It avoids an unsupported troubleshooting checklist, keeps missing empty, and preserves unknown severity because workflow impact is not established.
 

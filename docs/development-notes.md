@@ -1,11 +1,12 @@
 # Development notes
 
-I designed the project specification and scope, selected failure cases and
-synthetic ticket scenarios with Codex, and directed the support workflow and
-runbook structure. Codex handled code generation and prose drafting. My
-contribution centered on technical direction and review: examining captured
-evidence and earlier drafts, reading the ticket, runbook, agent, and evaluation
-code, and deciding what the guidance and evaluation should require.
+I set the scope, chose the failure cases and ticket scenarios, and decided what
+the runbooks, the agent, and the evaluation should require. Codex wrote the Python
+and first drafts of the prose; the tickets, agent instructions, runbooks, reply
+templates, and expectations then went through several rounds of my restructuring
+and rewriting, by hand and by direction. I read the ticket, runbook, agent, and
+evaluation modules against the saved T-006 run, ran the offline tests and
+rescoring myself, and reviewed all 13 generated replies.
 
 ## Keeping the scope focused
 
@@ -21,13 +22,12 @@ whether a draft is appropriate to send.
 
 ## Writing runbooks for support engineers
 
-During review, I identified that the runbooks mixed support guidance with lab
-reproduction procedures. I directed the separation: the
-[support runbooks](../runbooks/) explain what customers report, what the evidence
-supports, what to ask for, possible corrections, recovery checks, and routing.
-Experiment commands and evidence-publication procedures belong in the
-[maintainer guide](reproduction-guide.md). Provenance and reproduction links
-remain in each runbook's Notes section.
+The [support runbooks](../runbooks/) are written for the engineer handling the
+ticket, not for someone operating the lab: what the customer reports, what the
+evidence does and does not establish, what to ask for, the fix, how to confirm it,
+and when to escalate. I set that order and rewrote each runbook to it. Experiment
+commands and publication steps live in the [maintainer guide](reproduction-guide.md);
+provenance and reproduction links stay in each runbook's Notes section.
 
 I also chose to keep the runbooks readable for a support engineer when
 we reconsidered automated evaluation. Adding machine-oriented keywords to the
@@ -36,8 +36,9 @@ agent should use the same readable guidance as an engineer.
 
 ## Tuning the agent
 
-I asked for the instructions to define the output fields and their values in
-separate sections, so a policy can be reviewed and refined in one place.
+I directed a full rewrite of the agent instructions so that each output field
+and its allowed values is defined in its own section, and a policy can be
+reviewed and changed in one place.
 Supported case IDs come from the response schema, case-specific diagnostic
 guidance comes from runbooks, and general intake guidance covers requests that
 do not yet match a case.
