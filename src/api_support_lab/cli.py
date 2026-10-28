@@ -119,7 +119,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if run.record["status"] != "completed":
                     print("Triage failed; no draft accepted. Inspect the saved run.", file=sys.stderr)
                     return 1
-                print("Draft for manual review:")
+                print("Draft for human review:")
                 print(run.record["result"]["customer_reply"])
                 return 0
             from api_support_lab.evaluation import evaluate_live, report_passed, score_saved

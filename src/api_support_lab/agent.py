@@ -45,7 +45,7 @@ class TriageResult(BaseModel):
         "Do not request fields already supplied or known to be unavailable."
     ))
     customer_reply: str = Field(min_length=1, description=(
-        "Concise draft for manual review, grounded in ticket evidence and retrieved "
+        "Concise draft for human review, grounded in ticket evidence and retrieved "
         "guidance. Ask meaningfully for every missing information item; keep "
         "conditional questions consistent with missing too."
     ))

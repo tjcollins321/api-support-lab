@@ -279,7 +279,7 @@ def test_single_ticket_cli_draft_or_visible_failure(transport, draft, tmp_path, 
     output = capsys.readouterr()
     assert "Saved triage run" in output.out
     if success:
-        assert "Draft for manual review" in output.out
+        assert "Draft for human review" in output.out
     else:
         assert "no draft accepted" in output.err
         assert len(calls) == 1

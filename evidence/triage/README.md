@@ -45,6 +45,8 @@ I removed times of day from the publication copies while keeping UTC dates:
 - Renamed provenance links change full-ticket hashes. I refreshed those hashes;
   the subject, body, and pasted error sent to the model are unchanged.
 
+After the batch ran, a wording pass replaced "human review" with "manual review" in one phrase each in `triage/expected.yaml` (a header comment), `triage/instructions.md` (line 3), `agent.py` (a field description), `cli.py` (a print string), and `evaluation.py` (two report strings). I restored the run-time wording on 2026-10-28 so the source files in this tree are byte-identical to the ones that produced these records; the manifest's `source_corrections` entry records it, and the post-run wording is at `2ee5cc4`.
+
 The generated decisions, replies, escalation notes, tool arguments/statuses,
 usage, settings, and SDK versions are unchanged. The publication copies are
 **not byte-identical originals**. The [manifest](batch.json) distinguishes original

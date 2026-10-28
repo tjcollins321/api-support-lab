@@ -1,4 +1,4 @@
-# Evaluator and manual review criteria only. Never include this file in agent prompts.
+# Evaluator and human-review criteria only. Never include this file in agent prompts.
 # information_request_review is assessed against customer_reply by a person, not scored automatically.
 # required_diagnostic_literals checks diagnostic preservation, not evidence quality.
 # evidence_review is assessed by a person against the selected extracts and decision.

@@ -6,6 +6,19 @@
   "publication_commit": "2ee5cc46417596bf8c69b51f82a26277ba7d7154",
   "source_included_uncommitted_preparation": true,
   "source_note": "The batch ran on a local branch squashed into the publication commit; the hashes below identify the inputs.",
+  "source_corrections": [
+    {
+      "date": "2026-10-28",
+      "files": [
+        "triage/expected.yaml",
+        "triage/instructions.md",
+        "src/api_support_lab/agent.py",
+        "src/api_support_lab/cli.py",
+        "src/api_support_lab/evaluation.py"
+      ],
+      "note": "After the batch ran, a wording pass replaced 'human review' with 'manual review' in one phrase per file: the header comment of expected.yaml, line 3 of instructions.md, the customer_reply field description in agent.py, a print string in cli.py, and two limitations strings in evaluation.py. The run-time wording was restored on 2026-10-28 so the working tree matches original_source_sha256, and published_source_sha256 was updated to match. The post-run wording is at publication_commit 2ee5cc4. No scored value, runbook text, ticket, or generated record changed."
+    }
+  ],
   "model": "gpt-6.1-sol",
   "python_version": "3.14.4",
   "sdk_versions": {
@@ -136,7 +149,7 @@
     "runbooks/tool_schema.md": "49f77676fcc73aa43978d48fddf69c752ab9984820dd0f986d5e2cdac5c67a5d",
     "src/api_support_lab/__init__.py": "9a242310eed4707bc2e0577d6ef9bbd42694e28b38dd8f683ae410503434442f",
     "src/api_support_lab/__main__.py": "11bdc743d171254442c0a256a0594ae3aa1c106a8be072fd0997807eadeaa47d",
-    "src/api_support_lab/agent.py": "cd11e4cb36db1ded5654c270d47cd00692850778cc3cee64ecef591b52780e61",
+    "src/api_support_lab/agent.py": "46dfb0dc6373070cf7c044d2184f8b04128a5ed5e1b1bf8c3e976ce9a7e36fff",
     "src/api_support_lab/artifacts.py": "93c73b79d905bbcf2b78b978b1455940ddeef8dfbae0dead24ed8ec730e8a260",
     "src/api_support_lab/capture.py": "1299bf9d8eb098b5fb756aaf01109d646bca6f23a215a6ab82bbdc1aa27451ab",
     "src/api_support_lab/cases/__init__.py": "602b8444636909fbe4db03b08915fcbe05e19da679678aeb7fb20515b3d6c1cd",
@@ -145,14 +158,14 @@
     "src/api_support_lab/cases/invalid_credentials.py": "f90af89534918a45cbbb055cf73b677e61a24722427b48b8de5bb8fcb9f28ae4",
     "src/api_support_lab/cases/timeout.py": "5c94e5955af976ccb1622f8eca4f515cab7727af9db31a669ecc56b49a228df0",
     "src/api_support_lab/cases/tool_schema.py": "1beb82c274d102a9783814c1bde25dac9ec1e3e8946c03695dd038a11267bef0",
-    "src/api_support_lab/cli.py": "da27cb3f1698b7c012b59d4f07c44adc87e841525de18e4120e8df24d7304b1a",
+    "src/api_support_lab/cli.py": "ae8e69e5521ad15902ef4d26ba5e8f615efcdf7ba8c71275e1d927f583aa4d9f",
     "src/api_support_lab/config.py": "8d7574ba258affb9fa1bc32dfc60a5a0001aba384fa9032decae84159082fa03",
-    "src/api_support_lab/evaluation.py": "00b33c0bbd146aca80491bf19b65c8c6e0972e4cb3ad8dacc452d3555bc522e6",
+    "src/api_support_lab/evaluation.py": "3eeb5e5044e1dbc27b30f32ededc2d36c93a34d2090a20dd056d67d979a9e3eb",
     "src/api_support_lab/runbooks.py": "929fff703b5f5f9765bca46545dd0974d4580cb06f909c0f0c38243dd347d77b",
     "src/api_support_lab/sdk.py": "5df39a389d154e0a40ea02b244c75f65b0d941662dd61026cae14ca2ef2d8628",
     "src/api_support_lab/tickets.py": "bc1c0330f1cf032764136f3475a38549674a5223a94adfbcb2ac5ce3f75a7f24",
-    "triage/expected.yaml": "f13144bdc903bccb8816f76eb7fa725dc285d9ebc8fdce6114ea04b7d2b64377",
-    "triage/instructions.md": "a4238a5438c5e299f31059de46c5efa131b0b0519b569fa788bf2dfaced8a22b",
+    "triage/expected.yaml": "d3e90482e6be56e06c50d4b3df43a02b674f862d655bb05adef21fd75c193130",
+    "triage/instructions.md": "bbe588ba89830c802d69097c3a093be8529df4d1e2262c82a6bb6eeaeea7f10d",
     "triage/tickets/T-001.yaml": "95ad8331d7cf6eb2ae7c0f5eb93a954650ca87d67b6c929ead465540d8d08279",
     "triage/tickets/T-002.yaml": "e98d24223fc920cb4db5b5939772ddbbdb39921bfe8f8f1b1ef871f30cf8db18",
     "triage/tickets/T-003.yaml": "5d1577ccd449ee0b0449754359d440cf263afb2cb903f73ef67d7cb2ef4e2f8e",

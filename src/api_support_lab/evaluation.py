@@ -127,8 +127,8 @@ def score_runs(runs: list, tickets: list[Ticket], expectations: dict[str, Expect
         },
         "limitations": [
             "Automated checks do not establish reply usefulness or factual correctness.",
-            "Diagnostic preservation checks required literal strings in verbatim ticket extracts; evidence relevance and sufficiency require manual review.",
-            "Information requests and their consistency with missing are reviewed manually against customer_reply; no exact-name or semantic question grading is automated.",
+            "Diagnostic preservation checks required literal strings in verbatim ticket extracts; evidence relevance and sufficiency require human review.",
+            "Information requests and their consistency with missing are reviewed by a human against customer_reply; no exact-name or semantic question grading is automated.",
             "Review every reply for supported fixes, meaningful questions, uncertainty, revocation claims, data handling, and routing language.",
             "Usage may be absent or partial after failures; unknown cost is not zero.",
             "Live verification requires actual model runs and manual review; authored fixtures verify offline behavior only and do not establish agent performance.",
