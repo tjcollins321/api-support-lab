@@ -79,7 +79,7 @@ Corrected requests default to 2,048 output tokens and 60 seconds. CLI overrides 
 
 ## Runbooks and deterministic tools
 
-Each support runbook presents symptoms, meaning, evidence requests, a correction, recovery checks, escalation, a customer reply template, and Notes with verification status and capture links. The four published runbooks are verified against one broken/corrected lab pair each. Those labels describe lab evidence. Customer recovery still requires usable output in the affected workflow. Experiment commands and publication procedures live in the [maintainer guide](reproduction-guide.md), outside the agent's tools.
+Each support runbook presents symptoms, meaning, evidence requests, a correction, recovery checks, escalation, a customer reply template, and Notes with verification status and capture links. The four published runbooks are verified against one broken/corrected lab pair each. Those labels describe lab evidence. Customer recovery still requires usable output in the affected workflow. The reproduction commands are in the CLI section below; the agent's tools cannot reach them or the case code.
 
 ```python
 CaseId = Literal["invalid_credentials", "tool_schema", "incomplete_output", "timeout"]
@@ -116,7 +116,10 @@ By default, the runner uses `AsyncOpenAI` and `OpenAIResponsesModel` with a 60-s
 ## CLI, execution boundaries, and budget
 
 ```text
-uv run python -m api_support_lab reproduce CASE --variant broken|fixed --live
+uv run python -m api_support_lab reproduce invalid_credentials --variant broken|fixed --live
+uv run python -m api_support_lab reproduce tool_schema --variant broken|fixed --live
+uv run python -m api_support_lab reproduce incomplete_output --variant broken|fixed --live
+uv run python -m api_support_lab reproduce timeout --variant broken|fixed --live
 uv run python -m api_support_lab diagnose --status STATUS [--error-code CODE]
 uv run python -m api_support_lab triage TICKET.yaml --live
 uv run python -m api_support_lab evaluate --live
@@ -126,7 +129,7 @@ uv run pytest
 
 API commands require `--live` before client construction. Live evaluation and saved-result scoring are mutually exclusive. Offline scoring needs no credential or client. Pytest skips live-marked tests without `--run-live` and blocks DNS/socket connections inside its process for offline tests. The current suite contains no live API tests; its opt-in policy probe is harmless. `--no-env-file` prevents uv from loading an environment file.
 
-Triage and evaluation accept `--output-dir`, defaulting to checkout-relative `artifacts/triage/` and `artifacts/evaluation/`. Evaluation also saves individual runs. Accepted triage drafts and fully passing evaluations exit 0; failed attempts, input/data issues, or mismatches exit 1; configuration/argument errors exit 2. Reproduction exit 0 means its per-attempt predicate matched, as detailed in the maintainer guide.
+Triage and evaluation accept `--output-dir`, defaulting to checkout-relative `artifacts/triage/` and `artifacts/evaluation/`. Evaluation also saves individual runs. Accepted triage drafts and fully passing evaluations exit 0; failed attempts, input/data issues, or mismatches exit 1; configuration/argument errors exit 2. `reproduce` also accepts `--output-dir`, `--max-output-tokens`, and `--timeout-seconds`; it exits 0 when the attempt matched its case's `matches_expected()` predicate (for a broken variant, the intended failure), 1 for any other captured outcome or a write failure, and never repeats a request. Exit 0 on one attempt does not verify the pair.
 
 ## Evaluation design
 

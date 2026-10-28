@@ -68,6 +68,14 @@ without model calls. Generated reports go under ignored `artifacts/`. I retain
 input hashes when comparing scores because changing tickets or expectations can
 change the result.
 
+## Publishing a new batch
+
+1. Make every change to tickets, instructions, runbooks, expectations, and code first, and commit it. That commit is the batch's source commit; record its hash.
+2. From a clean checkout of that commit, run the batch once: `uv run --locked --env-file .env python -m api_support_lab evaluate --live`. Do not edit any input afterwards. If something must change, change it, commit, and run the whole batch again.
+3. Rescore the saved runs offline (`evaluate --results artifacts/evaluation/runs`) and confirm the summary matches the live report.
+4. Read every reply and record the verdicts, notes, and any edited replies in `manual-review.md` and `edited-replies/`.
+5. Copy the run records into `runs/`, regenerate `batch.json` with the source commit and hashes, update the counts in the README and docs, and commit that separately. `git diff --stat <source-commit>` should then touch only `evidence/`, `docs/`, and `README.md`.
+
 ## Limits
 
 I used these 13 synthetic samples during development, without a separate holdout

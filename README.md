@@ -109,4 +109,3 @@ The offline tests (279, mostly parametrised) cover capture, redaction, tool sche
 - [Manual review](docs/manual-review.md): assessing actual questions, with a model grader left as future work.
 - [Development notes](docs/development-notes.md): project attribution, the design calls, and how the agent was tuned.
 - [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
-- [Reproduction guide](docs/reproduction-guide.md): running the cases and publishing evidence.

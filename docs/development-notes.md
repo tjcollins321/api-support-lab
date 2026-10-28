@@ -25,8 +25,9 @@ whether a draft is appropriate to send.
 The [support runbooks](../runbooks/) are written for the engineer handling the
 ticket, not for someone operating the lab: what the customer reports, what the
 evidence does and does not establish, what to ask for, the fix, how to confirm it,
-and when to escalate. I set that order and rewrote each runbook to it. Experiment
-commands and publication steps live in the [maintainer guide](reproduction-guide.md);
+and when to escalate. I set that order and rewrote each runbook to it. The reproduction
+commands are in the [architecture](architecture.md#cli-execution-boundaries-and-budget)
+and the publication steps in the [triage evidence README](../evidence/triage/README.md#publishing-a-new-batch);
 provenance and reproduction links stay in each runbook's Notes section.
 
 I also chose to keep the runbooks readable for a support engineer when
