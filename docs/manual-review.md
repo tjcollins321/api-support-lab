@@ -51,10 +51,11 @@ I also check that:
   omissions or unrelated items.
 - The next step, severity, tone, uncertainty, and routing fit the customer’s report.
 
-I choose **Send as-is**, **Send with edits**, or **Would not send** and record my
-reasons separately from supporting observations prepared with Codex. These
-verdicts live in Markdown; the report’s `pending`/`pass`/`fail` schema is a separate
-representation.
+I choose **Send as-is**, **Send with edits**, or **Would not send**, and add a note
+where I have something to say beyond the criteria. Codex prepares the supporting
+observations in each table; I check each against the ticket and the reply before
+recording the assessment. These verdicts live in Markdown; the report’s
+`pending`/`pass`/`fail` schema is a separate representation.
 
 My [completed manual review](../evidence/triage/manual-review.md) records
 10 Send as-is, 3 Send with edits, and all 51 manual review criteria satisfied.
@@ -76,18 +77,17 @@ I can use this format:
 ## Ticket ID
 
 My verdict: Pending
-My reasoning: Pending
-Supporting observations prepared with Codex:
+My reasoning: (only where there is something beyond the criteria)
 
-| Information-request criterion | Assessment | Exact reply excerpt and explanation |
+| Information-request criterion | Assessment | Supporting observations |
 | --- | --- | --- |
 | Criterion from the report | Pending | |
 
-| Evidence criterion | Assessment | Selected ticket extract and explanation |
+| Evidence criterion | Assessment | Supporting observations |
 | --- | --- | --- |
 | Criterion from the report | Pending | |
 
-My suggested edits:
+My suggested edits: (only for Send with edits)
 ```
 
 ## Future enhancement: a separate model grader
