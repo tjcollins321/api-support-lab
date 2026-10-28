@@ -31,7 +31,7 @@ Its saved reply begins:
 
 The category is a hypothesis; the severity comes from the blocked report; the next step is to collect completion details and a sanitized failing excerpt.
 
-This excerpt comes from the [published T-006 run](evidence/triage/runs/T-006.json) in the batch I reviewed on 2026-10-27. I selected **Send with edits**, removing one redundant sentence later in the reply. I saved the [edited wording](evidence/triage/edited-replies/T-006.md) separately. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction, an escalation, and a misleading customer diagnosis.
+In my review I marked T-006 **Send with edits**, removing one redundant sentence later in the reply; the [edited wording](evidence/triage/edited-replies/T-006.md) is saved separately. The [walkthrough](docs/walkthrough.md) follows this example alongside a supported correction, an escalation, and a misleading customer diagnosis.
 
 ## What is implemented
 
@@ -48,7 +48,7 @@ For ticket triage, one agent with three read-only tools returns a structured dec
 
 I kept the failure set to four on purpose, to leave time to build and test the triage agent properly. Rate limits, quota, model access, and context overflow are out of scope, as are MCP, hosting, and external ticketing.
 
-The shared tools are ordinary Python functions: `diagnose`, `list_runbooks`, and `get_runbook`. The status/code mappings come from the captured errors. The case IDs are part of the tool and output schemas, so the agent can go straight to a runbook when a name matches the symptom; `list_runbooks` is for when none does. Unknown codes remain unmatched, and symptom-based retrieval supports cases without a diagnostic status/code mapping.
+The shared tools are ordinary Python functions: `diagnose`, `list_runbooks`, and `get_runbook`. The status/code mappings come from the captured errors. The case IDs are part of the tool and output schemas, so the agent can go straight to a runbook when a name matches the symptom; `list_runbooks` is for when none does.
 
 ## Quick start
 
@@ -61,7 +61,7 @@ uv run pytest -q
 uv run python -m api_support_lab evaluate --results evidence/triage/runs
 ```
 
-None of these need an API key. `diagnose` prints `["invalid_credentials"]`: a candidate, not a verdict. The tests run the agent loop against an in-memory transport with dummy credentials, and a pytest guard fails any test that tries to reach the network. `evaluate --results` scores the saved runs against `triage/expected.yaml` without calling the model and prints 13/13; it does not rerun the agent. Generated files go under the ignored `artifacts/` directory.
+None of these need an API key. `diagnose` prints `["invalid_credentials"]`, the runbook that matches that status and code. The tests run the agent loop against an in-memory transport with dummy credentials, and a pytest guard fails any test that tries to reach the network. `evaluate --results` scores the saved runs against `triage/expected.yaml` without calling the model and prints 13/13; it does not rerun the agent. Generated files go under the ignored `artifacts/` directory.
 
 For a live draft, copy `.env.example` to `.env`, configure your own project key, and explicitly load it:
 
@@ -69,7 +69,7 @@ For a live draft, copy `.env.example` to `.env`, configure your own project key,
 uv run --locked --env-file .env python -m api_support_lab triage triage/tickets/T-006.yaml --live
 ```
 
-The application does not automatically load `.env`; it is ignored by Git. Live commands require `--live` and may incur charges. The agent reads runbooks and drafts replies; it cannot send messages, run reproductions, or change accounts. Review every draft before use.
+The application does not automatically load `.env`; it is ignored by Git. Live commands require `--live` and may incur charges. The agent reads runbooks and drafts replies; it cannot send messages, run reproductions, or change accounts.
 
 ## How it works
 
@@ -97,15 +97,15 @@ Three rules shape the agent:
 
 ## Results and limits
 
-Each case has one reviewed live broken/corrected pair: a reproduction, not a benchmark.
+Each case was reproduced once: one live broken/corrected pair, captured 2026-10-22.
 
 I ran all 13 tickets once each, sequentially, with no retries. All 13 passed the automated checks (category, basis, action, severity, retrieval, verbatim evidence, ticket hash). Separately, I read every draft: 9 I would send as-is, 3 with edits, and 1 I would not send (T-011: the agent rightly escalated a rate-limit request it has no runbook for, but the reply just points the customer back to support). The [manual review](evidence/triage/manual-review.md) has the per-ticket verdicts; the [edited replies](evidence/triage/edited-replies/) hold the wording I approved, kept apart from the generated text. There is no separate holdout set, so this shows the loop working on these 13 tickets, not how the agent would do on unseen ones.
 
-The offline tests (279, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
+The offline tests (279, mostly parametrized) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the replies. All organizations and tickets are invented.
 
 ## Explore further
 
-- [Walkthrough](docs/walkthrough.md): four saved decisions, actual replies, and a code-reading path.
-- [Manual review](docs/manual-review.md): assessing actual questions, with a model grader left as future work.
-- [Development notes](docs/development-notes.md): project attribution, the design calls, and how the agent was tuned.
+- [Walkthrough](docs/walkthrough.md): four saved decisions, the full replies, and where each step lives in the code.
+- [Manual review](docs/manual-review.md): how I judge each draft, and what the automated checks don't cover.
+- [Development notes](docs/development-notes.md): what I did and what Codex did, the design calls, how the agent was tuned, and what I'd do next.
 - [Architecture](docs/architecture.md): components, interfaces, and design tradeoffs.
