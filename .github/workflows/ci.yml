@@ -1,0 +1,16 @@
+name: offline checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
+      - run: uv sync --locked
+      - run: uv run --locked --no-env-file pytest -q
+      - run: uv run --locked --no-env-file python -m api_support_lab evaluate --results evidence/triage/runs

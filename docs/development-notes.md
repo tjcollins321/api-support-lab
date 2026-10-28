@@ -89,8 +89,8 @@ The reviewed reproduction captures establish what happened in those API
 attempts. Saved agent drafts and manual reviews establish what was produced and
 judged for those particular inputs. Each source answers a different question.
 
-A separate model grader is potential future work. It could apply the manual review
-criteria to saved drafts and return findings with supporting excerpts. Its
-judgments would need comparison with manual reviews before being relied upon.
-I currently assess those criteria manually, without adding an evaluation
-framework dependency.
+## What I'd do next
+
+- A rate-limit runbook. T-011 is the one reply I would not send, because the lab has no guidance for the most common ticket type in a real queue. It is the next case I would reproduce and write up.
+- Holdout tickets. All 13 tickets were used while I tuned the instructions. A handful written after the instructions are frozen, run once, would show how the agent does on inputs it was not tuned against.
+- A model grader that applies the manual-review criteria to each saved draft and returns findings with excerpts, compared against my verdicts on this batch before I would rely on it. The [review guide](manual-review.md#future-enhancement-a-separate-model-grader) has the design.

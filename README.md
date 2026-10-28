@@ -1,4 +1,5 @@
 # API Support Lab
+[![offline checks](https://github.com/tjcollins321/api-support-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/tjcollins321/api-support-lab/actions/workflows/ci.yml)
 
 A small personal project that reproduces four OpenAI API failures against the live API, writes a support runbook for each from the captured evidence, and runs a triage agent that uses those runbooks to draft replies to 13 synthetic support tickets. The agent drafts; I review every reply before treating it as something I would send.
 
