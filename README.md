@@ -99,7 +99,7 @@ Three rules shape the agent:
 
 Each case has one reviewed live broken/corrected pair: a reproduction, not a benchmark.
 
-I ran all 13 tickets once each, sequentially, with no retries. All 13 passed the automated checks (category, basis, action, severity, retrieval, verbatim evidence, ticket hash). Separately, I read every draft: 10 I would send as-is, 3 with edits, 0 I would not send. The [manual review](evidence/triage/manual-review.md) has the per-ticket verdicts; the [edited replies](evidence/triage/edited-replies/) hold the wording I approved, kept apart from the generated text. There is no separate holdout set, so this shows the loop working on these 13 tickets, not how the agent would do on unseen ones.
+I ran all 13 tickets once each, sequentially, with no retries. All 13 passed the automated checks (category, basis, action, severity, retrieval, verbatim evidence, ticket hash). Separately, I read every draft: 9 I would send as-is, 3 with edits, and 1 I would not send (T-011: the agent rightly escalated a rate-limit request it has no runbook for, but the reply just points the customer back to support). The [manual review](evidence/triage/manual-review.md) has the per-ticket verdicts; the [edited replies](evidence/triage/edited-replies/) hold the wording I approved, kept apart from the generated text. There is no separate holdout set, so this shows the loop working on these 13 tickets, not how the agent would do on unseen ones.
 
 The offline tests (279, mostly parametrised) cover capture, redaction, tool schemas, the agent loop against an in-memory transport, and scoring. They test the software, not the quality of a live reply. All organizations and tickets are invented.
 

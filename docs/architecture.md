@@ -136,7 +136,7 @@ The scorer checks shape/grounding, ticket identity, category, basis, action, sev
 
 Live evaluation runs tickets once, sequentially, with no retries; ticket failures remain in the denominator. Reports separate operational failures from semantic mismatches and record settings, SDK versions, timestamps, ticket hashes, and the expectations hash. Offline scoring accepts a run, a report containing runs, or a directory; missing/duplicate/corrupt records and hash drift stay visible. Directory rescoring initializes pending review fields rather than importing Markdown verdicts.
 
-The published batch scored 13/13 with no operational failures or semantic mismatches. My separate review recorded 10 Send as-is, 3 Send with edits, and 51 satisfied criteria. Generated replies remain unchanged; approved edits are separate. All 13 samples were used during development, with no holdout set, so the batch does not establish unseen-ticket performance.
+The published batch scored 13/13 with no operational failures or semantic mismatches. My separate review recorded 9 Send as-is, 3 Send with edits, 1 Would not send, and 51 satisfied criteria. Generated replies remain unchanged; approved edits are separate. All 13 samples were used during development, with no holdout set, so the batch does not establish unseen-ticket performance.
 
 ## Tradeoffs and remaining verification
 

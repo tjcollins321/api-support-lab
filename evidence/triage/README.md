@@ -19,10 +19,11 @@ preserves those outcomes. The checks cover shape/grounding, ticket identity,
 category, basis, action, severity, retrieval, and selected diagnostic literals.
 They do not grade the quality of questions or selected evidence.
 
-I separately recorded **10 Send as-is**, **3 Send with edits**, and **0 Would not
-send**. I found all **51 manual review criteria Satisfied**: 26 information-request
-criteria and 25 evidence criteria. I approved the whole batch and the revised
-wording after reviewing every ticket.
+I separately recorded **9 Send as-is**, **3 Send with edits**, and **1 Would not
+send** (T-011, a rate-limit request the agent correctly escalated but whose reply
+needs material outside this lab's runbooks). I found all **51 manual review criteria
+Satisfied**: 26 information-request criteria and 25 evidence criteria. I approved the
+batch for publication, and the revised wording, after reviewing every ticket.
 
 My three edits are separate from the generated replies in the JSON:
 

@@ -161,8 +161,8 @@ Inspect T-006’s `result` and `tool_use`, then rescore the saved runs to inspec
 
 ## What the results establish
 
-The complete batch has **13/13 automated agreement** under the automated scorer, with **0 operational failures** and **0 semantic mismatches**. My separate [manual review](../evidence/triage/manual-review.md) records **10 Send as-is**, **3 Send with edits**, and all **51 manual review criteria satisfied**. Edited wording for T-006, T-010, and T-013 is labeled separately; the generated replies remain unchanged in the date-only JSON copies.
+The complete batch has **13/13 automated agreement** under the automated scorer, with **0 operational failures** and **0 semantic mismatches**. My separate [manual review](../evidence/triage/manual-review.md) records **9 Send as-is**, **3 Send with edits**, **1 Would not send**, and all **51 manual review criteria satisfied**. Edited wording for T-006, T-010, and T-013 is labeled separately; the generated replies remain unchanged in the date-only JSON copies.
 
-The additional [T-012 review](../evidence/triage/manual-review.md#t-012) checks completion-versus-parsing uncertainty and medium severity for a retry workaround. The [T-013 review](../evidence/triage/manual-review.md#t-013) checks a deployed credential source after two rotations during a customer-facing outage.
+The additional [T-012 review](../evidence/triage/manual-review.md#t-012) checks completion-versus-parsing uncertainty and medium severity for a retry workaround. The [T-013 review](../evidence/triage/manual-review.md#t-013) checks a deployed credential source after two rotations during a customer-facing outage. The [T-011 review](../evidence/triage/manual-review.md#t-011) is the case where every criterion holds and the reply is still not one I would send.
 
 I used these 13 synthetic samples during development, without a separate holdout. They illustrate this workflow on these inputs and do not establish general reliability. Future replies still need review. The [offline command](reproduction-guide.md#offline-checks-and-references) rescores the published records without an API key or new model calls.

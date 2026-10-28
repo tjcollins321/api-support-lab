@@ -58,8 +58,10 @@ recording the assessment. These verdicts live in Markdown; the report’s
 `pending`/`pass`/`fail` schema is a separate representation.
 
 My [completed manual review](../evidence/triage/manual-review.md) records
-10 Send as-is, 3 Send with edits, and all 51 manual review criteria satisfied.
-I approved the whole batch separately after reviewing every ticket. The
+9 Send as-is, 3 Send with edits, 1 Would not send, and all 51 manual review
+criteria satisfied; T-011 is the case where every criterion holds and the reply
+is still not one I would send. I approved the batch for publication after
+reviewing every ticket. The
 [edited replies](../evidence/triage/edited-replies/) preserve the wording I
 approved alongside the generated replies in the publication copies. Directory
 rescoring creates pending manual-review fields; it does not import my Markdown

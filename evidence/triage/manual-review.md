@@ -7,7 +7,7 @@ I published [date-only copies of all 13 records](runs/) from batch `live-review-
 ## Results
 
 - Automated agreement from the scorer: **13/13**; **0 operational failures**, **0 semantic mismatches**. Offline rescoring agreed with the original report.
-- My verdicts: **10 Send as-is**, **3 Send with edits**, **0 Would not send**.
+- My verdicts: **9 Send as-is**, **3 Send with edits**, **1 Would not send** (T-011).
 - Manual review criteria: **51 Satisfied** (26 information-request and 25 evidence criteria); **0 Omitted**, **0 Unclear**, **0 Not applicable**.
 
 | Ticket | Category / basis | Severity | Action | My verdict |
@@ -22,7 +22,7 @@ I published [date-only copies of all 13 records](runs/) from batch `live-review-
 | [T-008](#t-008) | `tool_schema` / `stated` | `unknown` | `recommend_fix` | Send as-is |
 | [T-009](#t-009) | `out_of_scope` / `none` | `unknown` | `escalate` | Send as-is |
 | [T-010](#t-010) | `out_of_scope` / `none` | `unknown` | `escalate` | Send with edits |
-| [T-011](#t-011) | `out_of_scope` / `none` | `unknown` | `escalate` | Send as-is |
+| [T-011](#t-011) | `out_of_scope` / `none` | `unknown` | `escalate` | Would not send |
 | [T-012](#t-012) | `incomplete_output` / `inferred` | `medium` | `request_info` | Send as-is |
 | [T-013](#t-013) | `invalid_credentials` / `stated` | `high` | `recommend_fix` | Send with edits |
 
@@ -629,9 +629,9 @@ Remove the no-diagnostics explanation and repeated approval wording for clarity,
 
 [Ticket](../../triage/tickets/T-011.yaml) · [Published record](runs/T-011.json). All seven automated checks passed; no operational failure.
 
-**My verdict:** Send as-is
+**My verdict:** Would not send
 
-**My reasoning:** T-011 tests whether the agent avoids inventing rate-limit guidance when it has no runbook for the request; it escalated instead, which satisfies that boundary. A useful reply to a limit-increase request needs account-review material this lab deliberately does not include, so I accept the redirect here as the agent standing in for a handoff it cannot perform.
+**My reasoning:** T-011 tests whether the agent invents rate-limit guidance when it has no runbook for the request; **it escalated instead, which is what I want it to do.** But the reply tells a customer who is already writing to support to contact their support channel, and **I would not send that.** A usable reply needs the public rate-limit material — how limits are set, where to see yours, how to ask for an increase — which **this lab deliberately leaves out, so there is no runbook to ground an edit.** I am recording it as the one reply I would not send rather than writing one the lab cannot support. **Every criterion is still satisfied**, which is the point: the checks measure grounding and restraint, not whether the customer got an answer.
 
 ### Selected ticket evidence
 
